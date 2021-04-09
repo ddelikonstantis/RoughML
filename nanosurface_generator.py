@@ -120,10 +120,7 @@ class SurfaceGenerator(ABC):
 
         vs_ngn, _ = self.sort(v_ngn)
 
-        v_ngs = np.zeros(self.n_points ** 2)
-        for iv in range(self.n_points ** 2):
-            ivs = Igs[iv]
-            v_ngs[ivs] = vs_ngn[iv]
+        v_ngs = vs_ngn[Igs]
 
         return v_ngs.reshape(self.n_points, self.n_points)
 
