@@ -36,7 +36,7 @@ def debug(method):
 
 
 class SurfaceGenerator(ABC):
-    def __init__(self, n_points=500, rms=1, skewness=0, kurtosis=3, corlength_x=20, corlength_y=20, alpha=1):
+    def __init__(self, n_points, rms, skewness, kurtosis, corlength_x, corlength_y, alpha):
         self.n_points = n_points
         self.rms = rms
         self.skewness = skewness
@@ -53,6 +53,18 @@ class SurfaceGenerator(ABC):
 
     def __repr__(self):
         return f'<{self}>'
+
+    def __call__(self, length):
+        self._length = length
+
+        return self
+
+    def __len__(self):
+      return self._length
+
+    def __iter__(self):
+        for _ in range(self._length):
+            yield self.generate_surface()
 
     def sort(self, elements):
         indices = np.argsort(elements, axis=0)
@@ -132,43 +144,28 @@ class SurfaceGenerator(ABC):
 
         return v_ngs.reshape(self.n_points, self.n_points)
 
-    def __call__(self, length):
-        self._length = length
-
-        return self
-
-    def __iter__(self):
-        for _ in range(self._length):
-            yield self.generate_surface()
-
 
 class NonGaussianSurfaceGenerator(SurfaceGenerator):
     def __init__(self, n_points=500, rms=1, skewness=0, kurtosis=3, corlength_x=20, corlength_y=20, alpha=1):
-        super().__init__(
-            n_points=n_points, rms=rms, skewness=skewness, kurtosis=kurtosis,
-            corlength_x=corlength_x, corlength_y=corlength_y, alpha=alpha
-        )
+        super().__init__(n_points, rms, skewness, kurtosis, corlength_x, corlength_y, alpha)
 
     def autocorrelation(self, tx, ty):
         return ((self.rms ** 2) * np.exp(-(abs(np.sqrt((tx / self.corlength_x) ** 2 + (ty / self.corlength_y) ** 2))) ** (2 * self.alpha)))
 
 
 class BeselNonGaussianSurfaceGenerator(NonGaussianSurfaceGenerator):
-    def __init__(self, n_points=500, rms=1, skewness=0, kurtosis=3, corlength_x=20, corlength_y=20, alpha=1, beta=1):
-        super().__init__(
-            n_points=n_points, rms=rms, skewness=skewness, kurtosis=kurtosis,
-            corlength_x=corlength_x, corlength_y=corlength_y, alpha=alpha
-        )
+    def __init__(self, n_points=500, rms=1, skewness=0, kurtosis=3, corlength_x=20, corlength_y=20, alpha=1, beta_x=1, beta_y=1):
+        super().__init__(n_points, rms, skewness, kurtosis, corlength_x, corlength_y, alpha)
 
-        self.beta = beta
+        self.beta_x, self.beta_y = beta_x, beta_y
 
     def autocorrelation(self, tx, ty):
-        return super().autocorrelation(tx, ty) * sympy.besselj(0, (2 * np.pi * np.sqrt(tx ** 2 + ty ** 2)) / self.beta)
+        return super().autocorrelation(tx, ty) * sympy.besselj(0, (2 * np.pi * np.sqrt((tx / self.beta_x) ** 2 + (ty / self.beta_y) ** 2))
 
 
 if __name__ == '__main__':
-    g = BeselNonGaussianSurfaceGenerator()
-    # g = NonGaussianSurfaceGenerator()
+    # g = BeselNonGaussianSurfaceGenerator()
+    g=NonGaussianSurfaceGenerator(128, 1, 0, 3, 10, 10, 2)
 
     for surface in g(1):
         print(surface)
