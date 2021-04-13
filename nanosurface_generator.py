@@ -1,10 +1,10 @@
+import inspect
 from abc import ABC, abstractmethod
 from functools import wraps
 
 import numpy as np
 import sympy
 from scipy import stats
-import inspect
 
 
 def debug(method):
@@ -60,7 +60,7 @@ class SurfaceGenerator(ABC):
         return self
 
     def __len__(self):
-      return self._length
+        return self._length
 
     def __iter__(self):
         for _ in range(self._length):
@@ -160,12 +160,12 @@ class BeselNonGaussianSurfaceGenerator(NonGaussianSurfaceGenerator):
         self.beta_x, self.beta_y = beta_x, beta_y
 
     def autocorrelation(self, tx, ty):
-        return super().autocorrelation(tx, ty) * sympy.besselj(0, (2 * np.pi * np.sqrt((tx / self.beta_x) ** 2 + (ty / self.beta_y) ** 2))
+        return super().autocorrelation(tx, ty) * sympy.besselj(0, (2 * np.pi * np.sqrt((tx / self.beta_x) ** 2 + (ty / self.beta_y) ** 2)))
 
 
 if __name__ == '__main__':
     # g = BeselNonGaussianSurfaceGenerator()
-    g=NonGaussianSurfaceGenerator(128, 1, 0, 3, 10, 10, 2)
+    g = NonGaussianSurfaceGenerator(128, 1, 0, 3, 10, 10, 2)
 
     for surface in g(1):
         print(surface)
