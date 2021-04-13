@@ -4,9 +4,18 @@ from functools import wraps
 import numpy as np
 import sympy
 from scipy import stats
+import inspect
 
 
 def debug(method):
+    signature = inspect.signature(method)
+
+    defaults = {
+        k: v.default
+        for k, v in signature.parameters.items()
+        if v.default is not inspect.Parameter.empty
+    }
+
     @wraps(method)
     def wrapper(*args, **kwargs):
         rv = method(*args, **kwargs)
@@ -14,11 +23,10 @@ def debug(method):
         called_with = ''
         if args:
             called_with += ', '.join(str(x) for x in args)
+            called_with += ', '
 
-        if kwargs:
-            if args:
-                called_with += ', '
-            called_with += ', '.join(f"{x}={y}" for x, y in kwargs.items())
+        called_with += ', '.join(
+            f"{x}={kwargs.get(x, defaults[x])}" for x in defaults.keys())
 
         print(f"{method.__name__}({called_with}) returned {rv}")
 
