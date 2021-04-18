@@ -4,6 +4,7 @@ from functools import wraps
 
 import numpy as np
 import sympy
+import matplotlib.pyplot as plt
 from scipy import stats
 
 
@@ -18,15 +19,23 @@ def debug(method):
 
     @wraps(method)
     def wrapper(*args, **kwargs):
-        rv = method(*args, **kwargs)
-
-        called_with = ''
+        called_with = ""
         if args:
-            called_with += ', '.join(str(x) for x in args)
-            called_with += ', '
+            called_with += ", ".join(str(x) for x in args)
+            called_with += ", "
 
-        called_with += ', '.join(
-            f"{x}={kwargs.get(x, defaults[x])}" for x in defaults.keys())
+        called_with += ", ".join(
+            f"{x}={kwargs.get(x, defaults[x])}" for x in defaults.keys()
+        )
+
+        if "debug" in defaults and "debug" not in kwargs:
+            kwargs["debug"] = True
+
+        try:
+            rv = method(*args, **kwargs)
+        except Exception as e:
+            print(f"{method.__name__}({called_with}) raised {e}")
+            raise
 
         print(f"{method.__name__}({called_with}) returned {rv}")
 
@@ -35,8 +44,18 @@ def debug(method):
     return wrapper
 
 
+def as_grayscale_image(array):
+    low, high = np.min(array), np.max(array)
+    array = (array - low) / (high - low)
+
+    plt.imshow(array, cmap="gray", vmin=0, vmax=1)
+    plt.show()
+
+
 class SurfaceGenerator(ABC):
-    def __init__(self, n_points, rms, skewness, kurtosis, corlength_x, corlength_y, alpha):
+    def __init__(
+        self, n_points, rms, skewness, kurtosis, corlength_x, corlength_y, alpha
+    ):
         self.n_points = n_points
         self.rms = rms
         self.skewness = skewness
@@ -52,7 +71,7 @@ class SurfaceGenerator(ABC):
         return f"{self.__class__.__name__}({self.n_points}, {self.rms}, {self.skewness}, {self.kurtosis}, {self.corlength_x}, {self.corlength_y}, {self.alpha})"
 
     def __repr__(self):
-        return f'<{self}>'
+        return f"<{self}>"
 
     def __call__(self, length):
         self._length = length
@@ -88,7 +107,7 @@ class SurfaceGenerator(ABC):
         tymax = self.n_points // 2
 
         dtx = (txmax - txmin) // self.n_points
-        dty = (tymax-tymin) // self.n_points
+        dty = (tymax - tymin) // self.n_points
 
         for tx in range(txmin, txmax, dtx):
             for ty in range(tymin, tymax, dty):
@@ -100,11 +119,12 @@ class SurfaceGenerator(ABC):
 
         # 2nd step: Generate a white noise, normalize it and take its Fourier transform
         X = np.random.rand(self.n_points, self.n_points)
-        aveX = np.mean(np.mean((X)))
+        aveX = np.mean(np.mean(X))
 
         dif2X = (X - aveX) ** 2
         stdX = np.sqrt(np.mean(np.mean(dif2X)))
         X = X / stdX
+
         XF = np.fft.fft2(X, s=(self.n_points, self.n_points))
 
         # 3nd step: Multiply the two Fourier transforms
@@ -115,7 +135,7 @@ class SurfaceGenerator(ABC):
         z = np.real(zaf)
 
         avez = np.mean(np.mean(z))
-        dif2z = (z-avez) ** 2
+        dif2z = (z - avez) ** 2
         stdz = np.sqrt(np.mean(np.mean(dif2z)))
         z = ((z - avez) * self.rms) / stdz
 
@@ -129,43 +149,109 @@ class SurfaceGenerator(ABC):
         # 2nd step: Generation of a non-Gaussian noise NxN
         z_ngn = stats.pearson3.rvs(
             self.skewness,
-            loc=self._mean, scale=self.rms, size=(self.n_points, self.n_points)
+            loc=self._mean,
+            scale=self.rms,
+            size=(self.n_points, self.n_points),
         )
 
+        # as_grayscale_image(z_ngn)
         # 3rd step: Combination of z_gs with z_ngn to output a z_ms
-        v_gs = z_gs.flatten()
-        v_ngn = z_ngn.flatten()
+        v_gs = z_gs.flatten(order="F")
+        v_ngn = z_ngn.flatten(order="F")
 
-        _, Igs = self.sort(v_gs)
+        Igs = np.argsort(v_gs)
 
-        vs_ngn, _ = self.sort(v_ngn)
+        vs_ngn = np.sort(v_ngn)
 
-        v_ngs = vs_ngn[Igs]
+        v_ngs = np.zeros_like(vs_ngn)
+        v_ngs[Igs] = vs_ngn
 
-        return v_ngs.reshape(self.n_points, self.n_points)
+        z_ngs = np.asmatrix(v_ngs.reshape(self.n_points, self.n_points, order="F")).H
+
+        return z_ngs
 
 
 class NonGaussianSurfaceGenerator(SurfaceGenerator):
-    def __init__(self, n_points=500, rms=1, skewness=0, kurtosis=3, corlength_x=20, corlength_y=20, alpha=1):
-        super().__init__(n_points, rms, skewness, kurtosis, corlength_x, corlength_y, alpha)
+    def __init__(
+        self,
+        n_points=500,
+        rms=1,
+        skewness=0,
+        kurtosis=3,
+        corlength_x=20,
+        corlength_y=20,
+        alpha=1,
+    ):
+        super().__init__(
+            n_points, rms, skewness, kurtosis, corlength_x, corlength_y, alpha
+        )
 
     def autocorrelation(self, tx, ty):
-        return ((self.rms ** 2) * np.exp(-(abs(np.sqrt((tx / self.corlength_x) ** 2 + (ty / self.corlength_y) ** 2))) ** (2 * self.alpha)))
+        return (self.rms ** 2) * np.exp(
+            -(
+                (
+                    abs(
+                        np.sqrt(
+                            (tx / self.corlength_x) ** 2 + (ty / self.corlength_y) ** 2
+                        )
+                    )
+                )
+                ** (2 * self.alpha)
+            )
+        )
 
 
 class BeselNonGaussianSurfaceGenerator(NonGaussianSurfaceGenerator):
-    def __init__(self, n_points=500, rms=1, skewness=0, kurtosis=3, corlength_x=20, corlength_y=20, alpha=1, beta_x=1, beta_y=1):
-        super().__init__(n_points, rms, skewness, kurtosis, corlength_x, corlength_y, alpha)
+    def __init__(
+        self,
+        n_points=500,
+        rms=1,
+        skewness=0,
+        kurtosis=3,
+        corlength_x=20,
+        corlength_y=20,
+        alpha=1,
+        beta_x=1,
+        beta_y=1,
+    ):
+        super().__init__(
+            n_points, rms, skewness, kurtosis, corlength_x, corlength_y, alpha
+        )
 
         self.beta_x, self.beta_y = beta_x, beta_y
 
     def autocorrelation(self, tx, ty):
-        return super().autocorrelation(tx, ty) * sympy.besselj(0, (2 * np.pi * np.sqrt((tx / self.beta_x) ** 2 + (ty / self.beta_y) ** 2)))
+        return super().autocorrelation(tx, ty) * sympy.besselj(
+            0, (2 * np.pi * np.sqrt((tx / self.beta_x) ** 2 + (ty / self.beta_y) ** 2))
+        )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # g = BeselNonGaussianSurfaceGenerator()
-    g = NonGaussianSurfaceGenerator(128, 1, 0, 3, 10, 10, 2)
+    g = NonGaussianSurfaceGenerator(128, 1, 0, 3, 16, 16, 1)
 
     for surface in g(1):
-        print(surface)
+        as_grayscale_image(surface)
+
+    # z_gs, z_ngn = (
+    #     np.array([[1, 4, 1, 9], [5, 3, 5, 6], [1, 8, 7, 4], [5, 1, 4, 5]]),
+    #     np.arange(1, 4 * 4 + 1),
+    # )
+
+    # v_gs = z_gs.flatten(order="F")
+    # print("v_gs =", v_gs, sep="\n")
+    # v_ngn = z_ngn.flatten(order="F")
+    # print("v_ngn =", v_ngn, sep="\n")
+
+    # Igs = np.argsort(v_gs)
+    # print("Igs =", Igs, sep="\n")
+
+    # vs_ngn = np.sort(v_ngn)
+    # print("vs_ngn =", vs_ngn, sep="\n")
+
+    # v_ngs = np.zeros_like(vs_ngn)
+    # v_ngs[Igs] = vs_ngn
+    # print("v_ngs =", v_ngs, sep="\n")
+
+    # z_ngs = np.asmatrix(v_ngs.reshape(4, 4, order="F")).H
+    # print("z_ngs =", z_ngs, sep="\n")
