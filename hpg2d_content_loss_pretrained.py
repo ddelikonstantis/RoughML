@@ -1,5 +1,6 @@
 import itertools
 import logging
+import time
 from abc import ABC, abstractmethod
 from functools import wraps
 from pathlib import Path
@@ -7,7 +8,7 @@ from zipfile import ZipFile
 
 import numpy as np
 import scipy.io as sio
-from pyinsect.collector.NGramGraphCollector import HPG2DCollector
+from pyinsect.collector.NGramGraphCollector import HPG2DCollectorParallel
 from sklearn.preprocessing import KBinsDiscretizer
 
 
@@ -138,7 +139,7 @@ def per_row(method=None, *, expected_ndim=2):
         @wraps(method)
         def wrapper_wrapper(self, matrix, *args, **kwargs):
             if len(matrix.shape) > expected_ndim:
-                return torch.tensor(
+                return np.array(
                     [method(self, row, *args, **kwargs) for row in matrix]
                 )
 
@@ -153,7 +154,7 @@ class HPG2DContentLoss(ContentLoss):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-        self._collector = HPG2DCollector()
+        self._collector = HPG2DCollectorParallel()
 
         for surface in self.surfaces:
             self._collector.add(surface)
@@ -172,7 +173,7 @@ class HPG2DContentLoss(ContentLoss):
 if __name__ == "__main__":
     logging.basicConfig(
         format='[%(asctime)s] %(levelname)s:%(name)s: %(message)s',
-        level=logging.DEBUG,
+        level=logging.CRITICAL,
         filename=Path.cwd() / f'{__file__}.log'
     )
 
@@ -184,11 +185,17 @@ if __name__ == "__main__":
 
     if DATASET_PATH.is_file():
         SURFACES_DIR = Path.cwd() / "surfaces"
-        SURFACES_DIR.mkdir(parents=True, exist_ok=True)
 
-        with ZipFile(DATASET_PATH, "r") as zip_file:
-            zip_file.extractall(SURFACES_DIR)
+        if not SURFACES_DIR.is_dir():
+            SURFACES_DIR.mkdir(parents=True, exist_ok=True)
 
+            with ZipFile(DATASET_PATH, "r") as zip_file:
+                zip_file.extractall(SURFACES_DIR)
+
+    start_time = time.time()
     dataset = NanoroughSurfaceMatLabDataset(SURFACES_DIR, limit=DATASET_SIZE)
+    print("NanoroughSurfaceMatLabDataset took %07.3fs" % (time.time() - start_time,))
 
+    start_time = time.time()
     content_loss = HPG2DContentLoss(surfaces=dataset.surfaces)
+    print("HPG2DContentLoss took %07.3fs" % (time.time() - start_time,))
