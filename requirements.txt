@@ -1,0 +1,11 @@
+numpy=="*"
+sympy=="*"
+scipy=="*"
+matplotlib=="*"
+plotly=="*"
+pandas=="*"
+pillow=="*"
+
+# dev
+isort=="*"
+black=="*"
