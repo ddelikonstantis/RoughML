@@ -1,11 +1,13 @@
-numpy=="*"
-sympy=="*"
-scipy=="*"
-matplotlib=="*"
-plotly=="*"
-pandas=="*"
-pillow=="*"
+numpy
+sympy
+scipy
+matplotlib
+plotly
+sklearn
+pandas
+pillow
 
 # dev
-isort=="*"
-black=="*"
+isort
+black
+flake8
