@@ -1,15 +1,27 @@
+import concurrent
+import cProfile
+import io
 import itertools
 import logging
+import os
+import pstats
+import statistics
 import time
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from functools import wraps
 from pathlib import Path
 from zipfile import ZipFile
 
 import numpy as np
+import pandas as pd
 import scipy.io as sio
-from pyinsect.collector.NGramGraphCollector import HPG2DCollectorParallel
+from pyinsect.collector.NGramGraphCollector import (
+    HPG2DCollector,
+    HPG2DCollectorParallel,
+)
 from sklearn.preprocessing import KBinsDiscretizer
+
+logger = logging.getLogger()
 
 
 class NanoroughSurfaceDataset(object):
@@ -139,9 +151,7 @@ def per_row(method=None, *, expected_ndim=2):
         @wraps(method)
         def wrapper_wrapper(self, matrix, *args, **kwargs):
             if len(matrix.shape) > expected_ndim:
-                return np.array(
-                    [method(self, row, *args, **kwargs) for row in matrix]
-                )
+                return np.array([method(self, row, *args, **kwargs) for row in matrix])
 
             return method(self, matrix, *args, **kwargs)
 
@@ -154,10 +164,28 @@ class HPG2DContentLoss(ContentLoss):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-        self._collector = HPG2DCollectorParallel()
+        self._build_collector()
 
-        for surface in self.surfaces:
+    def _build_collector(self):
+        self._collector = HPG2DCollector()
+
+        logger.info("Constructing %02d graphs", len(self.surfaces))
+
+        elapsed_time = []
+        for index, surface in enumerate(self.surfaces):
+            start_time = time.time()
             self._collector.add(surface)
+            elapsed_time.append(time.time() - start_time)
+
+            logger.info("Constructed graph %02d in %07.3fs", index, elapsed_time[-1])
+
+        logger.info(
+            "Constructed %02d graphs in %07.3fs [%.3f ± %.3f seconds per graph]",
+            len(self.surfaces),
+            sum(elapsed_time),
+            statistics.mean(elapsed_time),
+            statistics.stdev(elapsed_time) if len(elapsed_time) > 1 else 0,
+        )
 
     def __len__(self):
         return len(self.surfaces)
@@ -170,32 +198,101 @@ class HPG2DContentLoss(ContentLoss):
         return str({"shape": self.surfaces.shape})
 
 
+class HPG2DContentLossParallel(HPG2DContentLoss):
+    def _build_collector(self):
+        with concurrent.futures.ProcessPoolExecutor(os.cpu_count()) as pool:
+            self._collector = HPG2DCollectorParallel(pool=pool)
+
+            logger.info("Submitting %02d jobs", len(self.surfaces))
+
+            futures = {}
+            for index, surface in enumerate(self.surfaces):
+                future = pool.submit(self._collector._construct_graph, surface)
+
+                futures[future] = (index, time.time())
+
+            logger.info("Awaiting %02d jobs", len(self.surfaces))
+
+            elapsed_time = [None] * len(self.surfaces)
+            for future in concurrent.futures.as_completed(futures):
+                self._collector._add_graph(future.result())
+
+                index, start_time = futures[future]
+
+                elapsed_time[index] = time.time() - start_time
+
+                logger.info(
+                    "Job %02d completed after %07.3fs", index, elapsed_time[index]
+                )
+
+            logger.info(
+                "Constructed %02d graphs in %07.3fs [%.3f ± %.3f seconds per graph]",
+                len(self.surfaces),
+                sum(elapsed_time),
+                statistics.mean(elapsed_time),
+                statistics.stdev(elapsed_time) if len(elapsed_time) > 1 else 0,
+            )
+
+
+class Profiler(object):
+    def __init__(self, csv_path=Path.cwd() / "profiler.csv"):
+        self._csv_path = csv_path
+        self._profiler = cProfile.Profile()
+
+    def __enter__(self):
+        self._profiler.enable()
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self._profiler.disable()
+
+        result = io.StringIO()
+        pstats.Stats(self._profiler, stream=result).print_stats()
+        result = result.getvalue()
+
+        result = "ncalls" + result.split("ncalls")[-1]
+        result = "\n".join(
+            [",".join(line.rstrip().split(None, 5)) for line in result.split("\n")]
+        )
+
+        with self._csv_path.open("w+") as csv:
+            csv.write(result)
+
+        pd.read_csv(self._csv_path).sort_values(
+            by=["tottime", "cumtime"], ascending=False
+        ).to_csv(
+            self._csv_path, index=False
+        )
+
+
 if __name__ == "__main__":
     logging.basicConfig(
-        format='[%(asctime)s] %(levelname)s:%(name)s: %(message)s',
-        level=logging.CRITICAL,
-        filename=Path.cwd() / f'{__file__}.log'
+        format="[%(asctime)s] %(levelname)s:%(name)s: %(message)s",
+        level=logging.INFO,
+        # filename=Path.cwd() / f"{__file__}.log",
     )
 
-    DATASET_PATH = (
-        Path("/") / "mnt" / "g" / "My Drive" / "Thesis" / "Datasets" / "surfaces.zip"
-    )
+    # DATASET_PATH = (
+    #     Path("/") / "mnt" / "g" / "My Drive" / "Thesis" / "Datasets" / "surfaces.zip"
+    # )
 
-    DATASET_SIZE = 1
+    # DATASET_SIZE = 1
 
-    if DATASET_PATH.is_file():
-        SURFACES_DIR = Path.cwd() / "surfaces"
+    # if DATASET_PATH.is_file():
+    #     SURFACES_DIR = Path.cwd() / "surfaces"
 
-        if not SURFACES_DIR.is_dir():
-            SURFACES_DIR.mkdir(parents=True, exist_ok=True)
+    #     if not SURFACES_DIR.is_dir():
+    #         SURFACES_DIR.mkdir(parents=True, exist_ok=True)
 
-            with ZipFile(DATASET_PATH, "r") as zip_file:
-                zip_file.extractall(SURFACES_DIR)
+    #         with ZipFile(DATASET_PATH, "r") as zip_file:
+    #             zip_file.extractall(SURFACES_DIR)
+
+    # start_time = time.time()
+    # dataset = NanoroughSurfaceMatLabDataset(SURFACES_DIR, limit=DATASET_SIZE)
+    # logger.info("NanoroughSurfaceMatLabDataset took %07.3fs" % (time.time() - start_time,))
 
     start_time = time.time()
-    dataset = NanoroughSurfaceMatLabDataset(SURFACES_DIR, limit=DATASET_SIZE)
-    print("NanoroughSurfaceMatLabDataset took %07.3fs" % (time.time() - start_time,))
 
-    start_time = time.time()
-    content_loss = HPG2DContentLoss(surfaces=dataset.surfaces)
-    print("HPG2DContentLoss took %07.3fs" % (time.time() - start_time,))
+    with Profiler():
+        content_loss = HPG2DContentLoss(surfaces=np.random.random((2, 16, 16)) * 255)
+
+    logger.info("HPG2DContentLoss took %07.3fs" % (time.time() - start_time,))
