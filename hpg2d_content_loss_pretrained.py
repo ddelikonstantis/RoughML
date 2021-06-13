@@ -1,5 +1,7 @@
 import concurrent
 import cProfile
+import datetime
+import enum
 import io
 import itertools
 import logging
@@ -10,15 +12,14 @@ import time
 from abc import abstractmethod
 from functools import wraps
 from pathlib import Path
-from zipfile import ZipFile
+from typing import Tuple
 
 import numpy as np
 import pandas as pd
 import scipy.io as sio
-from pyinsect.collector.NGramGraphCollector import (
-    HPG2DCollector,
-    HPG2DCollectorParallel,
-)
+import typer
+from pyinsect.collector.NGramGraphCollector import (HPG2DCollector,
+                                                    HPG2DCollectorParallel)
 from sklearn.preprocessing import KBinsDiscretizer
 
 logger = logging.getLogger()
@@ -201,11 +202,12 @@ class HPG2DContentLoss(ContentLoss):
 class HPG2DContentLossParallel(HPG2DContentLoss):
     def _build_collector(self):
         with concurrent.futures.ProcessPoolExecutor(os.cpu_count()) as pool:
+            futures = {}
+
             self._collector = HPG2DCollectorParallel(pool=pool)
 
             logger.info("Submitting %02d jobs", len(self.surfaces))
 
-            futures = {}
             for index, surface in enumerate(self.surfaces):
                 future = pool.submit(self._collector._construct_graph, surface)
 
@@ -221,17 +223,15 @@ class HPG2DContentLossParallel(HPG2DContentLoss):
 
                 elapsed_time[index] = time.time() - start_time
 
-                logger.info(
-                    "Job %02d completed after %07.3fs", index, elapsed_time[index]
-                )
+                logger.info("Job %02d completed after %07.3fs", index, elapsed_time[index])
 
-            logger.info(
-                "Constructed %02d graphs in %07.3fs [%.3f ± %.3f seconds per graph]",
-                len(self.surfaces),
-                sum(elapsed_time),
-                statistics.mean(elapsed_time),
-                statistics.stdev(elapsed_time) if len(elapsed_time) > 1 else 0,
-            )
+        logger.info(
+            "Constructed %02d graphs in %07.3fs [%.3f ± %.3f seconds per graph]",
+            len(self.surfaces),
+            sum(elapsed_time),
+            statistics.mean(elapsed_time),
+            statistics.stdev(elapsed_time) if len(elapsed_time) > 1 else 0,
+        )
 
 
 class Profiler(object):
@@ -259,40 +259,45 @@ class Profiler(object):
 
         pd.read_csv(self._csv_path).sort_values(
             by=["tottime", "cumtime"], ascending=False
-        ).to_csv(
-            self._csv_path, index=False
-        )
+        ).to_csv(self._csv_path, index=False)
 
 
-if __name__ == "__main__":
+class LoggingLevel(enum.Enum):
+    info = "info"
+    debug = "debug"
+    critical = "critical"
+
+
+def main(
+    dims: Tuple[int, int, int] = typer.Argument((1, 16, 16)),
+    logging_lvl: LoggingLevel = "info",
+    log_to_file: bool = False,
+    parallel: bool = False
+):
+    logging_lvls = {
+        "info": logging.INFO,
+        "debug": logging.DEBUG,
+        "critical": logging.CRITICAL,
+    }
+
     logging.basicConfig(
         format="[%(asctime)s] %(levelname)s:%(name)s: %(message)s",
-        level=logging.INFO,
-        # filename=Path.cwd() / f"{__file__}.log",
+        level=logging_lvls[logging_lvl.value],
+        filename=Path.cwd() / f"{__file__}_{str(datetime.datetime.now())}.log" if log_to_file else None,
     )
-
-    # DATASET_PATH = (
-    #     Path("/") / "mnt" / "g" / "My Drive" / "Thesis" / "Datasets" / "surfaces.zip"
-    # )
-
-    # DATASET_SIZE = 1
-
-    # if DATASET_PATH.is_file():
-    #     SURFACES_DIR = Path.cwd() / "surfaces"
-
-    #     if not SURFACES_DIR.is_dir():
-    #         SURFACES_DIR.mkdir(parents=True, exist_ok=True)
-
-    #         with ZipFile(DATASET_PATH, "r") as zip_file:
-    #             zip_file.extractall(SURFACES_DIR)
-
-    # start_time = time.time()
-    # dataset = NanoroughSurfaceMatLabDataset(SURFACES_DIR, limit=DATASET_SIZE)
-    # logger.info("NanoroughSurfaceMatLabDataset took %07.3fs" % (time.time() - start_time,))
 
     start_time = time.time()
 
-    with Profiler():
-        content_loss = HPG2DContentLoss(surfaces=np.random.random((2, 16, 16)) * 255)
+    contnet_losses = {
+        False: HPG2DContentLoss,
+        True: HPG2DContentLossParallel,
+    }
 
-    logger.info("HPG2DContentLoss took %07.3fs" % (time.time() - start_time,))
+    with Profiler():
+        contnet_losses[parallel](surfaces=(np.random.random(dims) * 255))
+
+    logger.info("%s took %07.3fs" % (contnet_losses[parallel].__name__, time.time() - start_time,))
+
+
+if __name__ == "__main__":
+    typer.run(main)
