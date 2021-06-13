@@ -168,6 +168,8 @@ class HPG2DContentLoss(ContentLoss):
         self._build_collector()
 
     def _build_collector(self):
+        logger.info("Using a completely serial content loss")
+
         self._collector = HPG2DCollector()
 
         logger.info("Constructing %02d graphs", len(self.surfaces))
@@ -199,17 +201,16 @@ class HPG2DContentLoss(ContentLoss):
         return str({"shape": self.surfaces.shape})
 
 
-class HPG2DContentLossParallel(HPG2DContentLoss):
+class HPG2DContentLossParallelAddition(HPG2DContentLoss):
     def _build_collector(self):
+        logger.info("Using an addition parallel content loss")
+
         with concurrent.futures.ProcessPoolExecutor(os.cpu_count()) as pool:
+            self._collector = HPG2DCollector()
+
             futures = {}
-
-            self._collector = HPG2DCollectorParallel(pool=pool)
-
-            logger.info("Submitting %02d jobs", len(self.surfaces))
-
             for index, surface in enumerate(self.surfaces):
-                future = pool.submit(self._collector._construct_graph, surface)
+                future = pool.submit(self._collector.add, surface)
 
                 futures[future] = (index, time.time())
 
@@ -223,19 +224,87 @@ class HPG2DContentLossParallel(HPG2DContentLoss):
 
                 elapsed_time[index] = time.time() - start_time
 
-                logger.info("Job %02d completed after %07.3fs", index, elapsed_time[index])
+                logger.info(
+                    "Job %02d completed after %07.3fs", index, elapsed_time[index]
+                )
 
-        logger.info(
-            "Constructed %02d graphs in %07.3fs [%.3f ± %.3f seconds per graph]",
-            len(self.surfaces),
-            sum(elapsed_time),
-            statistics.mean(elapsed_time),
-            statistics.stdev(elapsed_time) if len(elapsed_time) > 1 else 0,
-        )
+            logger.info(
+                "Constructed %02d graphs in %07.3fs [%.3f ± %.3f seconds per graph]",
+                len(self.surfaces),
+                sum(elapsed_time),
+                statistics.mean(elapsed_time),
+                statistics.stdev(elapsed_time) if len(elapsed_time) > 1 else 0,
+            )
+
+
+class HPG2DContentLossParallelConstruction(HPG2DContentLoss):
+    def _build_collector(self):
+        logger.info("Using a construction parallel content loss")
+
+        with concurrent.futures.ProcessPoolExecutor(os.cpu_count()) as pool:
+            self._collector = HPG2DCollectorParallel(pool=pool)
+
+            logger.info("Constructing %02d graphs", len(self.surfaces))
+
+            elapsed_time = []
+            for index, surface in enumerate(self.surfaces):
+                start_time = time.time()
+                self._collector.add(surface)
+                elapsed_time.append(time.time() - start_time)
+
+                logger.info(
+                    "Constructed graph %02d in %07.3fs", index, elapsed_time[-1]
+                )
+
+            logger.info(
+                "Constructed %02d graphs in %07.3fs [%.3f ± %.3f seconds per graph]",
+                len(self.surfaces),
+                sum(elapsed_time),
+                statistics.mean(elapsed_time),
+                statistics.stdev(elapsed_time) if len(elapsed_time) > 1 else 0,
+            )
+
+
+class HPG2DContentLossParallel(HPG2DContentLoss):
+    def _build_collector(self):
+        logger.info("Using a completely parallel content loss")
+
+        with concurrent.futures.ProcessPoolExecutor(os.cpu_count()) as pool:
+            self._collector = HPG2DCollectorParallel(pool=pool)
+
+            logger.info("Constructing %02d graphs", len(self.surfaces))
+
+            futures = {}
+            for index, surface in enumerate(self.surfaces):
+                future = pool.submit(self._collector.add, surface)
+
+                futures[future] = (index, time.time())
+
+            logger.info("Awaiting %02d jobs", len(self.surfaces))
+
+            elapsed_time = [None] * len(self.surfaces)
+            for future in concurrent.futures.as_completed(futures):
+                future.result()
+
+                index, start_time = futures[future]
+
+                elapsed_time[index] = time.time() - start_time
+
+                logger.info(
+                    "Job %02d completed after %07.3fs", index, elapsed_time[index]
+                )
+
+            logger.info(
+                "Constructed %02d graphs in %07.3fs [%.3f ± %.3f seconds per graph]",
+                len(self.surfaces),
+                sum(elapsed_time),
+                statistics.mean(elapsed_time),
+                statistics.stdev(elapsed_time) if len(elapsed_time) > 1 else 0,
+            )
 
 
 class Profiler(object):
-    def __init__(self, csv_path=Path.cwd() / "profiler.csv"):
+    def __init__(self, csv_path=Path.cwd() / f"profiler_{datetime.datetime.now()}.csv"):
         self._csv_path = csv_path
         self._profiler = cProfile.Profile()
 
@@ -272,7 +341,7 @@ def main(
     dims: Tuple[int, int, int] = typer.Argument((1, 16, 16)),
     logging_lvl: LoggingLevel = "info",
     log_to_file: bool = False,
-    parallel: bool = False
+    parallel: int = 0,
 ):
     logging_lvls = {
         "info": logging.INFO,
@@ -283,20 +352,30 @@ def main(
     logging.basicConfig(
         format="[%(asctime)s] %(levelname)s:%(name)s: %(message)s",
         level=logging_lvls[logging_lvl.value],
-        filename=Path.cwd() / f"{__file__}_{str(datetime.datetime.now())}.log" if log_to_file else None,
+        filename=Path.cwd() / f"{__file__}_{str(datetime.datetime.now())}.log"
+        if log_to_file
+        else None,
     )
 
     start_time = time.time()
 
-    contnet_losses = {
-        False: HPG2DContentLoss,
-        True: HPG2DContentLossParallel,
-    }
+    contnet_losses = [
+        HPG2DContentLoss,
+        HPG2DContentLossParallelAddition,
+        HPG2DContentLossParallelConstruction,
+        HPG2DContentLossParallel,
+    ]
 
     with Profiler():
         contnet_losses[parallel](surfaces=(np.random.random(dims) * 255))
 
-    logger.info("%s took %07.3fs" % (contnet_losses[parallel].__name__, time.time() - start_time,))
+    logger.info(
+        "%s took %07.3fs"
+        % (
+            contnet_losses[parallel].__name__,
+            time.time() - start_time,
+        )
+    )
 
 
 if __name__ == "__main__":
