@@ -6,7 +6,9 @@ import io
 import itertools
 import logging
 import os
+import pickle
 import pstats
+import re
 import statistics
 import time
 from abc import abstractmethod
@@ -18,8 +20,10 @@ import numpy as np
 import pandas as pd
 import scipy.io as sio
 import typer
-from pyinsect.collector.NGramGraphCollector import (HPG2DCollector,
-                                                    HPG2DCollectorParallel)
+from pyinsect.collector.NGramGraphCollector import (
+    HPG2DCollector,
+    HPG2DCollectorParallel,
+)
 from sklearn.preprocessing import KBinsDiscretizer
 
 logger = logging.getLogger()
@@ -168,8 +172,6 @@ class HPG2DContentLoss(ContentLoss):
         self._build_collector()
 
     def _build_collector(self):
-        logger.info("Using a completely serial content loss")
-
         self._collector = HPG2DCollector()
 
         logger.info("Constructing %02d graphs", len(self.surfaces))
@@ -239,8 +241,6 @@ class HPG2DContentLossParallelAddition(HPG2DContentLoss):
 
 class HPG2DContentLossParallelConstruction(HPG2DContentLoss):
     def _build_collector(self):
-        logger.info("Using a construction parallel content loss")
-
         with concurrent.futures.ProcessPoolExecutor(os.cpu_count()) as pool:
             self._collector = HPG2DCollectorParallel(pool=pool)
 
@@ -267,8 +267,6 @@ class HPG2DContentLossParallelConstruction(HPG2DContentLoss):
 
 class HPG2DContentLossParallel(HPG2DContentLoss):
     def _build_collector(self):
-        logger.info("Using a completely parallel content loss")
-
         with concurrent.futures.ProcessPoolExecutor(os.cpu_count()) as pool:
             self._collector = HPG2DCollectorParallel(pool=pool)
 
@@ -303,8 +301,28 @@ class HPG2DContentLossParallel(HPG2DContentLoss):
             )
 
 
+def unique_name_of(prefix, extension="csv"):
+    strtime = datetime.datetime.now().strftime("%d_%m_%y_%H_%M_%S_%f")
+
+    return f"{prefix}_{strtime}.{extension}"
+
+
+def to_snake_case(name):
+    if "___" in name:
+        return name.lower()
+
+    name = re.sub("(.)([A-Z][a-z]+)", r"\1_\2", name)
+    name = name.replace("__", "_")
+
+    return re.sub("([a-z0-9])([A-Z])", r"\1_\2", name).lower()
+
+
+def unique_cwd_of(prefix, extension="csv"):
+    return Path.cwd() / unique_name_of(to_snake_case(prefix), extension=extension)
+
+
 class Profiler(object):
-    def __init__(self, csv_path=Path.cwd() / f"profiler_{datetime.datetime.now()}.csv"):
+    def __init__(self, csv_path=unique_cwd_of("profiler")):
         self._csv_path = csv_path
         self._profiler = cProfile.Profile()
 
@@ -361,13 +379,19 @@ def main(
 
     contnet_losses = [
         HPG2DContentLoss,
-        HPG2DContentLossParallelAddition,
         HPG2DContentLossParallelConstruction,
+        HPG2DContentLossParallelAddition,
         HPG2DContentLossParallel,
     ]
 
-    with Profiler():
-        contnet_losses[parallel](surfaces=(np.random.random(dims) * 255))
+    with Profiler(unique_cwd_of(contnet_losses[parallel].__name__)):
+        content_loss = contnet_losses[parallel](surfaces=(np.random.random(dims) * 255))
+
+        logger.info("Pickling an instance of %s", content_loss.__class__.__name__)
+        with unique_cwd_of(content_loss.__class__.__name__, extension="pkl").open(
+            "wb"
+        ) as pkl:
+            pickle.dump(content_loss, pkl)
 
     logger.info(
         "%s took %07.3fs"
