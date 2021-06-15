@@ -14,3 +14,4 @@ git+https://github.com/billsioros/PyINSECT.git@FEATURE_Implementing_HPGraphColle
 isort
 black
 flake8
+jupytext
