@@ -1,55 +1,10 @@
-import inspect
 from abc import ABC, abstractmethod
-from functools import wraps
 
-import matplotlib.pyplot as plt
 import numpy as np
 import sympy
 from scipy import stats
 
-
-def debug(method):
-    signature = inspect.signature(method)
-
-    defaults = {
-        k: v.default
-        for k, v in signature.parameters.items()
-        if v.default is not inspect.Parameter.empty
-    }
-
-    @wraps(method)
-    def wrapper(*args, **kwargs):
-        called_with = ""
-        if args:
-            called_with += ", ".join(str(x) for x in args)
-            called_with += ", "
-
-        called_with += ", ".join(
-            f"{x}={kwargs.get(x, defaults[x])}" for x in defaults.keys()
-        )
-
-        if "debug" in defaults and "debug" not in kwargs:
-            kwargs["debug"] = True
-
-        try:
-            rv = method(*args, **kwargs)
-        except Exception as e:
-            print(f"{method.__name__}({called_with}) raised {e}")
-            raise
-
-        print(f"{method.__name__}({called_with}) returned {rv}")
-
-        return rv
-
-    return wrapper
-
-
-def as_grayscale_image(array):
-    low, high = np.min(array), np.max(array)
-    array = (array - low) / (high - low)
-
-    plt.imshow(array, cmap="gray", vmin=0, vmax=1)
-    plt.show()
+from src.roughml.plot import as_grayscale_image
 
 
 class SurfaceGenerator(ABC):
@@ -174,12 +129,12 @@ class SurfaceGenerator(ABC):
 class NonGaussianSurfaceGenerator(SurfaceGenerator):
     def __init__(
         self,
-        n_points=500,
+        n_points=128,
         rms=1,
         skewness=0,
         kurtosis=3,
-        corlength_x=20,
-        corlength_y=20,
+        corlength_x=4,
+        corlength_y=4,
         alpha=1,
     ):
         super().__init__(
@@ -204,12 +159,12 @@ class NonGaussianSurfaceGenerator(SurfaceGenerator):
 class BeselNonGaussianSurfaceGenerator(NonGaussianSurfaceGenerator):
     def __init__(
         self,
-        n_points=500,
+        n_points=128,
         rms=1,
         skewness=0,
         kurtosis=3,
-        corlength_x=20,
-        corlength_y=20,
+        corlength_x=4,
+        corlength_y=4,
         alpha=1,
         beta_x=1,
         beta_y=1,
@@ -227,31 +182,18 @@ class BeselNonGaussianSurfaceGenerator(NonGaussianSurfaceGenerator):
 
 
 if __name__ == "__main__":
-    # g = BeselNonGaussianSurfaceGenerator()
-    g = NonGaussianSurfaceGenerator(128, 1, 0, 3, 16, 16, 1)
+    generate = NonGaussianSurfaceGenerator()
 
-    for surface in g(1):
+    for surface in generate(1):
         as_grayscale_image(surface)
+        #   as_3d_surface(surface)
+        #   plot_correlation(surface)
 
-    # z_gs, z_ngn = (
-    #     np.array([[1, 4, 1, 9], [5, 3, 5, 6], [1, 8, 7, 4], [5, 1, 4, 5]]),
-    #     np.arange(1, 4 * 4 + 1),
-    # )
+    besel_generate = BeselNonGaussianSurfaceGenerator(
+        128, 1, 0, 3, 16, 16, 0.5, 4000, 4000
+    )
 
-    # v_gs = z_gs.flatten(order="F")
-    # print("v_gs =", v_gs, sep="\n")
-    # v_ngn = z_ngn.flatten(order="F")
-    # print("v_ngn =", v_ngn, sep="\n")
-
-    # Igs = np.argsort(v_gs)
-    # print("Igs =", Igs, sep="\n")
-
-    # vs_ngn = np.sort(v_ngn)
-    # print("vs_ngn =", vs_ngn, sep="\n")
-
-    # v_ngs = np.zeros_like(vs_ngn)
-    # v_ngs[Igs] = vs_ngn
-    # print("v_ngs =", v_ngs, sep="\n")
-
-    # z_ngs = np.asmatrix(v_ngs.reshape(4, 4, order="F")).H
-    # print("z_ngs =", z_ngs, sep="\n")
+    for surface in besel_generate(1):
+        as_grayscale_image(surface)
+        #   as_3d_surface(surface)
+        #   plot_correlation(surface)
