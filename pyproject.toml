@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "roughml"
-version = "0.2.1"
+version = "0.1.0"
 description = "A nanorough surface super-resolution framework"
 authors = ["billsioros <billsioros97@gmail.com>"]
 license = "MIT"
@@ -20,6 +20,7 @@ pyinsect = {git = "https://github.com/billsioros/PyINSECT.git", rev = "FEATURE_I
 pre-commit = "^2.13.0"
 isort = "^5.8.0"
 black = "^21.6b0"
+python-semantic-release = "^7.16.1"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
