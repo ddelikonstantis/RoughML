@@ -1,3 +1,6 @@
+ci:
+  skip: [jupytext]
+
 repos:
   - repo: https://github.com/commitizen-tools/commitizen
     rev: v2.17.9
