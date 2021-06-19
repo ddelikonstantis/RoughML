@@ -32,3 +32,8 @@ src_paths = ["src", "Nanorough_surface_Super_resolution.py"]
 [tool.vulture]
 min_confidence = 95
 paths = ["src", "Nanorough_surface_Super_resolution.py"]
+
+[tool.semantic_release]
+version_toml = "pyproject.toml:tool.poetry.version"
+changelog_components = "semantic_release.changelog.changelog_headers,semantic_release.changelog.compare_url"
+build_command = "python -m pip install poetry && poetry build"
