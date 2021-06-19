@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--next-version-placeholder-->
 
+## v0.2.1 (2021-06-19)
+### Fix
+* Sync `py` and `ipynb` versions ([`6092641`](https://github.com/billsioros/thesis/commit/6092641ae734d6267473c3dadbbf5c9603a84543))
+
+**[See all commits in this version](https://github.com/billsioros/thesis/compare/v0.2.0...v0.2.1)**
+
 ## v0.2.0 (2021-06-19)
 ### Feature
 * Convert to library ([`7aee276`](https://github.com/billsioros/thesis/commit/7aee2764697e2ca23e6000ca6695c13823a9e3f6))
