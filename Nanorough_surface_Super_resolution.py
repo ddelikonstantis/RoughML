@@ -67,7 +67,7 @@ except ImportError:
 # - [plotly](https://plotly.com/) (which requires [pandas](https://pandas.pydata.org/)) as well as [matplotlib](https://matplotlib.org/) are used in order to plot various graphs.
 
 # + cellView="code" id="1057687b"
-# !pip install /content/drive/MyDrive/Thesis/roughml-1.0.0-py3-none-any.whl
+# !pip install /content/drive/MyDrive/Thesis/roughml-1.0.1-py3-none-any.whl
 
 # + [markdown] id="0192c059"
 # ## Initializing (a.k.a `Seeding`) the Random Number Generator(s)
@@ -198,7 +198,7 @@ training_flow(generator, discriminator)
 # ## Instantiating the **Generator** and the **Discriminator** Networks
 
 # + cellView="code" id="e301a7a0"
-from src.roughml.models import CNNGenerator
+from roughml.models import CNNGenerator
 
 generator = CNNGenerator.from_device(device)
 
@@ -206,7 +206,7 @@ generator = CNNGenerator.from_device(device)
 generator
 
 # + cellView="code" id="5a8a9aad"
-from src.roughml.models import CNNDiscriminator
+from roughml.models import CNNDiscriminator
 
 discriminator = CNNDiscriminator.from_device(device)
 
