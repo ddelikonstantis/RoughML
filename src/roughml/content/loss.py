@@ -1,3 +1,8 @@
+import concurrent
+import logging
+import os
+import statistics
+import time
 from abc import abstractmethod
 from functools import wraps
 
@@ -10,6 +15,8 @@ from pyinsect.collector.NGramGraphCollector import (
 
 from roughml.content.quantization import KBinsDiscretizerQuantizer
 from roughml.shared.configuration import Configuration
+
+logger = logging.getLogger(__name__)
 
 
 def per_row(method=None, *, expected_ndim=2):
@@ -43,9 +50,15 @@ class ContentLoss(Configuration):
 
         self.surfaces = self.quantizer.surfaces
 
+    def __len__(self):
+        return len(self.surfaces)
+
     @abstractmethod
     def __call__(self, surface):
         return self.quantizer(surface)
+
+    def __str__(self):
+        return str({"shape": self.surfaces.shape})
 
 
 class NGramGraphContentLoss(ContentLoss):
@@ -61,15 +74,9 @@ class NGramGraphContentLoss(ContentLoss):
         for surface in self.surfaces:
             self._collector.add(surface)
 
-    def __len__(self):
-        return len(self.surfaces)
-
     @per_row(expected_ndim=1)
     def __call__(self, surface):
         return self._collector.appropriateness_of(super().__call__(surface).reshape(-1))
-
-    def __str__(self):
-        return str({"shape": self.surfaces.shape})
 
 
 class ArrayGraph2DContentLoss(ContentLoss):
@@ -83,15 +90,9 @@ class ArrayGraph2DContentLoss(ContentLoss):
         for surface in self.surfaces:
             self._collector.add(surface)
 
-    def __len__(self):
-        return len(self.surfaces)
-
     @per_row
     def __call__(self, surface):
         return self._collector.appropriateness_of(super().__call__(surface))
-
-    def __str__(self):
-        return str({"shape": self.surfaces.shape})
 
 
 class HPG2DContentLoss(ContentLoss):
@@ -100,20 +101,70 @@ class HPG2DContentLoss(ContentLoss):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
+        self._build_collector()
+
+    def _build_collector(self):
+        total_start_time = time.time()
+
         self._collector = HPG2DCollector()
 
-        for surface in self.surfaces:
-            self._collector.add(surface)
+        logger.info("Constructing %02d graphs", len(self.surfaces))
 
-    def __len__(self):
-        return len(self.surfaces)
+        elapsed_time = []
+        for index, surface in enumerate(self.surfaces):
+            start_time = time.time()
+            self._collector.add(surface)
+            elapsed_time.append(time.time() - start_time)
+
+            logger.info("Constructed graph %02d in %07.3fs", index, elapsed_time[-1])
+
+        logger.info(
+            "Constructed %02d graphs in %07.3fs [%.3f ± %.3f seconds per graph]",
+            len(self.surfaces),
+            time.time() - total_start_time,
+            statistics.mean(elapsed_time),
+            statistics.stdev(elapsed_time) if len(elapsed_time) > 1 else 0,
+        )
 
     @per_row
     def __call__(self, surface):
         return self._collector.appropriateness_of(super().__call__(surface))
 
-    def __str__(self):
-        return str({"shape": self.surfaces.shape})
+
+class HPG2DParallelContentLoss(HPG2DContentLoss):
+    def _build_collector(self):
+        with concurrent.futures.ProcessPoolExecutor(os.cpu_count()) as pool:
+            total_start_time = time.time()
+
+            self._collector = HPG2DCollector()
+
+            futures = {}
+            for index, surface in enumerate(self.surfaces):
+                future = pool.submit(self._collector.add, surface)
+
+                futures[future] = (index, time.time())
+
+            logger.info("Awaiting %02d jobs", len(self.surfaces))
+
+            elapsed_time = [None] * len(self.surfaces)
+            for future in concurrent.futures.as_completed(futures):
+                self._collector._add_graph(future.result())
+
+                index, start_time = futures[future]
+
+                elapsed_time[index] = time.time() - start_time
+
+                logger.info(
+                    "Job %02d completed after %07.3fs", index, elapsed_time[index]
+                )
+
+            logger.info(
+                "Constructed %02d graphs in %07.3fs [%.3f ± %.3f seconds per graph]",
+                len(self.surfaces),
+                time.time() - total_start_time,
+                statistics.mean(elapsed_time),
+                statistics.stdev(elapsed_time) if len(elapsed_time) > 1 else 0,
+            )
 
 
 if __name__ == "__main__":
