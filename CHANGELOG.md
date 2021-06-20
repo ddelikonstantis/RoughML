@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--next-version-placeholder-->
 
+## v1.1.0 (2021-06-20)
+### Feature
+* Add parallel hpg content loss ([`250e297`](https://github.com/billsioros/thesis/commit/250e2973a99bcf93ffd08e4c4c15205f645f1c5d))
+
+**[See all commits in this version](https://github.com/billsioros/thesis/compare/v1.0.1...v1.1.0)**
+
 ## v1.0.1 (2021-06-20)
 ### Fix
 * Removed `src` import(s) prefix ([`cc0c918`](https://github.com/billsioros/thesis/commit/cc0c9186fccc16cfd2b9061d79f44a678f05065c))
