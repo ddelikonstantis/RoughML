@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--next-version-placeholder-->
 
+## v1.0.0 (2021-06-20)
+### Fix
+* Set python minimum version to 3.7 ([`d81db21`](https://github.com/billsioros/thesis/commit/d81db219881adff2e094800df75a335fdffdf2f6))
+
+### Breaking
+* set python minimum version to 3.7 ([`d81db21`](https://github.com/billsioros/thesis/commit/d81db219881adff2e094800df75a335fdffdf2f6))
+
+**[See all commits in this version](https://github.com/billsioros/thesis/compare/v0.2.0...v1.0.0)**
+
 ## v0.2.0 (2021-06-19)
 ### Feature
 * Convert to library ([`7aee276`](https://github.com/billsioros/thesis/commit/7aee2764697e2ca23e6000ca6695c13823a9e3f6))
