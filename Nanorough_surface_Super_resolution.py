@@ -13,9 +13,6 @@
 #     name: python3
 # ---
 
-# + [markdown] id="view-in-github" colab_type="text"
-# <a href="https://colab.research.google.com/github/billsioros/thesis/blob/master/Nanorough_surface_Super_resolution.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
-
 # + [markdown] id="cce26209"
 # # ✔️ Prerequisites
 
@@ -30,13 +27,35 @@
 #   - The available hardware backend. GPU utilization is preferable, as it results in higher complition time.
 # - `(Optionally)` Mount Google Drive, where we can load our dataset from.
 
+# + [markdown] id="19e0a6d0"
+# ## Determining the Current Working Directory
+
+# + cellView="code" id="945a9ccd"
+from pathlib import Path
+
+BASE_DIR = Path.cwd()
+
+# + [markdown] id="94c4d99f"
+# ## Mounting Google Drive
+
+# + cellView="code" id="12dcaea0"
+GDRIVE_DIR = BASE_DIR / "drive"
+
+# + cellView="code" id="e24f0051"
+try:
+    from google.colab import drive
+
+    drive.mount(f"{GDRIVE_DIR}")
+except ImportError:
+    pass
+
 # + [markdown] id="16a902e2"
 # ## Installing [graphviz](https://graphviz.org/) & [libgraphviz-dev](https://packages.debian.org/jessie/libgraphviz-dev)
 
 # + [markdown] id="8c0cdd85"
 # The aforementioned packages are required by [PyINSECT](https://github.com/billsioros/PyINSECT/tree/implementing-HPGs) and more specifically its graph plotting methods.
 
-# + cellView="code" colab={"base_uri": "https://localhost:8080/"} id="919734ca" outputId="fd43fbde-ade3-4225-c24e-e950d0baab55"
+# + cellView="code" id="919734ca"
 # !sudo apt-get install graphviz libgraphviz-dev
 
 # + [markdown] id="7f5668f4"
@@ -47,8 +66,8 @@
 # - [numpy](https://numpy.org/), [sympy](https://www.sympy.org/en/index.html) and [scipy](https://www.scipy.org/) are used to in the context of nanorough surface generation.
 # - [plotly](https://plotly.com/) (which requires [pandas](https://pandas.pydata.org/)) as well as [matplotlib](https://matplotlib.org/) are used in order to plot various graphs.
 
-# + cellView="code" colab={"base_uri": "https://localhost:8080/"} id="1057687b" outputId="15f921e0-f921-47ab-b4e2-8a355c422e54"
-# !pip install torch numpy sympy scipy plotly pandas sklearn matplotlib==3.1.1 git+https://github.com/billsioros/PyINSECT.git@FEATURE_Implementing_HPGraphCollector git+https://github.com/billsioros/thesis.git
+# + cellView="code" id="1057687b"
+# !pip install /content/drive/MyDrive/Thesis/roughml-1.0.0-py3-none-any.whl
 
 # + [markdown] id="0192c059"
 # ## Initializing (a.k.a `Seeding`) the Random Number Generator(s)
@@ -74,28 +93,6 @@ if SEED is not None:
     torch.cuda.manual_seed(SEED)
     torch.backends.cudnn.deterministic = True
     os.environ["PYTHONHASHSEED"] = str(SEED)
-
-# + [markdown] id="19e0a6d0"
-# ## Determining the Current Working Directory
-
-# + cellView="code" id="945a9ccd"
-from pathlib import Path
-
-BASE_DIR = Path.cwd()
-
-# + [markdown] id="94c4d99f"
-# ## Mounting Google Drive
-
-# + cellView="code" id="12dcaea0"
-GDRIVE_DIR = BASE_DIR / "drive"
-
-# + cellView="code" colab={"base_uri": "https://localhost:8080/"} id="e24f0051" outputId="63d677c9-6087-4045-8fa7-bdce4181473d"
-try:
-    from google.colab import drive
-
-    drive.mount(f"{GDRIVE_DIR}")
-except ImportError:
-    pass
 
 # + [markdown] id="6fce8a2a"
 # ## Determining available backend
@@ -130,7 +127,7 @@ logger = logging.getLogger()
 # + [markdown] id="ec374650"
 # ## Instantiating the **Generator** and the **Discriminator** Networks
 
-# + cellView="code" id="d6594cb1" outputId="ef0da838-1378-4614-8c5a-ead42de77ebb" colab={"base_uri": "https://localhost:8080/", "height": 333}
+# + cellView="code" id="d6594cb1"
 from roughml.models import PerceptronGenerator
 
 generator = PerceptronGenerator.from_device(device)
@@ -160,10 +157,9 @@ from pathlib import Path
 CHECKPOINT_DIR = BASE_DIR / "checkpoint"
 CHECKPOINT_DIR.mkdir(parents=True, exist_ok=True)
 
+# + cellView="code" id="63114157"
 from roughml.content.loss import NGramGraphContentLoss
 from roughml.data.transforms import Flatten, To
-
-# + cellView="code" id="63114157"
 from roughml.training.flow import TrainingFlow
 from roughml.training.manager import per_epoch
 
@@ -225,10 +221,15 @@ from torch.nn import BCELoss
 
 criterion = BCELoss().to(device)
 
-from roughml.content.loss import ArrayGraph2DContentLoss
-from roughml.data.transforms import To, View
+# + id="QOVvzTEv0o6V"
+from pathlib import Path
+
+CHECKPOINT_DIR = BASE_DIR / "checkpoint"
+CHECKPOINT_DIR.mkdir(parents=True, exist_ok=True)
 
 # + cellView="code" id="82fb12f6"
+from roughml.content.loss import ArrayGraph2DContentLoss
+from roughml.data.transforms import To, View
 from roughml.training.flow import TrainingFlow
 from roughml.training.manager import per_epoch
 

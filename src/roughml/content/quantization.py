@@ -2,7 +2,7 @@ from abc import abstractstaticmethod
 
 from sklearn.preprocessing import KBinsDiscretizer
 
-from src.roughml.shared.configuration import Configuration
+from roughml.shared.configuration import Configuration
 
 
 class Quantizer(Configuration):

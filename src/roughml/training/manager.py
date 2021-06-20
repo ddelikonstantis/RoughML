@@ -3,9 +3,9 @@ import logging
 import torch
 from torch.optim import Adam
 
-from src.roughml.shared.configuration import Configuration
-from src.roughml.shared.decorators import benchmark
-from src.roughml.training.split import train_test_dataloaders
+from roughml.shared.configuration import Configuration
+from roughml.shared.decorators import benchmark
+from roughml.training.split import train_test_dataloaders
 
 logger = logging.getLogger(__name__)
 

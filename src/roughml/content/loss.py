@@ -8,8 +8,8 @@ from pyinsect.collector.NGramGraphCollector import (
     NGramGraphCollector,
 )
 
-from src.roughml.content.quantization import KBinsDiscretizerQuantizer
-from src.roughml.shared.configuration import Configuration
+from roughml.content.quantization import KBinsDiscretizerQuantizer
+from roughml.shared.configuration import Configuration
 
 
 def per_row(method=None, *, expected_ndim=2):

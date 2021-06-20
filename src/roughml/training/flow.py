@@ -1,11 +1,11 @@
 from pathlib import Path
 from zipfile import ZipFile
 
-from src.roughml.data.generators import NonGaussianSurfaceGenerator
-from src.roughml.data.sets import NanoroughSurfaceDataset, NanoroughSurfaceMatLabDataset
-from src.roughml.plot import plot_against
-from src.roughml.shared.configuration import Configuration
-from src.roughml.training.manager import TrainingManager
+from roughml.data.generators import NonGaussianSurfaceGenerator
+from roughml.data.sets import NanoroughSurfaceDataset, NanoroughSurfaceMatLabDataset
+from roughml.plot import plot_against
+from roughml.shared.configuration import Configuration
+from roughml.training.manager import TrainingManager
 
 
 def load_dataset(

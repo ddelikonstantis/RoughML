@@ -4,7 +4,7 @@ import numpy as np
 import sympy
 from scipy import stats
 
-from src.roughml.plot import as_grayscale_image
+from roughml.plot import as_grayscale_image
 
 
 class SurfaceGenerator(ABC):
