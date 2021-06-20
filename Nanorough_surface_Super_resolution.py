@@ -13,6 +13,9 @@
 #     name: python3
 # ---
 
+# + [markdown] colab_type="text" id="view-in-github"
+# <a href="https://colab.research.google.com/github/billsioros/thesis/blob/master/Nanorough_surface_Super_resolution.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
+
 # + [markdown] id="cce26209"
 # # ✔️ Prerequisites
 
@@ -41,7 +44,7 @@ BASE_DIR = Path.cwd()
 # + cellView="code" id="12dcaea0"
 GDRIVE_DIR = BASE_DIR / "drive"
 
-# + cellView="code" id="e24f0051"
+# + cellView="code" colab={"base_uri": "https://localhost:8080/"} id="e24f0051" outputId="30ae6242-7890-45fb-97f4-7a3f98101b5c"
 try:
     from google.colab import drive
 
@@ -55,7 +58,7 @@ except ImportError:
 # + [markdown] id="8c0cdd85"
 # The aforementioned packages are required by [PyINSECT](https://github.com/billsioros/PyINSECT/tree/implementing-HPGs) and more specifically its graph plotting methods.
 
-# + cellView="code" id="919734ca"
+# + cellView="code" colab={"base_uri": "https://localhost:8080/"} id="919734ca" outputId="0767e6fd-b55e-4ebc-9e0e-11b243700c1c"
 # !sudo apt-get install graphviz libgraphviz-dev
 
 # + [markdown] id="7f5668f4"
@@ -66,7 +69,7 @@ except ImportError:
 # - [numpy](https://numpy.org/), [sympy](https://www.sympy.org/en/index.html) and [scipy](https://www.scipy.org/) are used to in the context of nanorough surface generation.
 # - [plotly](https://plotly.com/) (which requires [pandas](https://pandas.pydata.org/)) as well as [matplotlib](https://matplotlib.org/) are used in order to plot various graphs.
 
-# + cellView="code" id="1057687b"
+# + cellView="code" colab={"base_uri": "https://localhost:8080/"} id="1057687b" outputId="2ab1f525-0235-4308-cabb-a7793277473b"
 # !pip install /content/drive/MyDrive/Thesis/roughml-1.0.1-py3-none-any.whl
 
 # + [markdown] id="0192c059"
@@ -132,7 +135,7 @@ from roughml.models import PerceptronGenerator
 
 generator = PerceptronGenerator.from_device(device)
 
-# + cellView="code" id="4bff3a44"
+# + cellView="code" colab={"base_uri": "https://localhost:8080/"} id="4bff3a44" outputId="9d75bc1a-7272-4fdb-902d-e689a0627517"
 generator
 
 # + cellView="code" id="cac059ee"
@@ -140,7 +143,7 @@ from roughml.models import PerceptronDiscriminator
 
 discriminator = PerceptronDiscriminator.from_generator(generator, device=device)
 
-# + cellView="code" id="64022987"
+# + cellView="code" colab={"base_uri": "https://localhost:8080/"} id="64022987" outputId="7adfec62-6485-49aa-c5e9-667d291b03e9"
 discriminator
 
 # + [markdown] id="eb813599"
@@ -157,9 +160,10 @@ from pathlib import Path
 CHECKPOINT_DIR = BASE_DIR / "checkpoint"
 CHECKPOINT_DIR.mkdir(parents=True, exist_ok=True)
 
-# + cellView="code" id="63114157"
 from roughml.content.loss import NGramGraphContentLoss
 from roughml.data.transforms import Flatten, To
+
+# + cellView="code" id="63114157"
 from roughml.training.flow import TrainingFlow
 from roughml.training.manager import per_epoch
 
@@ -188,7 +192,7 @@ training_flow = TrainingFlow(
     },
 )
 
-# + id="836ed418"
+# + colab={"base_uri": "https://localhost:8080/", "height": 573} id="836ed418" outputId="f4d7ef3c-027c-4725-9f07-50e4d7c28ff1"
 training_flow(generator, discriminator)
 
 # + [markdown] id="fe589c1a"
@@ -202,7 +206,7 @@ from roughml.models import CNNGenerator
 
 generator = CNNGenerator.from_device(device)
 
-# + cellView="code" id="36ffe487"
+# + cellView="code" colab={"base_uri": "https://localhost:8080/"} id="36ffe487" outputId="eb6bbc54-4dd6-48f7-bf24-20becc244a3a"
 generator
 
 # + cellView="code" id="5a8a9aad"
@@ -210,7 +214,7 @@ from roughml.models import CNNDiscriminator
 
 discriminator = CNNDiscriminator.from_device(device)
 
-# + cellView="code" id="1d0a4a40"
+# + cellView="code" colab={"base_uri": "https://localhost:8080/"} id="1d0a4a40" outputId="2c54123a-5dce-4405-a82e-a28c832e678e"
 discriminator
 
 # + [markdown] id="7bbbcc22"
@@ -227,9 +231,10 @@ from pathlib import Path
 CHECKPOINT_DIR = BASE_DIR / "checkpoint"
 CHECKPOINT_DIR.mkdir(parents=True, exist_ok=True)
 
-# + cellView="code" id="82fb12f6"
 from roughml.content.loss import ArrayGraph2DContentLoss
 from roughml.data.transforms import To, View
+
+# + cellView="code" id="82fb12f6"
 from roughml.training.flow import TrainingFlow
 from roughml.training.manager import per_epoch
 
@@ -258,5 +263,5 @@ training_flow = TrainingFlow(
     },
 )
 
-# + id="3c4cdce1"
+# + colab={"base_uri": "https://localhost:8080/", "height": 573} id="3c4cdce1" outputId="c22dfcc0-c6d9-4726-c197-acf11bdec52f"
 training_flow(generator, discriminator)
