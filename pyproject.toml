@@ -17,6 +17,7 @@ pandas = "^1.2.4"
 pyinsect = {git = "https://github.com/billsioros/PyINSECT.git", rev = "FEATURE_Implementing_HPGraphCollector"}
 torchvision = "^0.10.0"
 ipython = "^7.24.1"
+tqdm = "^4.61.1"
 
 [tool.poetry.dev-dependencies]
 pre-commit = "^2.13.0"

@@ -2,6 +2,7 @@ import logging
 
 import torch
 from torch.optim import Adam
+from tqdm import tqdm
 
 from roughml.shared.configuration import Configuration
 from roughml.shared.decorators import benchmark
@@ -166,7 +167,7 @@ class TrainingManager(Configuration):
         generator_losses, discriminator_losses = [], []
         discriminator_output_reals, discriminator_output_fakes = [], []
 
-        for epoch in range(self.n_epochs):
+        for epoch in tqdm(range(self.n_epochs), desc="Epochs"):
             (
                 generator_loss,
                 discriminator_loss,
