@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--next-version-placeholder-->
 
+## v1.2.0 (2021-06-23)
+### Feature
+* Per epoch surface batch animation ([`448d3dc`](https://github.com/billsioros/thesis/commit/448d3dcbe7cbc90a8e8ad48d66b61d73e8fa84c1))
+
+**[See all commits in this version](https://github.com/billsioros/thesis/compare/v1.1.0...v1.2.0)**
+
 ## v1.1.0 (2021-06-20)
 ### Feature
 * Add parallel hpg content loss ([`250e297`](https://github.com/billsioros/thesis/commit/250e2973a99bcf93ffd08e4c4c15205f645f1c5d))
