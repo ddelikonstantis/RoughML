@@ -1,18 +1,18 @@
 import logging
 
-import torch
 from torch import nn
 
 logger = logging.getLogger(__name__)
 
+from roughml.models.base import Base
 
-class CNNGenerator(nn.Module):
+
+class CNNGenerator(Base):
     def __init__(
         self,
         in_channels=100,
         out_channels=128,
         training_channels=1,
-        dtype=torch.float64,
     ):
         super().__init__()
 
@@ -68,19 +68,6 @@ class CNNGenerator(nn.Module):
             ]
         )
 
-        self.to(dtype)
-
-    @classmethod
-    def from_device(cls, device):
-        model = cls()
-
-        if device.type == "cuda" and torch.cuda.device_count() > 1:
-            model = nn.DataParallel(model)
-
-        model = model.to(device)
-
-        return model
-
     def forward(self, batch):
         logger.debug("%s:Input: %s", self.__class__.__name__, batch.shape)
 
@@ -98,8 +85,8 @@ class CNNGenerator(nn.Module):
         return batch
 
 
-class CNNDiscriminator(nn.Module):
-    def __init__(self, out_channels=1, in_channels=128, dtype=torch.float64):
+class CNNDiscriminator(Base):
+    def __init__(self, out_channels=1, in_channels=128):
         super().__init__()
 
         self.out_channels = out_channels
@@ -131,19 +118,6 @@ class CNNDiscriminator(nn.Module):
                 ),
             ]
         )
-
-        self.to(dtype=dtype)
-
-    @classmethod
-    def from_device(cls, device):
-        model = cls()
-
-        if device.type == "cuda" and torch.cuda.device_count() > 1:
-            model = nn.DataParallel(model)
-
-        model = model.to(device)
-
-        return model
 
     def forward(self, batch):
         logger.debug("%s:Input: %s", self.__class__.__name__, batch.shape)

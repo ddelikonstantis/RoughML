@@ -3,80 +3,72 @@ import logging
 import torch
 from torch import nn
 
+from roughml.models.base import Base
+
 logger = logging.getLogger(__name__)
 
 
-class PerceptronGenerator(nn.Module):
-    def __init__(self, in_features, out_features, dtype=torch.float64):
+class PerceptronGenerator(Base):
+    def __init__(self, in_features, out_features):
         super().__init__()
 
         self.in_features, self.out_features = in_features, out_features
 
-        self.feature_dims = (in_features,)
+        self.feature_dims = (in_features, 1, 1)
 
-        self.linear = nn.Linear(in_features, out_features)
+        self.linear = nn.Linear(in_features, out_features[0] * out_features[1])
         self.activation = nn.ReLU()
-
-        self.to(dtype=dtype)
 
     def forward(self, batch):
         logger.debug("%s:Input: %s", self.__class__.__name__, batch.shape)
 
-        batch = self.activation(self.linear(batch))
+        batch_size, _, _, _ = batch.shape
+
+        batch = self.activation(self.linear(batch.view(batch_size, -1)))
 
         logger.debug("%s:Output: %s", self.__class__.__name__, batch.shape)
 
-        return batch
+        return batch.view(batch_size, 1, self.out_features[0], self.out_features[1])
 
     @classmethod
     def from_device(
-        cls, device, in_features=100, out_features=128 * 128, dtype=torch.float64
+        cls, device, in_features=100, out_features=(128, 128), dtype=torch.float64
     ):
-        model = cls(in_features, out_features, dtype=dtype)
-
-        if device.type == "cuda" and torch.cuda.device_count() > 1:
-            model = nn.DataParallel(model)
-
-        model = model.to(device)
-
-        return model
+        return super().from_device(device, in_features, out_features, dtype=dtype)
 
     @classmethod
     def from_dataset(cls, dataset, device, in_features=100, dtype=torch.float64):
-        out_features = (dataset.subsampling_factor * dataset.subsampling_value) ** 2
+        super_resolved_value = dataset.subsampling_factor * dataset.subsampling_value
+
+        out_features = (super_resolved_value, super_resolved_value)
 
         return cls.from_device(
             device, in_features=in_features, out_features=out_features, dtype=dtype
         )
 
 
-class PerceptronDiscriminator(nn.Module):
-    def __init__(self, in_features, dtype=torch.float64):
+class PerceptronDiscriminator(Base):
+    def __init__(self, in_features):
         super().__init__()
-
-        self.feature_dims = (in_features,)
 
         self.linear = nn.Linear(in_features, 1)
         self.activation = nn.Sigmoid()
 
-        self.to(dtype=dtype)
-
     def forward(self, batch):
         logger.debug("%s:Input: %s", self.__class__.__name__, batch.shape)
 
-        batch = self.activation(self.linear(batch))
+        batch_size, _, _, _ = batch.shape
+
+        batch = self.activation(self.linear(batch.view(batch_size, -1)))
 
         logger.debug("%s:Output: %s", self.__class__.__name__, batch.shape)
 
         return batch
 
     @classmethod
-    def from_generator(cls, generator, dtype=torch.float64, device=None):
-        model = cls(generator.out_features, dtype=dtype)
-
-        if device.type == "cuda" and torch.cuda.device_count() > 1:
-            model = nn.DataParallel(model)
-
-        model = model.to(device)
-
-        return model
+    def from_generator(cls, generator, dtype=torch.float64):
+        return super().from_device(
+            generator.device,
+            generator.out_features[0] * generator.out_features[1],
+            dtype=dtype,
+        )

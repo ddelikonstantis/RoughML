@@ -3,7 +3,7 @@ from zipfile import ZipFile
 
 from roughml.data.generators import NonGaussianSurfaceGenerator
 from roughml.data.sets import NanoroughSurfaceDataset, NanoroughSurfaceMatLabDataset
-from roughml.plot import plot_against
+from roughml.plot import animate_epochs, plot_against
 from roughml.shared.configuration import Configuration
 from roughml.training.manager import TrainingManager
 
@@ -64,6 +64,7 @@ class TrainingFlow(Configuration):
             discriminator_losses,
             discriminator_output_reals,
             discriminator_output_fakes,
+            images,
         ) = training_manager(generator, discriminator, dataset)
 
         plot_against(
@@ -83,3 +84,5 @@ class TrainingFlow(Configuration):
             ylabel="Discriminator Output",
             labels=("Real Data", "Generator Data"),
         )
+
+        animate_epochs(images)

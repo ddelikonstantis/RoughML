@@ -9,8 +9,8 @@
 #       format_version: '1.5'
 #       jupytext_version: 1.11.3
 #   kernelspec:
-#     display_name: Python 3
-#     name: python3
+#     display_name: ''
+#     name: ''
 # ---
 
 # + [markdown] colab_type="text" id="view-in-github"
@@ -29,6 +29,35 @@
 #   - The current working directory, as it's going to be used to reference various files such as the dataset, our model checkpoints e.t.c
 #   - The available hardware backend. GPU utilization is preferable, as it results in higher complition time.
 # - `(Optionally)` Mount Google Drive, where we can load our dataset from.
+# -
+
+# ## Configuring our Loggers
+
+# +
+import logging.config
+
+logging.config.dictConfig(
+    {
+        "version": 1,
+        "disable_existing_loggers": True,
+        "formatters": {
+            "standard": {"format": "[%(asctime)s] %(levelname)s:%(name)s: %(message)s"}
+        },
+        "handlers": {
+            "default": {
+                "level": "CRITICAL",
+                "formatter": "standard",
+                "class": "logging.StreamHandler",
+            }
+        },
+        "loggers": {"": {"handlers": ["default"], "level": "CRITICAL"}},
+    }
+)
+
+# +
+import logging
+
+logger = logging.getLogger()
 
 # + [markdown] id="19e0a6d0"
 # ## Determining the Current Working Directory
@@ -59,7 +88,7 @@ except ImportError:
 # The aforementioned packages are required by [PyINSECT](https://github.com/billsioros/PyINSECT/tree/implementing-HPGs) and more specifically its graph plotting methods.
 
 # + cellView="code" colab={"base_uri": "https://localhost:8080/"} id="919734ca" outputId="0767e6fd-b55e-4ebc-9e0e-11b243700c1c"
-# !sudo apt-get install graphviz libgraphviz-dev
+# !sudo apt-get install graphviz libgraphviz-dev 1> /dev/null
 
 # + [markdown] id="7f5668f4"
 # ## Installing the required `pip` modules
@@ -68,9 +97,23 @@ except ImportError:
 # - [torch](https://pytorch.org/) is our machine learning framework of choice.
 # - [numpy](https://numpy.org/), [sympy](https://www.sympy.org/en/index.html) and [scipy](https://www.scipy.org/) are used to in the context of nanorough surface generation.
 # - [plotly](https://plotly.com/) (which requires [pandas](https://pandas.pydata.org/)) as well as [matplotlib](https://matplotlib.org/) are used in order to plot various graphs.
+# -
+
+WHEEL_FILE = GDRIVE_DIR / "roughml-1.0.1-py3-none-any.whl"
 
 # + cellView="code" colab={"base_uri": "https://localhost:8080/"} id="1057687b" outputId="2ab1f525-0235-4308-cabb-a7793277473b"
-# !pip install /content/drive/MyDrive/Thesis/roughml-1.0.1-py3-none-any.whl
+import subprocess
+import sys
+
+pip_freeze_output = subprocess.check_output(
+    [sys.executable, "-m", "pip", "freeze"]
+).decode()
+
+if "roughml" not in pip_freeze_output:
+    if WHEEL_FILE.is_file():
+        subprocess.check_call([sys.executable, "-m", "pip", "install", GDRIVE_DIR])
+    else:
+        raise FileNotFoundError(WHEEL_FILE)
 
 # + [markdown] id="0192c059"
 # ## Initializing (a.k.a `Seeding`) the Random Number Generator(s)
@@ -111,19 +154,6 @@ if torch.cuda.is_available():
 # + cellView="code" id="520ba5c1"
 device = torch.device(device)
 
-# + [markdown] id="64c09dfe"
-# ## Configuring our Loggers
-
-# + cellView="code" id="5eea1ad8"
-import logging
-
-logging.basicConfig(
-    format="[%(asctime)s] %(levelname)s:%(name)s: %(message)s", level=logging.CRITICAL
-)
-
-# + id="b45114ef"
-logger = logging.getLogger()
-
 # + [markdown] id="60d78d1e"
 # # 🙃 A naive-approach
 
@@ -141,7 +171,7 @@ generator
 # + cellView="code" id="cac059ee"
 from roughml.models import PerceptronDiscriminator
 
-discriminator = PerceptronDiscriminator.from_generator(generator, device=device)
+discriminator = PerceptronDiscriminator.from_generator(generator)
 
 # + cellView="code" colab={"base_uri": "https://localhost:8080/"} id="64022987" outputId="7adfec62-6485-49aa-c5e9-667d291b03e9"
 discriminator
@@ -154,14 +184,14 @@ from torch.nn import BCELoss
 
 criterion = BCELoss().to(device)
 
-# + cellView="code" id="90443487"
+# + cellView="code" id="90443487" tags=[]
 from pathlib import Path
 
 CHECKPOINT_DIR = BASE_DIR / "checkpoint"
 CHECKPOINT_DIR.mkdir(parents=True, exist_ok=True)
 
 from roughml.content.loss import NGramGraphContentLoss
-from roughml.data.transforms import Flatten, To
+from roughml.data.transforms import To, View
 
 # + cellView="code" id="63114157"
 from roughml.training.flow import TrainingFlow
@@ -188,11 +218,11 @@ training_flow = TrainingFlow(
     dataset={
         "limit": 10,
         "path": GDRIVE_DIR / "MyDrive" / "Thesis" / "Datasets" / "surfaces.zip",
-        "transforms": [Flatten(), To(device)],
+        "transforms": [To(device), View(1, 128, 128)],
     },
 )
 
-# + colab={"base_uri": "https://localhost:8080/", "height": 573} id="836ed418" outputId="f4d7ef3c-027c-4725-9f07-50e4d7c28ff1"
+# + colab={"base_uri": "https://localhost:8080/", "height": 573} id="836ed418" outputId="f4d7ef3c-027c-4725-9f07-50e4d7c28ff1" tags=[]
 training_flow(generator, discriminator)
 
 # + [markdown] id="fe589c1a"

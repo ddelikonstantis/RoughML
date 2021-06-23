@@ -28,12 +28,9 @@ def per_epoch(
     else:
         content_loss_weight, criterion_weight = loss_weights
 
-    (
-        generator_loss,
-        discriminator_loss,
-        discriminator_output_real,
-        discriminator_output_fake,
-    ) = (0, 0, 0, 0)
+    generator_loss, discriminator_loss = 0, 0
+    discriminator_output_real, discriminator_output_fake = 0, 0
+
     for train_iteration, X_batch in enumerate(dataloader):
         if log_every_n is not None and not train_iteration % log_every_n:
             logger.info(f"Training Iteration #{train_iteration:04d}")
@@ -140,7 +137,17 @@ class TrainingManager(Configuration):
         else:
             self.content_loss_weight = 0.5
 
+        if not hasattr(self, "fixed_noise_dim"):
+            self.fixed_noise_dim = 64
+
     def __call__(self, generator, discriminator, dataset):
+        fixed_noise = torch.randn(
+            self.fixed_noise_dim,
+            *generator.feature_dims,
+            dtype=generator.dtype,
+            device=generator.device,
+        )
+
         train_dataloader, _ = train_test_dataloaders(
             dataset, train_ratio=self.train_ratio, **self.dataloader.to_dict()
         )
@@ -155,12 +162,10 @@ class TrainingManager(Configuration):
         if self.benchmark is True and logger.level <= logging.INFO:
             train_epoch_f = benchmark(train_epoch_f)
 
-        (
-            generator_losses,
-            discriminator_losses,
-            discriminator_output_reals,
-            discriminator_output_fakes,
-        ) = ([], [], [], [])
+        fixed_fakes = []
+        generator_losses, discriminator_losses = [], []
+        discriminator_output_reals, discriminator_output_fakes = [], []
+
         for epoch in range(self.n_epochs):
             (
                 generator_loss,
@@ -204,12 +209,16 @@ class TrainingManager(Configuration):
             discriminator_output_reals.append(discriminator_output_real)
             discriminator_output_fakes.append(discriminator_output_fake)
 
+            with torch.no_grad():
+                fixed_fakes.append(generator(fixed_noise).detach().cpu())
+
             logger.info(
                 "Epoch: %02d, Generator Loss: %7.3f, Discriminator Loss: %7.3f",
                 epoch,
                 generator_loss,
                 discriminator_loss,
             )
+
             logger.info(
                 "Epoch: %02d, Discriminator Output: [Real: %7.3f, Fake: %7.3f]",
                 epoch,
@@ -222,4 +231,5 @@ class TrainingManager(Configuration):
             discriminator_losses,
             discriminator_output_reals,
             discriminator_output_fakes,
+            fixed_fakes,
         )

@@ -15,6 +15,8 @@ sympy = "^1.8"
 sklearn = "^0.0"
 pandas = "^1.2.4"
 pyinsect = {git = "https://github.com/billsioros/PyINSECT.git", rev = "FEATURE_Implementing_HPGraphCollector"}
+torchvision = "^0.10.0"
+ipython = "^7.24.1"
 
 [tool.poetry.dev-dependencies]
 pre-commit = "^2.13.0"
@@ -22,6 +24,7 @@ isort = "^5.8.0"
 black = "^21.6b0"
 python-semantic-release = "^7.16.1"
 jupytext = "^1.11.3"
+ipykernel = "^5.5.5"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

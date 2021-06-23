@@ -4,6 +4,12 @@ repos:
     hooks:
       - id: commitizen
         stages: [commit-msg]
+  - repo: https://github.com/roy-ht/pre-commit-jupyter
+    rev: v1.2.1
+    hooks:
+      - id: jupyter-notebook-cleanup
+        args:
+          - --remove-kernel-metadata
   - repo: https://github.com/mwouts/jupytext
     rev: v1.11.3
     hooks:

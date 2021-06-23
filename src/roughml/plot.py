@@ -1,6 +1,10 @@
+import IPython.display as ipyd
+import matplotlib.animation as animation
 import matplotlib.pyplot as plt
+import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
+import torchvision.utils as vutils
 
 
 def plot_against(first, second, title="", xlabel="", ylabel="", labels=("", "")):
@@ -73,3 +77,29 @@ def plot_correlation(array):
     )
 
     fig.show()
+
+
+def animate_epochs(images):
+    fig = plt.figure(figsize=(8, 8))
+    plt.axis("off")
+
+    artists = []
+    for image in images:
+        grid = vutils.make_grid(image, padding=2, normalize=True)
+
+        artists.append(
+            [
+                plt.imshow(
+                    np.transpose(grid, (1, 2, 0)),
+                    animated=True,
+                )
+            ]
+        )
+
+    plt.close()
+
+    ani = animation.ArtistAnimation(
+        fig, artists, interval=1000, repeat_delay=1000, blit=True
+    )
+
+    ipyd.display(ipyd.HTML(ani.to_jshtml()))

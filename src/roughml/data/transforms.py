@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from torch import flatten
+import torch
 
 
 class Transform(ABC):
@@ -14,7 +14,7 @@ class Transform(ABC):
 
 class Flatten(Transform):
     def __call__(self, tensor):
-        return flatten(tensor)
+        return torch.flatten(tensor)
 
 
 class To(Transform):
@@ -43,9 +43,3 @@ class View(Transform):
 
     def __call__(self, tensor):
         return tensor.view(*self.args)
-
-
-# class Pad(Transform):
-#     #FIXME
-#   def __call__(self, tensor):
-#     return np.apply_along_axis(lambda row: np.tile(row, 4), 1, y)
