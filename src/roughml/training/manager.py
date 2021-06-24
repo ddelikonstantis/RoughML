@@ -1,4 +1,5 @@
 import logging
+import time
 
 import torch
 from torch.optim import Adam
@@ -32,10 +33,8 @@ def per_epoch(
     generator_loss, discriminator_loss = 0, 0
     discriminator_output_real, discriminator_output_fake = 0, 0
 
+    start_time = time.time()
     for train_iteration, X_batch in enumerate(dataloader):
-        if log_every_n is not None and not train_iteration % log_every_n:
-            logger.info(f"Training Iteration #{train_iteration:04d}")
-
         # (1) Update D network: maximize log(D(x)) + log(1 - D(G(z)))
         ## Train with all-real batch
         discriminator.zero_grad()
@@ -100,6 +99,15 @@ def per_epoch(
         discriminator_output_real += discriminator_output_real_batch / len(dataloader)
         discriminator_output_fake += discriminator_output_fake_batch / len(dataloader)
 
+        if log_every_n is not None and not train_iteration % log_every_n:
+            logger.info(
+                "Training Iteration #%04d ended after %7.3f seconds",
+                train_iteration,
+                time.time() - start_time,
+            )
+
+            start_time = time.time()
+
     return (
         generator_loss,
         discriminator_loss,
@@ -154,6 +162,7 @@ class TrainingManager(Configuration):
         )
 
         optimizer_generator = Adam(generator.parameters(), **self.optimizer.to_dict())
+
         optimizer_discriminator = Adam(
             discriminator.parameters(), **self.optimizer.to_dict()
         )
@@ -200,6 +209,7 @@ class TrainingManager(Configuration):
                 torch.save(
                     generator.state_dict(), self.checkpoint_dir / f"{generator_mt}.mt"
                 )
+
                 torch.save(
                     discriminator.state_dict(),
                     self.checkpoint_dir / f"{discriminator_mt}.mt",

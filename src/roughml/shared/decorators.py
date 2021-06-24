@@ -1,7 +1,7 @@
 import inspect
 import logging
+import time
 from functools import wraps
-from time import time
 
 logger = logging.getLogger(__name__)
 
@@ -14,9 +14,9 @@ def benchmark(method):
 
     @wraps(method)
     def wrapper(*args, **kwargs):
-        beg = time()
+        beg = time.time()
         rv = method(*args, **kwargs)
-        end = time()
+        end = time.time()
 
         logger.info("%s returned after %7.3f seconds", method.__name__, end - beg)
 
