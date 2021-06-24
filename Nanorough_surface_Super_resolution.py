@@ -35,6 +35,9 @@
 
 # +
 import logging.config
+import os
+
+LOGGING_LEVEL = os.environ.get("LOGGING_LEVEL", "CRITICAL").upper()
 
 logging.config.dictConfig(
     {
@@ -45,12 +48,12 @@ logging.config.dictConfig(
         },
         "handlers": {
             "default": {
-                "level": "CRITICAL",
+                "level": LOGGING_LEVEL,
                 "formatter": "standard",
                 "class": "logging.StreamHandler",
             }
         },
-        "loggers": {"": {"handlers": ["default"], "level": "CRITICAL"}},
+        "loggers": {"": {"handlers": ["default"], "level": LOGGING_LEVEL}},
     }
 )
 
