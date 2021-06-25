@@ -79,13 +79,16 @@ def plot_correlation(array):
     fig.show()
 
 
-def animate_epochs(images):
+def animate_epochs(batches_of_tensors, indices=None, save_path=None, **kwargs):
     fig = plt.figure(figsize=(8, 8))
     plt.axis("off")
 
     artists = []
-    for image in images:
-        grid = vutils.make_grid(image, padding=2, normalize=True)
+    for batch_of_tensors in batches_of_tensors:
+        if indices:
+            batch_of_tensors = [batch_of_tensors[index] for index in indices]
+
+        grid = vutils.make_grid(batch_of_tensors, padding=2, normalize=True)
 
         artists.append(
             [
@@ -99,7 +102,18 @@ def animate_epochs(images):
     plt.close()
 
     ani = animation.ArtistAnimation(
-        fig, artists, interval=1000, repeat_delay=1000, blit=True
+        fig,
+        artists,
+        interval=kwargs.get("interval", 1000),
+        repeat_delay=kwargs.get("repeat_delay", 1000),
+        blit=kwargs.get("blit", True),
     )
 
     ipyd.display(ipyd.HTML(ani.to_jshtml()))
+
+    if save_path is not None:
+        # Set up formatting for the movie files
+        Writer = animation.writers["ffmpeg"]
+        writer = Writer(fps=kwargs.get("fps", 15), bitrate=kwargs.get("bitrate", 1800))
+
+        ani.save(str(save_path), writer=writer)

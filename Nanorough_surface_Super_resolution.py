@@ -294,6 +294,12 @@ training_flow = TrainingFlow(
         "path": GDRIVE_DIR / "MyDrive" / "Thesis" / "Datasets" / "surfaces.zip",
         "transforms": [To(device), View(1, 128, 128)],
     },
+    animation={
+        "indices": [
+            0,
+        ],
+        "save_path": Path.cwd() / "cnn_per_epoch_animation.mp4",
+    },
 )
 
 # + colab={"base_uri": "https://localhost:8080/", "height": 573} id="3c4cdce1" outputId="c22dfcc0-c6d9-4726-c197-acf11bdec52f"

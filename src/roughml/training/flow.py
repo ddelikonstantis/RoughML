@@ -42,6 +42,21 @@ class TrainingFlow(Configuration):
         if not hasattr(self, "training_manager"):
             self.training_manager = {}
 
+        if not hasattr(self, "animation"):
+            self.animation = Configuration(
+                indices=[
+                    0,
+                ],
+                save_path=None,
+                parameters={
+                    "interval": 1000,
+                    "repeat_delay": 1000,
+                    "blit": True,
+                    "fps": 15,
+                    "bitrate": 1800,
+                },
+            )
+
     def __call__(self, generator, discriminator):
         dataset = load_dataset(
             self.dataset.path,
@@ -64,7 +79,7 @@ class TrainingFlow(Configuration):
             discriminator_losses,
             discriminator_output_reals,
             discriminator_output_fakes,
-            images,
+            fixed_fakes,
         ) = training_manager(generator, discriminator, dataset)
 
         plot_against(
@@ -85,4 +100,17 @@ class TrainingFlow(Configuration):
             labels=("Real Data", "Generator Data"),
         )
 
-        animate_epochs(images)
+        animate_epochs(
+            fixed_fakes,
+            indices=self.animation.indices,
+            save_path=self.animation.save_path,
+            **self.animation.parameters.to_dict()
+        )
+
+        return (
+            generator_losses,
+            discriminator_losses,
+            discriminator_output_reals,
+            discriminator_output_fakes,
+            fixed_fakes,
+        )
