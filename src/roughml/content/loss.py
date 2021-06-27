@@ -1,9 +1,10 @@
 import concurrent
 import logging
 import os
+import pickle
 import statistics
 import time
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 from functools import wraps
 
 import torch
@@ -42,7 +43,7 @@ def per_row(method=None, *, expected_ndim=2):
     return wrapper if method is None else wrapper(method)
 
 
-class ContentLoss(Configuration):
+class ContentLoss(Configuration, ABC):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
@@ -59,6 +60,15 @@ class ContentLoss(Configuration):
 
     def __str__(self):
         return str({"shape": self.surfaces.shape})
+
+    def to_pickle(self, path):
+        with path.open("wb") as file:
+            pickle.dump(self, file)
+
+    @classmethod
+    def from_pickle(cls, path):
+        with path.open("rb") as file:
+            return pickle.load(file)
 
 
 class NGramGraphContentLoss(ContentLoss):

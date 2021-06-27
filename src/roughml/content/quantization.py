@@ -1,20 +1,17 @@
-from abc import abstractstaticmethod
+from abc import ABC, abstractstaticmethod
 
 from sklearn.preprocessing import KBinsDiscretizer
 
 from roughml.shared.configuration import Configuration
 
 
-class Quantizer(Configuration):
+class Quantizer(Configuration, ABC):
     """The `Quantizer` sub-classes are responsible for quantizing our
     input data consisting of floating point values. These floating point
     values are going to serve as symbols for the `n-gram graph
     representation` and having an infinite amount of symbols will do us
     no good.
     """
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
 
     @abstractstaticmethod
     def __call__(self, tensor):

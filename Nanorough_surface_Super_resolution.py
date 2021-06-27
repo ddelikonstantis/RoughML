@@ -203,8 +203,7 @@ from roughml.training.manager import per_epoch
 training_flow = TrainingFlow(
     training_manager={
         "benchmark": True,
-        "checkpoint_dir": CHECKPOINT_DIR,
-        "checkpoint_multiple": False,
+        "checkpoint": {"directory": CHECKPOINT_DIR, "multiple": True},
         "train_epoch": per_epoch,
         "log_every_n": 10,
         "criterion": criterion,
@@ -217,7 +216,10 @@ training_flow = TrainingFlow(
             "num_workers": 0,
         },
     },
-    content_loss_type=NGramGraphContentLoss,
+    content_loss={
+        "type": NGramGraphContentLoss,
+        "cache": CHECKPOINT_DIR / "n_gram_graph_content_loss.pkl",
+    },
     dataset={
         "limit": 10,
         "path": GDRIVE_DIR / "MyDrive" / "Thesis" / "Datasets" / "surfaces.zip",
@@ -274,8 +276,7 @@ from roughml.training.manager import per_epoch
 training_flow = TrainingFlow(
     training_manager={
         "benchmark": True,
-        "checkpoint_dir": CHECKPOINT_DIR,
-        "checkpoint_multiple": False,
+        "checkpoint": {"directory": CHECKPOINT_DIR, "multiple": True},
         "train_epoch": per_epoch,
         "log_every_n": 10,
         "criterion": criterion,
@@ -288,7 +289,10 @@ training_flow = TrainingFlow(
             "num_workers": 0,
         },
     },
-    content_loss_type=ArrayGraph2DContentLoss,
+    content_loss={
+        "type": ArrayGraph2DContentLoss,
+        "cache": CHECKPOINT_DIR / "array_graph2d_content_loss.pkl",
+    },
     dataset={
         "limit": 10,
         "path": GDRIVE_DIR / "MyDrive" / "Thesis" / "Datasets" / "surfaces.zip",

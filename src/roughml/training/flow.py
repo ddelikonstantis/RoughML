@@ -73,7 +73,13 @@ class TrainingFlow(Configuration):
         if hasattr(self.training_manager, "content_loss"):
             training_manager = TrainingManager(**self.training_manager.to_dict())
         else:
-            content_loss = self.content_loss_type(surfaces=dataset.surfaces)
+            if self.content_loss.cache.is_file():
+                content_loss = self.content_loss.type.from_pickle(
+                    self.content_loss.cache
+                )
+            else:
+                content_loss = self.content_loss.type(surfaces=dataset.surfaces)
+                content_loss.to_pickle(self.content_loss.cache)
 
             training_manager = TrainingManager(
                 content_loss=content_loss, **self.training_manager.to_dict()

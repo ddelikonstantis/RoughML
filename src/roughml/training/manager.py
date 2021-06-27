@@ -126,12 +126,8 @@ class TrainingManager(Configuration):
         if not hasattr(self, "log_every_n"):
             self.log_every_n = None
 
-        if not hasattr(self, "checkpoint_dir"):
-            self.checkpoint_dir = None
-
-        if self.checkpoint_dir is not None:
-            if not hasattr(self, "checkpoint_multiple"):
-                self.checkpoint_multiple = False
+        if not hasattr(self, "checkpoint"):
+            self.checkpoint = Configuration(directory=None, multiple=False)
 
         if not hasattr(self, "content_loss"):
             self.content_loss = None
@@ -194,7 +190,7 @@ class TrainingManager(Configuration):
                 log_every_n=self.log_every_n,
             )
 
-            if self.checkpoint_dir is not None and (
+            if self.checkpoint.directory is not None and (
                 not generator_losses or generator_loss < min(generator_losses)
             ):
                 generator_mt, discriminator_mt = (
@@ -202,17 +198,18 @@ class TrainingManager(Configuration):
                     f"{discriminator.__class__.__name__}",
                 )
 
-                if self.checkpoint_multiple is True:
+                if self.checkpoint.multiple is True:
                     generator_mt += f"_{epoch:03d}"
                     discriminator_mt += f"_{epoch:03d}"
 
                 torch.save(
-                    generator.state_dict(), self.checkpoint_dir / f"{generator_mt}.mt"
+                    generator.state_dict(),
+                    self.checkpoint.directory / f"{generator_mt}.mt",
                 )
 
                 torch.save(
                     discriminator.state_dict(),
-                    self.checkpoint_dir / f"{discriminator_mt}.mt",
+                    self.checkpoint.directory / f"{discriminator_mt}.mt",
                 )
 
             generator_losses.append(generator_loss)
