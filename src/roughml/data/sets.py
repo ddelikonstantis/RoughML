@@ -9,12 +9,11 @@ from torch.utils.data.dataset import Dataset
 class NanoroughSurfaceDataset(Dataset):
     """A dataset of pre-generated nanorough surfaces"""
 
-    def __init__(self, surfaces, subsampling_factor=4, transforms=[]):
-        self.surfaces = np.array(surfaces)
-        self.surfaces = torch.from_numpy(self.surfaces)
+    def __init__(self, surfaces, subsampling_factor, transforms):
+        self.surfaces = surfaces
 
         self.subsampling_factor = subsampling_factor
-        self.subsampling_value = int(surfaces[0].shape[1] / subsampling_factor)
+        self.subsampling_value = int(self.surfaces.shape[2] / subsampling_factor)
 
         self.transforms = transforms
 
@@ -33,18 +32,33 @@ class NanoroughSurfaceDataset(Dataset):
 
         return surface
 
+    def to_pt(self, path):
+        state = {
+            "surfaces": self.surfaces,
+            "subsampling_factor": self.subsampling_factor,
+            "transforms": self.transforms,
+        }
 
-class NanoroughSurfaceMatLabDataset(NanoroughSurfaceDataset):
-    """A dataset of pre-generated nanorough surfaces in `.mat` format"""
+        torch.save(state, path)
 
-    def __init__(
-        self,
+    @classmethod
+    def from_list(cls, surfaces, subsampling_factor=4, transforms=[]):
+        surfaces = np.array(surfaces)
+        surfaces = torch.from_numpy(surfaces)
+
+        return cls(surfaces, subsampling_factor, transforms)
+
+    @classmethod
+    def from_matlab(
+        cls,
         surface_dir,
         subsampling_factor=4,
         variable_name="data",
         transforms=[],
         limit=None,
     ):
+        """Load pre-generated nanorough surfaces in `.mat` format"""
+
         assert surface_dir.is_dir(), "%s does not exist or is not a dictionary" % (
             surface_dir,
         )
@@ -54,15 +68,17 @@ class NanoroughSurfaceMatLabDataset(NanoroughSurfaceDataset):
             if file.is_dir() or file.suffix != ".mat":
                 continue
 
-            surfaces.append(self.from_matlab(file, variable_name))
+            matlab_array = sio.loadmat(file)
+            numpy_array = matlab_array[variable_name]
 
-        super().__init__(
+            surfaces.append(numpy_array)
+
+        return cls.from_list(
             surfaces, subsampling_factor=subsampling_factor, transforms=transforms
         )
 
     @classmethod
-    def from_matlab(cls, path_to_mat, variable_name):
-        matlab_array = sio.loadmat(str(path_to_mat))
-        numpy_array = matlab_array[variable_name]
+    def from_pt(cls, path):
+        state = torch.load(path)
 
-        return numpy_array
+        return cls(state["surfaces"], state["subsampling_factor"], state["transforms"])

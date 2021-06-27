@@ -2,7 +2,7 @@ from pathlib import Path
 from zipfile import ZipFile
 
 from roughml.data.generators import NonGaussianSurfaceGenerator
-from roughml.data.sets import NanoroughSurfaceDataset, NanoroughSurfaceMatLabDataset
+from roughml.data.sets import NanoroughSurfaceDataset
 from roughml.plot import animate_epochs, plot_against
 from roughml.shared.configuration import Configuration
 from roughml.training.manager import TrainingManager
@@ -19,12 +19,17 @@ def load_dataset(
                 zip_file.extractall(cache_dir)
 
     if cache_dir.is_dir():
-        dataset = NanoroughSurfaceMatLabDataset(
+        dataset = NanoroughSurfaceDataset.from_matlab(
             cache_dir, transforms=transforms, limit=limit
         )
     else:
-        generate = NonGaussianSurfaceGenerator()
-        dataset = NanoroughSurfaceDataset(list(generate(limit)), transforms=transforms)
+        generate_surfaces = NonGaussianSurfaceGenerator()
+
+        surfaces = []
+        for surface in generate_surfaces(limit):
+            surfaces.append(surface)
+
+        dataset = NanoroughSurfaceDataset.from_list(surfaces, transforms=transforms)
 
     return dataset
 
