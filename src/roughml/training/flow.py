@@ -62,6 +62,15 @@ class TrainingFlow(Configuration):
                 },
             )
 
+        if not hasattr(self.animation, "parameters"):
+            self.animation.parameters = Configuration(
+                interval=1000,
+                repeat_delay=1000,
+                blit=True,
+                fps=15,
+                bitrate=1800,
+            )
+
     def __call__(self, generator, discriminator):
         dataset = load_dataset(
             self.dataset.path,

@@ -81,10 +81,12 @@ def plot_correlation(array):
 
 def animate_epochs(batches_of_tensors, indices=None, save_path=None, **kwargs):
     fig = plt.figure(figsize=(8, 8))
+    axes = fig.add_subplot(111)
+
     plt.axis("off")
 
     artists = []
-    for batch_of_tensors in batches_of_tensors:
+    for index, batch_of_tensors in enumerate(batches_of_tensors, start=1):
         if indices:
             batch_of_tensors = [batch_of_tensors[index] for index in indices]
 
@@ -95,7 +97,16 @@ def animate_epochs(batches_of_tensors, indices=None, save_path=None, **kwargs):
                 plt.imshow(
                     np.transpose(grid, (1, 2, 0)),
                     animated=True,
-                )
+                ),
+                plt.text(
+                    0.5,
+                    1.01,
+                    "Epoch %02d" % (index,),
+                    horizontalalignment="center",
+                    verticalalignment="bottom",
+                    transform=axes.transAxes,
+                    fontsize=16,
+                ),
             ]
         )
 
