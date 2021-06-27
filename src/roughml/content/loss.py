@@ -68,7 +68,14 @@ class ContentLoss(Configuration, ABC):
     @classmethod
     def from_pickle(cls, path):
         with path.open("rb") as file:
-            return pickle.load(file)
+            instance = pickle.load(file)
+
+            if not isinstance(instance, cls):
+                raise TypeError(
+                    "%r is not an instance of %s" % (instance, cls.__name__)
+                )
+
+            return instance
 
 
 class NGramGraphContentLoss(ContentLoss):
