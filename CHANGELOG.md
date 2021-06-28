@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--next-version-placeholder-->
 
+## v1.4.0 (2021-06-27)
+### Feature
+* Store/load dataset to/from `.pt` file ([`4b17918`](https://github.com/billsioros/thesis/commit/4b17918c6005dafb632b251c13e4e73f42cd2db8))
+* Save per epoch animation(s) ([`dedc063`](https://github.com/billsioros/thesis/commit/dedc063c6434a7852758bc5110a4de061da9842a))
+
+**[See all commits in this version](https://github.com/billsioros/thesis/compare/v1.3.0...v1.4.0)**
+
 ## v1.3.0 (2021-06-24)
 ### Feature
 * Configure logging level via `export` ([`312f175`](https://github.com/billsioros/thesis/commit/312f175b368176d6bf42b2bd880b887e2160f444))
