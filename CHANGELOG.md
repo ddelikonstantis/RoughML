@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--next-version-placeholder-->
 
+## v1.5.0 (2021-06-28)
+### Feature
+* Add title to per epoch animation ([`52b4bc3`](https://github.com/billsioros/thesis/commit/52b4bc35d07b157e38a090d262a6be1074f9642e))
+* Cache content loss(es) ([`b5c9fed`](https://github.com/billsioros/thesis/commit/b5c9fed1777f2944fa117d4ab916d919a7b9e85b))
+
+### Fix
+* Check instance class when loading `from_pickle` ([`0dd3c8d`](https://github.com/billsioros/thesis/commit/0dd3c8d9a604e9ca7ce18c0b7dacfc749e7b1deb))
+
+**[See all commits in this version](https://github.com/billsioros/thesis/compare/v1.4.0...v1.5.0)**
+
 ## v1.4.0 (2021-06-27)
 ### Feature
 * Store/load dataset to/from `.pt` file ([`4b17918`](https://github.com/billsioros/thesis/commit/4b17918c6005dafb632b251c13e4e73f42cd2db8))
