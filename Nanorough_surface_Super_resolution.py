@@ -102,7 +102,11 @@ except ImportError:
 # - [plotly](https://plotly.com/) (which requires [pandas](https://pandas.pydata.org/)) as well as [matplotlib](https://matplotlib.org/) are used in order to plot various graphs.
 # -
 
-WHEEL_FILE = GDRIVE_DIR / "roughml-1.0.1-py3-none-any.whl"
+WHEEL_VERSION = "1.5.0"
+WHEEL_FILE = "roughml-%s-py3-none-any.whl".format(
+    WHEEL_VERSION,
+)
+WHEEL_PATH = GDRIVE_DIR / "MyDrive" / "Thesis" / WHEEL_FILE
 
 # + cellView="code" colab={"base_uri": "https://localhost:8080/"} id="1057687b" outputId="2ab1f525-0235-4308-cabb-a7793277473b"
 import subprocess
@@ -113,10 +117,10 @@ pip_freeze_output = subprocess.check_output(
 ).decode()
 
 if "roughml" not in pip_freeze_output:
-    if WHEEL_FILE.is_file():
-        subprocess.check_call([sys.executable, "-m", "pip", "install", GDRIVE_DIR])
+    if WHEEL_PATH.is_file():
+        subprocess.check_call([sys.executable, "-m", "pip", "install", WHEEL_PATH])
     else:
-        raise FileNotFoundError(WHEEL_FILE)
+        raise FileNotFoundError(WHEEL_PATH)
 
 # + [markdown] id="0192c059"
 # ## Initializing (a.k.a `Seeding`) the Random Number Generator(s)
