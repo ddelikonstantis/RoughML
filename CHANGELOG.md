@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--next-version-placeholder-->
 
+## v1.5.2 (2021-06-29)
+### Fix
+* Wrong path when invoking `pip` ([`59cb5e3`](https://github.com/billsioros/thesis/commit/59cb5e347f140ba4e85ae9349ac64557f885ec74))
+
+**[See all commits in this version](https://github.com/billsioros/thesis/compare/v1.5.1...v1.5.2)**
+
 ## v1.5.1 (2021-06-29)
 ### Fix
 * Criterion and content loss weights add up to 1 ([`2447088`](https://github.com/billsioros/thesis/commit/244708899463815658d01134842a6a5af60970f6))
