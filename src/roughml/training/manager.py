@@ -140,7 +140,7 @@ class TrainingManager(Configuration):
         if isinstance(self.content_loss, tuple):
             self.content_loss, self.content_loss_weight = self.content_loss
         else:
-            self.content_loss_weight = 0.5
+            self.content_loss_weight = 1 - self.criterion_weight
 
         if not hasattr(self, "fixed_noise_dim"):
             self.fixed_noise_dim = 64
