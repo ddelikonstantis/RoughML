@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--next-version-placeholder-->
 
+## v1.5.1 (2021-06-29)
+### Fix
+* Criterion and content loss weights add up to 1 ([`2447088`](https://github.com/billsioros/thesis/commit/244708899463815658d01134842a6a5af60970f6))
+
+**[See all commits in this version](https://github.com/billsioros/thesis/compare/v1.5.0...v1.5.1)**
+
 ## v1.5.0 (2021-06-28)
 ### Feature
 * Add title to per epoch animation ([`52b4bc3`](https://github.com/billsioros/thesis/commit/52b4bc35d07b157e38a090d262a6be1074f9642e))
