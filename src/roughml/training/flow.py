@@ -100,7 +100,7 @@ class TrainingFlow(Configuration):
             discriminator_output_reals,
             discriminator_output_fakes,
             fixed_fakes,
-        ) = training_manager(generator, discriminator, dataset)
+        ) = list(zip(*list(training_manager(generator, discriminator, dataset))))
 
         plot_against(
             generator_losses,

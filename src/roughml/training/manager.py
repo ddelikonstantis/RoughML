@@ -168,10 +168,7 @@ class TrainingManager(Configuration):
         if self.benchmark is True and logger.level <= logging.INFO:
             train_epoch_f = benchmark(train_epoch_f)
 
-        fixed_fakes = []
-        generator_losses, discriminator_losses = [], []
-        discriminator_output_reals, discriminator_output_fakes = [], []
-
+        min_generator_loss = float("inf")
         for epoch in tqdm(range(self.n_epochs), desc="Epochs"):
             (
                 generator_loss,
@@ -190,9 +187,12 @@ class TrainingManager(Configuration):
                 log_every_n=self.log_every_n,
             )
 
-            if self.checkpoint.directory is not None and (
-                not generator_losses or generator_loss < min(generator_losses)
+            if (
+                self.checkpoint.directory is not None
+                and generator_loss < min_generator_loss
             ):
+                min_generator_loss = generator_loss
+
                 generator_mt, discriminator_mt = (
                     f"{generator.__class__.__name__}",
                     f"{discriminator.__class__.__name__}",
@@ -212,13 +212,8 @@ class TrainingManager(Configuration):
                     self.checkpoint.directory / f"{discriminator_mt}.mt",
                 )
 
-            generator_losses.append(generator_loss)
-            discriminator_losses.append(discriminator_loss)
-            discriminator_output_reals.append(discriminator_output_real)
-            discriminator_output_fakes.append(discriminator_output_fake)
-
             with torch.no_grad():
-                fixed_fakes.append(generator(fixed_noise).detach().cpu())
+                fixed_fake = generator(fixed_noise).detach().cpu()
 
             logger.info(
                 "Epoch: %02d, Generator Loss: %7.3f, Discriminator Loss: %7.3f",
@@ -234,10 +229,10 @@ class TrainingManager(Configuration):
                 discriminator_output_fake,
             )
 
-        return (
-            generator_losses,
-            discriminator_losses,
-            discriminator_output_reals,
-            discriminator_output_fakes,
-            fixed_fakes,
-        )
+            yield (
+                generator_loss,
+                discriminator_loss,
+                discriminator_output_real,
+                discriminator_output_fake,
+                fixed_fake,
+            )
