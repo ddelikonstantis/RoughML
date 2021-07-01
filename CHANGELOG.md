@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--next-version-placeholder-->
 
+## v2.0.0 (2021-07-01)
+### Feature
+* Enable gradient clipping ([`14dc13f`](https://github.com/billsioros/thesis/commit/14dc13fe7aabf2d47e30f825bfce3f3515cd4fbc))
+
+### Breaking
+* convert `TrainingManager.__call__` to iterator ([`04b18c9`](https://github.com/billsioros/thesis/commit/04b18c90895a0e8a5e06b381d1684aa6fd6c3d98))
+
+**[See all commits in this version](https://github.com/billsioros/thesis/compare/v1.5.2...v2.0.0)**
+
 ## v1.5.2 (2021-06-29)
 ### Fix
 * Wrong path when invoking `pip` ([`59cb5e3`](https://github.com/billsioros/thesis/commit/59cb5e347f140ba4e85ae9349ac64557f885ec74))

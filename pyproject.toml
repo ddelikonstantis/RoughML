@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "roughml"
-version = "1.5.2"
+version = "2.0.0"
 description = "A nanorough surface super-resolution framework"
 authors = ["billsioros <billsioros97@gmail.com>"]
 license = "MIT"
