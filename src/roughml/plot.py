@@ -25,7 +25,7 @@ def plot_against(first, second, title="", xlabel="", ylabel="", labels=("", ""))
     plt.show()
 
 
-def as_grayscale_image(array):
+def as_grayscale_image(array, save_path=None):
     fig = px.imshow(array, color_continuous_scale="gray")
     fig.update_layout(coloraxis_showscale=False)
     fig.update_xaxes(showticklabels=False)
@@ -39,21 +39,29 @@ def as_grayscale_image(array):
         # margin=dict(l=65, r=50, b=65, t=90)
     )
 
-    fig.show()
+    if save_path is None:
+        fig.show()
+    else:
+        with save_path.open("wb") as file:
+            fig.write_image(file)
 
 
-def as_3d_surface(array, autosize=False):
+def as_3d_surface(array, save_path=False):
     fig = go.Figure(data=[go.Surface(z=array)])
 
     fig.update_layout(
         # title=title,
-        autosize=autosize,
+        autosize=False,
         width=500,
         height=500,
         # margin=dict(l=65, r=50, b=65, t=90)
     )
 
-    fig.show()
+    if save_path is None:
+        fig.show()
+    else:
+        with save_path.open("wb") as file:
+            fig.write_image(file)
 
 
 def plot_correlation(array):

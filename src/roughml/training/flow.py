@@ -3,7 +3,7 @@ from zipfile import ZipFile
 
 from roughml.data.generators import NonGaussianSurfaceGenerator
 from roughml.data.sets import NanoroughSurfaceDataset
-from roughml.plot import animate_epochs, plot_against
+from roughml.plot import animate_epochs, as_3d_surface, as_grayscale_image, plot_against
 from roughml.shared.configuration import Configuration
 from roughml.training.manager import TrainingManager
 
@@ -46,6 +46,13 @@ class TrainingFlow(Configuration):
 
         if not hasattr(self, "training_manager"):
             self.training_manager = {}
+
+        if not hasattr(self, "plot"):
+            self.plot = Configuration(
+                save_directory=None,
+                gray_scale={"limit": None, "save_path_fmt": None},
+                surface={"limit": None, "save_path_fmt": None},
+            )
 
         if not hasattr(self, "animation"):
             self.animation = Configuration(
@@ -127,10 +134,37 @@ class TrainingFlow(Configuration):
             **self.animation.parameters.to_dict()
         )
 
-        return (
-            generator_losses,
-            discriminator_losses,
-            discriminator_output_reals,
-            discriminator_output_fakes,
-            fixed_fakes,
-        )
+        if self.plot.save_directory is not None:
+            self.plot.save_directory.mkdir(parents=True, exist_ok=True)
+
+            if self.plot.grayscale.save_path_fmt is not None:
+                for i in range(self.plot.grayscale.limit):
+                    true_surface = dataset.surfaces[i].squeeze()
+                    fake_surface = fixed_fakes[-1][i].squeeze()
+
+                    as_grayscale_image(
+                        true_surface,
+                        self.plot.save_directory
+                        / (self.plot.grayscale.save_path_fmt % ("true", i)),
+                    )
+                    as_grayscale_image(
+                        fake_surface,
+                        self.plot.save_directory
+                        / (self.plot.grayscale.save_path_fmt % ("fake", i)),
+                    )
+
+            if self.plot.surface.save_path_fmt is not None:
+                for i in range(self.plot.surface.limit):
+                    true_surface = dataset.surfaces[i].squeeze()
+                    fake_surface = fixed_fakes[-1][i].squeeze()
+
+                    as_3d_surface(
+                        true_surface,
+                        self.plot.save_directory
+                        / (self.plot.surface.save_path_fmt % ("true", i)),
+                    )
+                    as_3d_surface(
+                        fake_surface,
+                        self.plot.save_directory
+                        / (self.plot.surface.save_path_fmt % ("fake", i)),
+                    )
