@@ -32,18 +32,40 @@ class PerceptronGenerator(Base):
 
     @classmethod
     def from_device(
-        cls, device, in_features=100, out_features=(128, 128), dtype=torch.float64
+        cls,
+        device,
+        in_features=100,
+        out_features=(128, 128),
+        dtype=torch.float64,
+        gradient_clipping=None,
     ):
-        return super().from_device(device, in_features, out_features, dtype=dtype)
+        return super().from_device(
+            device,
+            in_features,
+            out_features,
+            dtype=dtype,
+            gradient_clipping=gradient_clipping,
+        )
 
     @classmethod
-    def from_dataset(cls, dataset, device, in_features=100, dtype=torch.float64):
+    def from_dataset(
+        cls,
+        dataset,
+        device,
+        in_features=100,
+        dtype=torch.float64,
+        gradient_clipping=None,
+    ):
         super_resolved_value = dataset.subsampling_factor * dataset.subsampling_value
 
         out_features = (super_resolved_value, super_resolved_value)
 
         return cls.from_device(
-            device, in_features=in_features, out_features=out_features, dtype=dtype
+            device,
+            in_features=in_features,
+            out_features=out_features,
+            dtype=dtype,
+            gradient_clipping=gradient_clipping,
         )
 
 
@@ -66,9 +88,10 @@ class PerceptronDiscriminator(Base):
         return batch
 
     @classmethod
-    def from_generator(cls, generator, dtype=torch.float64):
+    def from_generator(cls, generator, dtype=torch.float64, gradient_clipping=None):
         return super().from_device(
             generator.device,
             generator.out_features[0] * generator.out_features[1],
             dtype=dtype,
+            gradient_clipping=gradient_clipping,
         )

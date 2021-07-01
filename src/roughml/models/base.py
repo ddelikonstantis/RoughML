@@ -8,7 +8,9 @@ logger = logging.getLogger(__name__)
 
 class Base(nn.Module):
     @classmethod
-    def from_device(cls, device, *args, dtype=torch.float64, **kwargs):
+    def from_device(
+        cls, device, *args, dtype=torch.float64, gradient_clipping=None, **kwargs
+    ):
         model = cls(*args, **kwargs)
 
         if device.type == "cuda" and torch.cuda.device_count() > 1:
@@ -18,6 +20,16 @@ class Base(nn.Module):
 
         if dtype is not None:
             model = model.to(dtype=dtype)
+
+        if gradient_clipping is not None:
+            if isinstance(gradient_clipping, tuple):
+                low, high = gradient_clipping
+            else:
+                low, high = -gradient_clipping, +gradient_clipping
+
+            for param in model.parameters():
+                if param.requires_grad is True:
+                    param.register_hook(lambda grad: torch.clamp(grad, low, high))
 
         return model
 
