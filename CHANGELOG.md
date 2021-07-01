@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--next-version-placeholder-->
 
+## v2.1.0 (2021-07-01)
+### Feature
+* Save images on flow exit ([`83127d9`](https://github.com/billsioros/thesis/commit/83127d9abde626a80d22617fa5a4461db7153eb1))
+
+**[See all commits in this version](https://github.com/billsioros/thesis/compare/v2.0.0...v2.1.0)**
+
 ## v2.0.0 (2021-07-01)
 ### Feature
 * Enable gradient clipping ([`14dc13f`](https://github.com/billsioros/thesis/commit/14dc13fe7aabf2d47e30f825bfce3f3515cd4fbc))
