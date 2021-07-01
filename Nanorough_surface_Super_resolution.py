@@ -322,5 +322,8 @@ training_flow = TrainingFlow(
 
 # + colab={"base_uri": "https://localhost:8080/", "height": 573} id="3c4cdce1" outputId="c22dfcc0-c6d9-4726-c197-acf11bdec52f"
 training_flow(generator, discriminator)
+# -
+
+# ## Dismounting Google Drive and persisting any changes made
 
 drive.flush_and_unmount()
