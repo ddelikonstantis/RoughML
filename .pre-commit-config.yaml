@@ -51,3 +51,11 @@ repos:
         pass_filenames: false
         entry: poetry export --without-hashes -o requirements.txt
         files: ^(pyproject.toml|poetry.lock)$
+  - repo: local
+    hooks:
+      - id: google-drive
+        name: google-drive
+        entry: bash -c 'poetry build; find dist -name "roughml*.whl" | sort -r | head -1 | xargs cp -t /mnt/g/My\ Drive/Thesis/binaries/'
+        language: system
+        types: [python]
+        pass_filenames: false
