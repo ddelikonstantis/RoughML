@@ -134,12 +134,8 @@ class TrainingFlow(Configuration):
             **self.animation.parameters.to_dict()
         )
 
-        print(self.plot.save_directory)
-
         if self.plot.save_directory is not None:
             self.plot.save_directory.mkdir(parents=True, exist_ok=True)
-
-            print(self.plot.grayscale)
 
             if self.plot.grayscale.save_path_fmt is not None:
                 for i in range(self.plot.grayscale.limit):
@@ -156,8 +152,6 @@ class TrainingFlow(Configuration):
                         self.plot.save_directory
                         / (self.plot.grayscale.save_path_fmt % ("fake", i)),
                     )
-
-            print(self.plot.surface)
 
             if self.plot.surface.save_path_fmt is not None:
                 for i in range(self.plot.surface.limit):
