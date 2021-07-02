@@ -102,11 +102,9 @@ except ImportError:
 # - [plotly](https://plotly.com/) (which requires [pandas](https://pandas.pydata.org/)) as well as [matplotlib](https://matplotlib.org/) are used in order to plot various graphs.
 # -
 
-WHEEL_VERSION = "1.5.0"
-WHEEL_FILE = "roughml-%s-py3-none-any.whl".format(
-    WHEEL_VERSION,
-)
-WHEEL_PATH = GDRIVE_DIR / "MyDrive" / "Thesis" / WHEEL_FILE
+WHEEL_VERSION = "2.1.0"
+WHEEL_FILE = "roughml-%s-py3-none-any.whl" % (WHEEL_VERSION,)
+WHEEL_PATH = GDRIVE_DIR / "MyDrive" / "Thesis" / "binaries" / WHEEL_FILE
 
 # + cellView="code" colab={"base_uri": "https://localhost:8080/"} id="1057687b" outputId="2ab1f525-0235-4308-cabb-a7793277473b"
 import subprocess
