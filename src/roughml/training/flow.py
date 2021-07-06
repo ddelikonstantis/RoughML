@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 from zipfile import ZipFile
 
@@ -7,12 +8,12 @@ from roughml.plot import animate_epochs, as_3d_surface, as_grayscale_image, plot
 from roughml.shared.configuration import Configuration
 from roughml.training.manager import TrainingManager
 
+logger = logging.getLogger(__name__)
 
-def load_dataset(
-    dataset_path, transforms=[], limit=None, cache_dir=Path.cwd() / "surfaces"
-):
+
+def load_dataset(dataset_path, transforms=[], limit=None, cache_dir=None):
     if dataset_path.is_file():
-        if not cache_dir.is_dir():
+        if cache_dir is not None and not cache_dir.is_dir():
             cache_dir.mkdir(parents=True, exist_ok=True)
 
             with ZipFile(dataset_path, "r") as zip_file:
@@ -52,6 +53,7 @@ class TrainingFlow(Configuration):
                 save_directory=None,
                 gray_scale={"limit": None, "save_path_fmt": None},
                 surface={"limit": None, "save_path_fmt": None},
+                against={"save_path_fmt": None},
             )
 
         if not hasattr(self, "animation"):
@@ -79,6 +81,12 @@ class TrainingFlow(Configuration):
             )
 
     def __call__(self, generator, discriminator):
+        logger.info(
+            "Running the flow on a %s/%s pair",
+            generator.__class__.__name__,
+            discriminator.__class__.__name__,
+        )
+
         dataset = load_dataset(
             self.dataset.path,
             transforms=self.dataset.transforms,
@@ -109,6 +117,13 @@ class TrainingFlow(Configuration):
             fixed_fakes,
         ) = list(zip(*list(training_manager(generator, discriminator, dataset))))
 
+        save_path_loss, save_path_discriminator_output = None, None
+        if self.plot.against.save_path_fmt is not None:
+            save_path_loss = self.plot.against.save_path_fmt % ("loss",)
+            save_path_discriminator_output = self.plot.against.save_path_fmt % (
+                "discriminator_output",
+            )
+
         plot_against(
             generator_losses,
             discriminator_losses,
@@ -116,6 +131,7 @@ class TrainingFlow(Configuration):
             xlabel="Epoch",
             ylabel="Loss",
             labels=("Generator", "Discriminator"),
+            save_path=save_path_loss,
         )
 
         plot_against(
@@ -125,6 +141,7 @@ class TrainingFlow(Configuration):
             xlabel="Epoch",
             ylabel="Discriminator Output",
             labels=("Real Data", "Generator Data"),
+            save_path=save_path_discriminator_output,
         )
 
         animate_epochs(

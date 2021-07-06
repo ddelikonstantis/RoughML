@@ -29,38 +29,6 @@
 #   - The current working directory, as it's going to be used to reference various files such as the dataset, our model checkpoints e.t.c
 #   - The available hardware backend. GPU utilization is preferable, as it results in higher complition time.
 # - `(Optionally)` Mount Google Drive, where we can load our dataset from.
-# -
-
-# ## Configuring our Loggers
-
-# +
-import logging.config
-import os
-
-LOGGING_LEVEL = os.environ.get("LOGGING_LEVEL", "CRITICAL").upper()
-
-logging.config.dictConfig(
-    {
-        "version": 1,
-        "disable_existing_loggers": True,
-        "formatters": {
-            "standard": {"format": "[%(asctime)s] %(levelname)s:%(name)s: %(message)s"}
-        },
-        "handlers": {
-            "default": {
-                "level": LOGGING_LEVEL,
-                "formatter": "standard",
-                "class": "logging.StreamHandler",
-            }
-        },
-        "loggers": {"": {"handlers": ["default"], "level": LOGGING_LEVEL}},
-    }
-)
-
-# +
-import logging
-
-logger = logging.getLogger()
 
 # + [markdown] id="19e0a6d0"
 # ## Determining the Current Working Directory
@@ -82,7 +50,54 @@ try:
 
     drive.mount(f"{GDRIVE_DIR}")
 except ImportError:
-    pass
+    GDRIVE_DIR.mkdir(parents=True, exist_ok=True)
+
+# +
+THESIS_DIR = GDRIVE_DIR / "MyDrive" / "Thesis"
+OUTPUT_DIR = THESIS_DIR / "Output"
+
+CHECKPOINT_DIR = OUTPUT_DIR / "Checkpoint"
+CHECKPOINT_DIR.mkdir(parents=True, exist_ok=True)
+
+LOGGING_DIR = OUTPUT_DIR / "Logging"
+LOGGING_DIR.mkdir(parents=True, exist_ok=True)
+
+PLOTTING_DIR = OUTPUT_DIR / "Logging"
+PLOTTING_DIR.mkdir(parents=True, exist_ok=True)
+# -
+
+# ## Configuring our Loggers
+
+# +
+import logging.config
+import os
+from datetime import datetime
+
+LOGGING_LEVEL = os.environ.get("LOGGING_LEVEL", "CRITICAL").upper()
+
+logging.config.dictConfig(
+    {
+        "version": 1,
+        "disable_existing_loggers": True,
+        "formatters": {
+            "standard": {"format": "[%(asctime)s] %(levelname)s:%(name)s: %(message)s"}
+        },
+        "handlers": {
+            "default": {
+                "level": LOGGING_LEVEL,
+                "formatter": "standard",
+                "class": "logging.StreamHandler",
+            },
+            "file": {
+                "level": LOGGING_LEVEL,
+                "formatter": "standard",
+                "class": "logging.FileHandler",
+                "filename": f"{LOGGING_DIR / datetime.now().strftime('%Y_%m_%d_%H_%M_%S_%f.log')}",
+            },
+        },
+        "loggers": {"": {"handlers": ["default", "file"], "level": LOGGING_LEVEL}},
+    }
+)
 
 # + [markdown] id="16a902e2"
 # ## Installing [graphviz](https://graphviz.org/) & [libgraphviz-dev](https://packages.debian.org/jessie/libgraphviz-dev)
@@ -104,7 +119,7 @@ except ImportError:
 
 WHEEL_VERSION = "2.1.0"
 WHEEL_FILE = "roughml-%s-py3-none-any.whl" % (WHEEL_VERSION,)
-WHEEL_PATH = GDRIVE_DIR / "MyDrive" / "Thesis" / "binaries" / WHEEL_FILE
+WHEEL_PATH = THESIS_DIR / "Binaries" / WHEEL_FILE
 
 # + cellView="code" colab={"base_uri": "https://localhost:8080/"} id="1057687b" outputId="2ab1f525-0235-4308-cabb-a7793277473b"
 import subprocess
@@ -189,16 +204,9 @@ from torch.nn import BCELoss
 
 criterion = BCELoss().to(device)
 
-# + cellView="code" id="90443487" tags=[]
-from pathlib import Path
-
-CHECKPOINT_DIR = BASE_DIR / "checkpoint"
-CHECKPOINT_DIR.mkdir(parents=True, exist_ok=True)
-
+# + cellView="code" id="63114157"
 from roughml.content.loss import NGramGraphContentLoss
 from roughml.data.transforms import To, View
-
-# + cellView="code" id="63114157"
 from roughml.training.flow import TrainingFlow
 from roughml.training.manager import per_epoch
 
@@ -224,13 +232,20 @@ training_flow = TrainingFlow(
     },
     dataset={
         "limit": 10,
-        "path": GDRIVE_DIR / "MyDrive" / "Thesis" / "Datasets" / "surfaces.zip",
+        "path": THESIS_DIR / "Datasets" / "surfaces.zip",
         "transforms": [To(device), View(1, 128, 128)],
     },
+    animation={
+        "indices": [
+            0,
+        ],
+        "save_path": PLOTTING_DIR / "cnn_per_epoch_animation.mp4",
+    },
     plot={
-        "save_directory": GDRIVE_DIR / "MyDrive" / "Thesis" / "Images",
+        "save_directory": PLOTTING_DIR,
         "grayscale": {"limit": 10, "save_path_fmt": "grayscale_%s_%02d.png"},
         "surface": {"limit": 10, "save_path_fmt": "surface_%s_%02d.png"},
+        "against": {"save_path_fmt": "against_%s.png"},
     },
 )
 
@@ -267,16 +282,9 @@ from torch.nn import BCELoss
 
 criterion = BCELoss().to(device)
 
-# + id="QOVvzTEv0o6V"
-from pathlib import Path
-
-CHECKPOINT_DIR = BASE_DIR / "checkpoint"
-CHECKPOINT_DIR.mkdir(parents=True, exist_ok=True)
-
+# + cellView="code" id="82fb12f6"
 from roughml.content.loss import ArrayGraph2DContentLoss
 from roughml.data.transforms import To, View
-
-# + cellView="code" id="82fb12f6"
 from roughml.training.flow import TrainingFlow
 from roughml.training.manager import per_epoch
 
@@ -302,19 +310,20 @@ training_flow = TrainingFlow(
     },
     dataset={
         "limit": 10,
-        "path": GDRIVE_DIR / "MyDrive" / "Thesis" / "Datasets" / "surfaces.zip",
+        "path": THESIS_DIR / "Datasets" / "surfaces.zip",
         "transforms": [To(device), View(1, 128, 128)],
     },
     animation={
         "indices": [
             0,
         ],
-        "save_path": Path.cwd() / "cnn_per_epoch_animation.mp4",
+        "save_path": PLOTTING_DIR / "cnn_per_epoch_animation.mp4",
     },
     plot={
-        "save_directory": GDRIVE_DIR / "MyDrive" / "Thesis" / "Images",
+        "save_directory": PLOTTING_DIR,
         "grayscale": {"limit": 10, "save_path_fmt": "grayscale_%s_%02d.png"},
         "surface": {"limit": 10, "save_path_fmt": "surface_%s_%02d.png"},
+        "against": {"save_path_fmt": "against_%s.png"},
     },
 )
 
