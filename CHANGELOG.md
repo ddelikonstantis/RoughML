@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--next-version-placeholder-->
 
+## v2.2.0 (2021-07-08)
+### Feature
+* Run the flow over multiple datasets ([`d01651d`](https://github.com/billsioros/thesis/commit/d01651d9fbbb6b33fff1c51ebd48d4edd9f5b123))
+* Save training flow outputs to Google Drive by default ([`1032892`](https://github.com/billsioros/thesis/commit/103289203d6ef5dbd90de4c82dce5fce358c8b92))
+
+**[See all commits in this version](https://github.com/billsioros/thesis/compare/v2.1.0...v2.2.0)**
+
 ## v2.1.0 (2021-07-01)
 ### Feature
 * Save images on flow exit ([`83127d9`](https://github.com/billsioros/thesis/commit/83127d9abde626a80d22617fa5a4461db7153eb1))
