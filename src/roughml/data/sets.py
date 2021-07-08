@@ -1,7 +1,4 @@
-import itertools
-
 import numpy as np
-import scipy.io as sio
 import torch
 from torch.utils.data.dataset import Dataset
 
@@ -47,35 +44,6 @@ class NanoroughSurfaceDataset(Dataset):
         surfaces = torch.from_numpy(surfaces)
 
         return cls(surfaces, subsampling_factor, transforms)
-
-    @classmethod
-    def from_matlab(
-        cls,
-        surface_dir,
-        subsampling_factor=4,
-        variable_name="data",
-        transforms=[],
-        limit=None,
-    ):
-        """Load pre-generated nanorough surfaces in `.mat` format"""
-
-        assert surface_dir.is_dir(), "%s does not exist or is not a dictionary" % (
-            surface_dir,
-        )
-
-        surfaces = []
-        for file in itertools.islice(surface_dir.iterdir(), limit):
-            if file.is_dir() or file.suffix != ".mat":
-                continue
-
-            matlab_array = sio.loadmat(file)
-            numpy_array = matlab_array[variable_name]
-
-            surfaces.append(numpy_array)
-
-        return cls.from_list(
-            surfaces, subsampling_factor=subsampling_factor, transforms=transforms
-        )
 
     @classmethod
     def from_pt(cls, path):

@@ -50,54 +50,49 @@ try:
 
     drive.mount(f"{GDRIVE_DIR}")
 except ImportError:
-    GDRIVE_DIR.mkdir(parents=True, exist_ok=True)
+    pass
 
 # +
-THESIS_DIR = GDRIVE_DIR / "MyDrive" / "Thesis"
+if GDRIVE_DIR.is_dir():
+    THESIS_DIR = GDRIVE_DIR / "MyDrive" / "Thesis"
+else:
+    THESIS_DIR = BASE_DIR
+
 OUTPUT_DIR = THESIS_DIR / "Output"
 
-CHECKPOINT_DIR = OUTPUT_DIR / "Checkpoint"
-CHECKPOINT_DIR.mkdir(parents=True, exist_ok=True)
-
-LOGGING_DIR = OUTPUT_DIR / "Logging"
-LOGGING_DIR.mkdir(parents=True, exist_ok=True)
-
-PLOTTING_DIR = OUTPUT_DIR / "Logging"
-PLOTTING_DIR.mkdir(parents=True, exist_ok=True)
+if THESIS_DIR.is_dir():
+    DATASET_DIR = THESIS_DIR / "Datasets"
+else:
+    DATASET_DIR = BASE_DIR / "Datasets"
 # -
 
 # ## Configuring our Loggers
 
 # +
-import logging.config
 import os
-from datetime import datetime
 
 LOGGING_LEVEL = os.environ.get("LOGGING_LEVEL", "CRITICAL").upper()
 
-logging.config.dictConfig(
-    {
-        "version": 1,
-        "disable_existing_loggers": True,
-        "formatters": {
-            "standard": {"format": "[%(asctime)s] %(levelname)s:%(name)s: %(message)s"}
+LOGGING_CONFIG = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "standard": {"format": "[%(asctime)s] %(levelname)s:%(name)s: %(message)s"}
+    },
+    "handlers": {
+        "default": {
+            "level": LOGGING_LEVEL,
+            "formatter": "standard",
+            "class": "logging.StreamHandler",
         },
-        "handlers": {
-            "default": {
-                "level": LOGGING_LEVEL,
-                "formatter": "standard",
-                "class": "logging.StreamHandler",
-            },
-            "file": {
-                "level": LOGGING_LEVEL,
-                "formatter": "standard",
-                "class": "logging.FileHandler",
-                "filename": f"{LOGGING_DIR / datetime.now().strftime('%Y_%m_%d_%H_%M_%S_%f.log')}",
-            },
+        "file": {
+            "level": LOGGING_LEVEL,
+            "formatter": "standard",
+            "class": "logging.FileHandler",
         },
-        "loggers": {"": {"handlers": ["default", "file"], "level": LOGGING_LEVEL}},
-    }
-)
+    },
+    "loggers": {"": {"handlers": ["default", "file"], "level": LOGGING_LEVEL}},
+}
 
 # + [markdown] id="16a902e2"
 # ## Installing [graphviz](https://graphviz.org/) & [libgraphviz-dev](https://packages.debian.org/jessie/libgraphviz-dev)
@@ -204,19 +199,37 @@ from torch.nn import BCELoss
 
 criterion = BCELoss().to(device)
 
+import functools
+
 # + cellView="code" id="63114157"
 from roughml.content.loss import NGramGraphContentLoss
+from roughml.data.loaders import (
+    load_dataset_from_pt,
+    load_dataset_from_zip,
+    load_multiple_datasets_from_pt,
+)
 from roughml.data.transforms import To, View
 from roughml.training.flow import TrainingFlow
 from roughml.training.manager import per_epoch
 
+
+def logging_callback(config, logging_dir):
+    level = config["handlers"]["file"]["level"].lower()
+
+    config["handlers"]["file"]["filename"] = logging_dir / f"{level}.log"
+
+    return config
+
+
 training_flow = TrainingFlow(
+    output_dir=OUTPUT_DIR,
+    logging={"config": LOGGING_CONFIG, "callback": logging_callback},
     training_manager={
         "benchmark": True,
-        "checkpoint": {"directory": CHECKPOINT_DIR, "multiple": True},
+        "checkpoint": {"multiple": True},
         "train_epoch": per_epoch,
         "log_every_n": 10,
-        "criterion": criterion,
+        "criterion": {"instance": criterion},
         "n_epochs": 10,
         "train_ratio": 0.8,
         "optimizer": {"lr": 0.0005, "weight_decay": 0},
@@ -228,23 +241,25 @@ training_flow = TrainingFlow(
     },
     content_loss={
         "type": NGramGraphContentLoss,
-        "cache": CHECKPOINT_DIR / "n_gram_graph_content_loss.pkl",
+        "cache": "n_gram_graph_content_loss.pkl",
     },
-    dataset={
-        "limit": 10,
-        "path": THESIS_DIR / "Datasets" / "surfaces.zip",
-        "transforms": [To(device), View(1, 128, 128)],
+    data={
+        "loader": functools.partial(
+            load_multiple_datasets_from_pt,
+            DATASET_DIR,
+            transforms=[To(device), View(1, 128, 128)],
+            limit=10,
+        )
     },
     animation={
         "indices": [
             0,
         ],
-        "save_path": PLOTTING_DIR / "cnn_per_epoch_animation.mp4",
+        "save_path": "cnn_per_epoch_animation.mp4",
     },
     plot={
-        "save_directory": PLOTTING_DIR,
-        "grayscale": {"limit": 10, "save_path_fmt": "grayscale_%s_%02d.png"},
-        "surface": {"limit": 10, "save_path_fmt": "surface_%s_%02d.png"},
+        "grayscale": {"limit": 10, "save_path_fmt": "grayscale/%s_%02d.png"},
+        "surface": {"limit": 10, "save_path_fmt": "surface/%s_%02d.png"},
         "against": {"save_path_fmt": "against_%s.png"},
     },
 )
@@ -282,6 +297,8 @@ from torch.nn import BCELoss
 
 criterion = BCELoss().to(device)
 
+import functools
+
 # + cellView="code" id="82fb12f6"
 from roughml.content.loss import ArrayGraph2DContentLoss
 from roughml.data.transforms import To, View
@@ -289,12 +306,14 @@ from roughml.training.flow import TrainingFlow
 from roughml.training.manager import per_epoch
 
 training_flow = TrainingFlow(
+    output_dir=OUTPUT_DIR,
+    logging={"config": LOGGING_CONFIG, "callback": logging_callback},
     training_manager={
         "benchmark": True,
-        "checkpoint": {"directory": CHECKPOINT_DIR, "multiple": True},
+        "checkpoint": {"multiple": True},
         "train_epoch": per_epoch,
         "log_every_n": 10,
-        "criterion": criterion,
+        "criterion": {"instance": criterion},
         "n_epochs": 10,
         "train_ratio": 0.8,
         "optimizer": {"lr": 0.0002, "betas": (0.5, 0.999)},
@@ -306,23 +325,25 @@ training_flow = TrainingFlow(
     },
     content_loss={
         "type": ArrayGraph2DContentLoss,
-        "cache": CHECKPOINT_DIR / "array_graph2d_content_loss.pkl",
+        "cache": "array_graph2d_content_loss.pkl",
     },
-    dataset={
-        "limit": 10,
-        "path": THESIS_DIR / "Datasets" / "surfaces.zip",
-        "transforms": [To(device), View(1, 128, 128)],
+    data={
+        functools.partial(
+            load_multiple_datasets_from_pt,
+            DATASET_DIR,
+            transforms=[To(device), View(1, 128, 128)],
+            limit=10,
+        )
     },
     animation={
         "indices": [
             0,
         ],
-        "save_path": PLOTTING_DIR / "cnn_per_epoch_animation.mp4",
+        "save_path": "cnn_per_epoch_animation.mp4",
     },
     plot={
-        "save_directory": PLOTTING_DIR,
-        "grayscale": {"limit": 10, "save_path_fmt": "grayscale_%s_%02d.png"},
-        "surface": {"limit": 10, "save_path_fmt": "surface_%s_%02d.png"},
+        "grayscale": {"limit": 10, "save_path_fmt": "grayscale/%s_%02d.png"},
+        "surface": {"limit": 10, "save_path_fmt": "surface/%s_%02d.png"},
         "against": {"save_path_fmt": "against_%s.png"},
     },
 )
@@ -333,4 +354,9 @@ training_flow(generator, discriminator)
 
 # ## Dismounting Google Drive and persisting any changes made
 
-drive.flush_and_unmount()
+try:
+    from google.colab import drive
+
+    drive.flush_and_unmount()
+except ImportError:
+    pass

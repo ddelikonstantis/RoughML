@@ -157,4 +157,6 @@ Thumbs.db
 surfaces/
 *.csv
 *.pkl
-*.mt
+*.pt
+*.png
+*.mp4

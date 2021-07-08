@@ -1,4 +1,4 @@
-class Configuration:
+class Configuration(object):
     def __init__(self, **kwargs):
         for key, value in kwargs.items():
             if isinstance(value, dict):

@@ -132,15 +132,13 @@ class TrainingManager(Configuration):
         if not hasattr(self, "content_loss"):
             self.content_loss = None
 
-        if isinstance(self.criterion, tuple):
-            self.criterion, self.criterion_weight = self.criterion
-        else:
-            self.criterion_weight = 0.5
+        if not hasattr(self.criterion, "weight"):
+            self.criterion.weight = 0.5
 
         if isinstance(self.content_loss, tuple):
             self.content_loss, self.content_loss_weight = self.content_loss
         else:
-            self.content_loss_weight = 1 - self.criterion_weight
+            self.content_loss_weight = 1 - self.criterion.weight
 
         if not hasattr(self, "fixed_noise_dim"):
             self.fixed_noise_dim = 64
@@ -181,9 +179,9 @@ class TrainingManager(Configuration):
                 train_dataloader,
                 optimizer_generator,
                 optimizer_discriminator,
-                self.criterion,
+                self.criterion.instance,
                 content_loss=self.content_loss,
-                loss_weights=(self.content_loss_weight, self.criterion_weight),
+                loss_weights=(self.content_loss_weight, self.criterion.weight),
                 log_every_n=self.log_every_n,
             )
 
@@ -204,12 +202,12 @@ class TrainingManager(Configuration):
 
                 torch.save(
                     generator.state_dict(),
-                    self.checkpoint.directory / f"{generator_mt}.mt",
+                    self.checkpoint.directory / f"{generator_mt}.pt",
                 )
 
                 torch.save(
                     discriminator.state_dict(),
-                    self.checkpoint.directory / f"{discriminator_mt}.mt",
+                    self.checkpoint.directory / f"{discriminator_mt}.pt",
                 )
 
             with torch.no_grad():
