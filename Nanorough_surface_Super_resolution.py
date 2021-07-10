@@ -393,7 +393,7 @@ training_flow = TrainingFlow(
 training_flow(generator, discriminator)
 # -
 
-# ## Dismounting Google Drive and persisting any changes made
+# # 👋 Dismounting Google Drive and persisting any changes made
 
 try:
     from google.colab import drive
