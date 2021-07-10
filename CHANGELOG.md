@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--next-version-placeholder-->
 
+## v3.0.0 (2021-07-10)
+### Feature
+* Notify on flow completion (via email) ([`38fe3a2`](https://github.com/billsioros/thesis/commit/38fe3a2847c7e140967c67f2cd339842467dd4ed))
+
+### Breaking
+* notify on flow completion (via email) ([`38fe3a2`](https://github.com/billsioros/thesis/commit/38fe3a2847c7e140967c67f2cd339842467dd4ed))
+
+**[See all commits in this version](https://github.com/billsioros/thesis/compare/v2.2.0...v3.0.0)**
+
 ## v2.2.0 (2021-07-08)
 ### Feature
 * Run the flow over multiple datasets ([`d01651d`](https://github.com/billsioros/thesis/commit/d01651d9fbbb6b33fff1c51ebd48d4edd9f5b123))
