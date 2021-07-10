@@ -113,7 +113,7 @@ LOGGING_CONFIG = {
 # - [plotly](https://plotly.com/) (which requires [pandas](https://pandas.pydata.org/)) as well as [matplotlib](https://matplotlib.org/) are used in order to plot various graphs.
 # -
 
-WHEEL_VERSION = "2.1.0"
+WHEEL_VERSION = "3.0.1"
 WHEEL_FILE = "roughml-%s-py3-none-any.whl" % (WHEEL_VERSION,)
 WHEEL_PATH = THESIS_DIR / "Binaries" / WHEEL_FILE
 
