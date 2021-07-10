@@ -30,6 +30,8 @@ def plot_against(
         with save_path.open("wb") as file:
             plt.savefig(file, bbox_inches="tight")
 
+        plt.close()
+
 
 def as_grayscale_image(array, save_path=None):
     fig = px.imshow(array, color_continuous_scale="gray")

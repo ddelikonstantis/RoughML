@@ -41,10 +41,9 @@ BASE_DIR = Path.cwd()
 # + [markdown] id="94c4d99f"
 # ## Mounting Google Drive
 
-# + cellView="code" id="12dcaea0"
+# + cellView="code" colab={"base_uri": "https://localhost:8080/"} id="e24f0051" outputId="30ae6242-7890-45fb-97f4-7a3f98101b5c"
 GDRIVE_DIR = BASE_DIR / "drive"
 
-# + cellView="code" colab={"base_uri": "https://localhost:8080/"} id="e24f0051" outputId="30ae6242-7890-45fb-97f4-7a3f98101b5c"
 try:
     from google.colab import drive
 
@@ -53,6 +52,8 @@ except ImportError:
     pass
 
 # +
+SECRETS_DIR = GDRIVE_DIR / "MyDrive" / "Secrets"
+
 if GDRIVE_DIR.is_dir():
     THESIS_DIR = GDRIVE_DIR / "MyDrive" / "Thesis"
 else:
@@ -168,6 +169,49 @@ if torch.cuda.is_available():
 
 # + cellView="code" id="520ba5c1"
 device = torch.device(device)
+# -
+
+
+# ## Setting up our callbacks
+
+# ### End-of-training callback
+
+# +
+from datetime import datetime
+
+from roughml.shared.notifiers import EndOfTrainingNotifier
+
+training_callback = None
+if SECRETS_DIR.is_dir():
+    notifier = EndOfTrainingNotifier.from_json(SECRETS_DIR / "credentials.json")
+
+    timestamp = datetime.now().strftime("%Y/%m/%d %H:%M:%S.%f")
+
+    def training_callback(log_file=None, **context):
+        notifier(
+            ("Vasilis Sioros", "billsioros97@gmail.com"),
+            log_file=log_file,
+            dataset=context["dataset"],
+            generator=context["generator"],
+            discriminator=context["discriminator"],
+            elapsed_time=context["elapsed_time"],
+            succeeded=context["succeeded"],
+            identifier=timestamp,
+        )
+
+
+# -
+
+# ### Logging initialization callback
+
+
+def logging_callback(config, logging_dir):
+    level = config.handlers.file.level.lower()
+
+    config.handlers.file.filename = logging_dir / f"{level}.log"
+
+    return config
+
 
 # + [markdown] id="60d78d1e"
 # # 🙃 A naive-approach
@@ -199,45 +243,37 @@ from torch.nn import BCELoss
 
 criterion = BCELoss().to(device)
 
+# + cellView="code" id="63114157"
 import functools
 
-# + cellView="code" id="63114157"
 from roughml.content.loss import NGramGraphContentLoss
-from roughml.data.loaders import (
-    load_dataset_from_pt,
-    load_dataset_from_zip,
-    load_multiple_datasets_from_pt,
-)
+from roughml.data.loaders import load_multiple_datasets_from_pt
 from roughml.data.transforms import To, View
 from roughml.training.flow import TrainingFlow
 from roughml.training.manager import per_epoch
 
-
-def logging_callback(config, logging_dir):
-    level = config["handlers"]["file"]["level"].lower()
-
-    config["handlers"]["file"]["filename"] = logging_dir / f"{level}.log"
-
-    return config
-
-
 training_flow = TrainingFlow(
     output_dir=OUTPUT_DIR,
     logging={"config": LOGGING_CONFIG, "callback": logging_callback},
-    training_manager={
-        "benchmark": True,
-        "checkpoint": {"multiple": True},
-        "train_epoch": per_epoch,
-        "log_every_n": 10,
-        "criterion": {"instance": criterion},
-        "n_epochs": 10,
-        "train_ratio": 0.8,
-        "optimizer": {"lr": 0.0005, "weight_decay": 0},
-        "dataloader": {
-            "batch_size": 256,
-            "shuffle": True,
-            "num_workers": 0,
+    training={
+        "manager": {
+            "benchmark": True,
+            "checkpoint": {"multiple": True},
+            "train_epoch": per_epoch,
+            "log_every_n": 10,
+            "criterion": {"instance": criterion},
+            "n_epochs": 10,
+            "train_ratio": 0.8,
+            "optimizer": {"lr": 0.0005, "weight_decay": 0},
+            "dataloader": {
+                "batch_size": 256,
+                "shuffle": True,
+                "num_workers": 0,
+            },
         },
+        "callbacks": [
+            training_callback,
+        ],
     },
     content_loss={
         "type": NGramGraphContentLoss,
@@ -248,7 +284,7 @@ training_flow = TrainingFlow(
             load_multiple_datasets_from_pt,
             DATASET_DIR,
             transforms=[To(device), View(1, 128, 128)],
-            limit=10,
+            limit=4,
         )
     },
     animation={
@@ -297,9 +333,9 @@ from torch.nn import BCELoss
 
 criterion = BCELoss().to(device)
 
+# + cellView="code" id="82fb12f6"
 import functools
 
-# + cellView="code" id="82fb12f6"
 from roughml.content.loss import ArrayGraph2DContentLoss
 from roughml.data.transforms import To, View
 from roughml.training.flow import TrainingFlow
@@ -308,31 +344,36 @@ from roughml.training.manager import per_epoch
 training_flow = TrainingFlow(
     output_dir=OUTPUT_DIR,
     logging={"config": LOGGING_CONFIG, "callback": logging_callback},
-    training_manager={
-        "benchmark": True,
-        "checkpoint": {"multiple": True},
-        "train_epoch": per_epoch,
-        "log_every_n": 10,
-        "criterion": {"instance": criterion},
-        "n_epochs": 10,
-        "train_ratio": 0.8,
-        "optimizer": {"lr": 0.0002, "betas": (0.5, 0.999)},
-        "dataloader": {
-            "batch_size": 256,
-            "shuffle": True,
-            "num_workers": 0,
+    training={
+        "manager": {
+            "benchmark": True,
+            "checkpoint": {"multiple": True},
+            "train_epoch": per_epoch,
+            "log_every_n": 10,
+            "criterion": {"instance": criterion},
+            "n_epochs": 10,
+            "train_ratio": 0.8,
+            "optimizer": {"lr": 0.0002, "betas": (0.5, 0.999)},
+            "dataloader": {
+                "batch_size": 256,
+                "shuffle": True,
+                "num_workers": 0,
+            },
         },
+        "callbacks": [
+            training_callback,
+        ],
     },
     content_loss={
         "type": ArrayGraph2DContentLoss,
         "cache": "array_graph2d_content_loss.pkl",
     },
     data={
-        functools.partial(
+        "loader": functools.partial(
             load_multiple_datasets_from_pt,
             DATASET_DIR,
             transforms=[To(device), View(1, 128, 128)],
-            limit=10,
+            limit=4,
         )
     },
     animation={
