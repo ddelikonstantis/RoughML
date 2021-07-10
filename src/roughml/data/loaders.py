@@ -49,7 +49,7 @@ def load_dataset_from_pt(dataset_path, transforms=[], limit=None):
         dataset.surfaces = dataset.surfaces[:limit, :]
 
     if transforms:
-        dataset.transforms = dataset.transforms
+        dataset.transforms = transforms
 
     yield dataset_path, dataset
 
