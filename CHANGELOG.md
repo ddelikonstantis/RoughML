@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--next-version-placeholder-->
 
+## v3.1.0 (2021-07-15)
+### Feature
+* Separatelly log/plot `content_loss` ([`fc16be6`](https://github.com/billsioros/thesis/commit/fc16be6142c7435d900ef1538295c9826ede3d60))
+* Instantiate models per dataset ([`f7bee53`](https://github.com/billsioros/thesis/commit/f7bee5310ed03ea9f3cbee64361d8b26d1ec5798))
+* Optionally suppress exceptions on training flow ([`122a055`](https://github.com/billsioros/thesis/commit/122a0556742b85a579576a6cf96b28ac755580d5))
+* Separate limits for dataset/surface loading ([`4754d72`](https://github.com/billsioros/thesis/commit/4754d72ec3383192fb5ceb6385ee8a6daeb2f5d3))
+
+**[See all commits in this version](https://github.com/billsioros/thesis/compare/v3.0.1...v3.1.0)**
+
 ## v3.0.1 (2021-07-10)
 ### Fix
 * Overwrite dataset transforms if provided ([`ed9dc7b`](https://github.com/billsioros/thesis/commit/ed9dc7b37713ae39261cd1f8036a244a8470e12b))
