@@ -55,8 +55,14 @@ def load_dataset_from_pt(dataset_path, transforms=[], limit=None):
 
 
 def load_multiple_datasets_from_pt(datasets_dir, transforms=[], limit=None):
-    for file in itertools.islice(datasets_dir.iterdir(), limit):
+    datasets_limit, surfaces_limit = limit, limit
+    if isinstance(limit, tuple):
+        datasets_limit, surfaces_limit = limit
+
+    for file in itertools.islice(datasets_dir.iterdir(), datasets_limit):
         if file.is_dir() or file.suffix != ".pt":
             continue
 
-        yield next(load_dataset_from_pt(file, transforms=transforms, limit=limit))
+        yield next(
+            load_dataset_from_pt(file, transforms=transforms, limit=surfaces_limit)
+        )
