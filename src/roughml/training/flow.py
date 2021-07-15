@@ -34,13 +34,6 @@ class TrainingFlow(Configuration):
                     0,
                 ],
                 save_path=None,
-                parameters={
-                    "interval": 1000,
-                    "repeat_delay": 1000,
-                    "blit": True,
-                    "fps": 15,
-                    "bitrate": 1800,
-                },
             )
 
         if not hasattr(self.animation, "parameters"):
@@ -52,11 +45,21 @@ class TrainingFlow(Configuration):
                 bitrate=1800,
             )
 
-    def __call__(self, generator, discriminator):
+        if not hasattr(self, "suppress_exceptions"):
+            self.suppress_exceptions = True
+
+    def __call__(self, get_generator, get_discriminator):
         for path, dataset in self.data.loader():
+            logger.info("Instantiating generator and discriminator")
+
+            generator = get_generator()
+            discriminator = get_discriminator(generator)
+
             start_time = time()
 
-            with ExceptionLoggingHandler(logger) as exception_logging_handler:
+            with ExceptionLoggingHandler(
+                logger, suppress_exceptions=self.suppress_exceptions
+            ) as exception_logging_handler:
                 self.process_dataset(generator, discriminator, path, dataset)
 
             end_time = time()
@@ -82,8 +85,12 @@ class TrainingFlow(Configuration):
         checkpoint_dir = dataset_output_dir / "Checkpoint"
         checkpoint_dir.mkdir(parents=True)
 
-        self.training.manager.checkpoint.directory = checkpoint_dir
-        content_loss_cache = checkpoint_dir / self.content_loss.cache
+        if hasattr(self.training.manager, "checkpoint"):
+            self.training.manager.checkpoint.directory = checkpoint_dir
+
+        content_loss_cache = None
+        if hasattr(self.content_loss, "cache"):
+            content_loss_cache = checkpoint_dir / self.content_loss.cache
 
         logging_dir = dataset_output_dir / "Logging"
         logging_dir.mkdir(parents=True)
@@ -108,13 +115,16 @@ class TrainingFlow(Configuration):
         if hasattr(self.training.manager, "content_loss"):
             training_manager = TrainingManager(**self.training.manager.to_dict())
         else:
-            if content_loss_cache is not None and content_loss_cache.is_file():
-                content_loss = self.content_loss.type.from_pickle(content_loss_cache)
+            if content_loss_cache is not None:
+                if content_loss_cache.is_file():
+                    content_loss = self.content_loss.type.from_pickle(
+                        content_loss_cache
+                    )
+                else:
+                    content_loss = self.content_loss.type(surfaces=dataset.surfaces)
+                    content_loss.to_pickle(content_loss_cache)
             else:
                 content_loss = self.content_loss.type(surfaces=dataset.surfaces)
-
-                if content_loss_cache is not None:
-                    content_loss.to_pickle(content_loss_cache)
 
             training_manager = TrainingManager(
                 content_loss=content_loss, **self.training.manager.to_dict()
@@ -125,13 +135,23 @@ class TrainingFlow(Configuration):
             discriminator_losses,
             discriminator_output_reals,
             discriminator_output_fakes,
+            content_losses,
             fixed_fakes,
         ) = list(zip(*list(training_manager(generator, discriminator, dataset))))
 
-        save_path_loss, save_path_discriminator_output = None, None
+        save_path_gen_vs_dis_loss, save_path_dis_output, save_path_bce_vs_con_loss = (
+            None,
+            None,
+            None,
+        )
         if self.plot.against.save_path_fmt is not None:
-            save_path_loss = self.plot.against.save_path_fmt % ("loss",)
-            save_path_discriminator_output = self.plot.against.save_path_fmt % (
+            save_path_gen_vs_dis_loss = self.plot.against.save_path_fmt % (
+                "gen_vs_dis_loss",
+            )
+            save_path_bce_vs_con_loss = self.plot.against.save_path_fmt % (
+                "bce_vs_con_loss",
+            )
+            save_path_dis_output = self.plot.against.save_path_fmt % (
                 "discriminator_output",
             )
 
@@ -142,7 +162,7 @@ class TrainingFlow(Configuration):
             xlabel="Epoch",
             ylabel="Loss",
             labels=("Generator", "Discriminator"),
-            save_path=self.plot.save_directory / save_path_loss,
+            save_path=self.plot.save_directory / save_path_gen_vs_dis_loss,
         )
 
         plot_against(
@@ -152,7 +172,17 @@ class TrainingFlow(Configuration):
             xlabel="Epoch",
             ylabel="Discriminator Output",
             labels=("Real Data", "Generator Data"),
-            save_path=self.plot.save_directory / save_path_discriminator_output,
+            save_path=self.plot.save_directory / save_path_dis_output,
+        )
+
+        plot_against(
+            generator_losses,
+            content_losses,
+            title="Mean Generator Total loss vs Content loss per epoch",
+            xlabel="Epoch",
+            ylabel="Loss",
+            labels=("BCE + Content Loss", "Content Loss"),
+            save_path=self.plot.save_directory / save_path_bce_vs_con_loss,
         )
 
         animate_epochs(
