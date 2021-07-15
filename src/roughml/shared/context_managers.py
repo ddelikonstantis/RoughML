@@ -1,6 +1,7 @@
 class ExceptionLoggingHandler(object):
-    def __init__(self, logger):
+    def __init__(self, logger, suppress_exceptions=True):
         self.logger = logger
+        self.suppress_exceptions = suppress_exceptions
 
     def __enter__(self):
         self._success = True
@@ -12,7 +13,7 @@ class ExceptionLoggingHandler(object):
             self._success = False
             self.logger.exception(exc_value)
 
-            return True
+            return self.suppress_exceptions
 
     @property
     def success(self):
