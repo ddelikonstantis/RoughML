@@ -217,23 +217,23 @@ def logging_callback(config, logging_dir):
 # # 🙃 A naive-approach
 
 # + [markdown] id="ec374650"
-# ## Instantiating the **Generator** and the **Discriminator** Networks
+# ## Defining the **Generator** and the **Discriminator** instantiation callbacks
 
 # + cellView="code" id="d6594cb1"
 from roughml.models import PerceptronGenerator
 
-generator = PerceptronGenerator.from_device(device)
 
-# + cellView="code" colab={"base_uri": "https://localhost:8080/"} id="4bff3a44" outputId="9d75bc1a-7272-4fdb-902d-e689a0627517"
-generator
+def get_generator():
+    return PerceptronGenerator.from_device(device)
+
 
 # + cellView="code" id="cac059ee"
 from roughml.models import PerceptronDiscriminator
 
-discriminator = PerceptronDiscriminator.from_generator(generator)
 
-# + cellView="code" colab={"base_uri": "https://localhost:8080/"} id="64022987" outputId="7adfec62-6485-49aa-c5e9-667d291b03e9"
-discriminator
+def get_discriminator(generator):
+    return PerceptronDiscriminator.from_generator(generator)
+
 
 # + [markdown] id="eb813599"
 # ## Training
@@ -258,7 +258,8 @@ training_flow = TrainingFlow(
     training={
         "manager": {
             "benchmark": True,
-            "checkpoint": {"multiple": True},
+            # Uncomment if you want to enable checkpointing
+            # "checkpoint": {"multiple": True},
             "train_epoch": per_epoch,
             "log_every_n": 10,
             "criterion": {"instance": criterion},
@@ -277,14 +278,15 @@ training_flow = TrainingFlow(
     },
     content_loss={
         "type": NGramGraphContentLoss,
-        "cache": "n_gram_graph_content_loss.pkl",
+        # Uncomment if you want to enable checkpointing
+        # "cache": "n_gram_graph_content_loss.pkl",
     },
     data={
         "loader": functools.partial(
             load_multiple_datasets_from_pt,
             DATASET_DIR,
             transforms=[To(device), View(1, 128, 128)],
-            limit=4,
+            limit=(4, 10),
         )
     },
     animation={
@@ -298,10 +300,11 @@ training_flow = TrainingFlow(
         "surface": {"limit": 10, "save_path_fmt": "surface/%s_%02d.png"},
         "against": {"save_path_fmt": "against_%s.png"},
     },
+    suppress_exceptions=False,
 )
 
 # + colab={"base_uri": "https://localhost:8080/", "height": 573} id="836ed418" outputId="f4d7ef3c-027c-4725-9f07-50e4d7c28ff1" tags=[]
-training_flow(generator, discriminator)
+training_flow(get_generator, get_discriminator)
 
 # + [markdown] id="fe589c1a"
 # # 😎 A CNN based approach
@@ -312,18 +315,18 @@ training_flow(generator, discriminator)
 # + cellView="code" id="e301a7a0"
 from roughml.models import CNNGenerator
 
-generator = CNNGenerator.from_device(device)
 
-# + cellView="code" colab={"base_uri": "https://localhost:8080/"} id="36ffe487" outputId="eb6bbc54-4dd6-48f7-bf24-20becc244a3a"
-generator
+def get_generator():
+    return CNNGenerator.from_device(device)
+
 
 # + cellView="code" id="5a8a9aad"
 from roughml.models import CNNDiscriminator
 
-discriminator = CNNDiscriminator.from_device(device)
 
-# + cellView="code" colab={"base_uri": "https://localhost:8080/"} id="1d0a4a40" outputId="2c54123a-5dce-4405-a82e-a28c832e678e"
-discriminator
+def get_discriminator(_):
+    return CNNDiscriminator.from_device(device)
+
 
 # + [markdown] id="7bbbcc22"
 # ## Training
@@ -347,7 +350,8 @@ training_flow = TrainingFlow(
     training={
         "manager": {
             "benchmark": True,
-            "checkpoint": {"multiple": True},
+            # Uncomment if you want to enable checkpointing
+            # "checkpoint": {"multiple": True},
             "train_epoch": per_epoch,
             "log_every_n": 10,
             "criterion": {"instance": criterion},
@@ -366,14 +370,15 @@ training_flow = TrainingFlow(
     },
     content_loss={
         "type": ArrayGraph2DContentLoss,
-        "cache": "array_graph2d_content_loss.pkl",
+        # Uncomment if you want to enable checkpointing
+        # "cache": "array_graph2d_content_loss.pkl",
     },
     data={
         "loader": functools.partial(
             load_multiple_datasets_from_pt,
             DATASET_DIR,
             transforms=[To(device), View(1, 128, 128)],
-            limit=4,
+            limit=(4, 10),
         )
     },
     animation={
@@ -387,10 +392,11 @@ training_flow = TrainingFlow(
         "surface": {"limit": 10, "save_path_fmt": "surface/%s_%02d.png"},
         "against": {"save_path_fmt": "against_%s.png"},
     },
+    suppress_exceptions=False,
 )
 
 # + colab={"base_uri": "https://localhost:8080/", "height": 573} id="3c4cdce1" outputId="c22dfcc0-c6d9-4726-c197-acf11bdec52f"
-training_flow(generator, discriminator)
+training_flow(get_generator, get_discriminator)
 # -
 
 # # 👋 Dismounting Google Drive and persisting any changes made

@@ -19,17 +19,18 @@ def per_epoch(
     optimizer_generator,
     optimizer_discriminator,
     criterion,
-    content_loss=None,
+    content_loss_fn=None,
     loss_weights=None,
     log_every_n=None,
 ):
     generator.train()
 
-    if content_loss is None:
+    if content_loss_fn is None:
         content_loss_weight, criterion_weight = 0, 1
     else:
         content_loss_weight, criterion_weight = loss_weights
 
+    content_loss = 0
     generator_loss, discriminator_loss = 0, 0
     discriminator_output_real, discriminator_output_fake = 0, 0
 
@@ -81,8 +82,12 @@ def per_epoch(
         if content_loss_weight <= 0:
             discriminator_error_fake = criterion(output, label)
         else:
-            generator_content_loss = content_loss(fake.cpu().detach().numpy().squeeze())
+            generator_content_loss = content_loss_fn(
+                fake.cpu().detach().numpy().squeeze()
+            )
             generator_content_loss = torch.mean(generator_content_loss).to(fake.device)
+
+            content_loss += generator_content_loss.item() / len(dataloader)
 
             discriminator_error_fake = (
                 content_loss_weight * generator_content_loss
@@ -113,6 +118,7 @@ def per_epoch(
         discriminator_loss,
         discriminator_output_real,
         discriminator_output_fake,
+        content_loss,
     )
 
 
@@ -132,13 +138,13 @@ class TrainingManager(Configuration):
         if not hasattr(self, "content_loss"):
             self.content_loss = None
 
+        if self.content_loss is None:
+            self.criterion.weight = 1
+
         if not hasattr(self.criterion, "weight"):
             self.criterion.weight = 0.5
 
-        if isinstance(self.content_loss, tuple):
-            self.content_loss, self.content_loss_weight = self.content_loss
-        else:
-            self.content_loss_weight = 1 - self.criterion.weight
+        self.content_loss_weight = 1 - self.criterion.weight
 
         if not hasattr(self, "fixed_noise_dim"):
             self.fixed_noise_dim = 64
@@ -173,6 +179,7 @@ class TrainingManager(Configuration):
                 discriminator_loss,
                 discriminator_output_real,
                 discriminator_output_fake,
+                content_loss,
             ) = train_epoch_f(
                 generator,
                 discriminator,
@@ -180,7 +187,7 @@ class TrainingManager(Configuration):
                 optimizer_generator,
                 optimizer_discriminator,
                 self.criterion.instance,
-                content_loss=self.content_loss,
+                content_loss_fn=self.content_loss,
                 loss_weights=(self.content_loss_weight, self.criterion.weight),
                 log_every_n=self.log_every_n,
             )
@@ -214,9 +221,10 @@ class TrainingManager(Configuration):
                 fixed_fake = generator(fixed_noise).detach().cpu()
 
             logger.info(
-                "Epoch: %02d, Generator Loss: %7.3f, Discriminator Loss: %7.3f",
+                "Epoch: %02d, Generator Loss: %7.3f (Content Loss: %7.3f), Discriminator Loss: %7.3f",
                 epoch,
                 generator_loss,
+                content_loss,
                 discriminator_loss,
             )
 
@@ -232,5 +240,6 @@ class TrainingManager(Configuration):
                 discriminator_loss,
                 discriminator_output_real,
                 discriminator_output_fake,
+                content_loss,
                 fixed_fake,
             )
