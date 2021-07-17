@@ -48,6 +48,9 @@ class TrainingFlow(Configuration):
         if not hasattr(self, "suppress_exceptions"):
             self.suppress_exceptions = True
 
+        if not hasattr(self, "content_loss"):
+            self.content_loss = Configuration(type=None, cache=None)
+
     def __call__(self, get_generator, get_discriminator):
         for path, dataset in self.data.loader():
             logger.info("Instantiating generator and discriminator")
@@ -89,7 +92,7 @@ class TrainingFlow(Configuration):
             self.training.manager.checkpoint.directory = checkpoint_dir
 
         content_loss_cache = None
-        if hasattr(self.content_loss, "cache"):
+        if getattr(self.content_loss, "cache", None) is not None:
             content_loss_cache = checkpoint_dir / self.content_loss.cache
 
         logging_dir = dataset_output_dir / "Logging"
@@ -115,6 +118,7 @@ class TrainingFlow(Configuration):
         if hasattr(self.training.manager, "content_loss"):
             training_manager = TrainingManager(**self.training.manager.to_dict())
         else:
+            content_loss = None
             if content_loss_cache is not None:
                 if content_loss_cache.is_file():
                     content_loss = self.content_loss.type.from_pickle(
@@ -124,7 +128,8 @@ class TrainingFlow(Configuration):
                     content_loss = self.content_loss.type(surfaces=dataset.surfaces)
                     content_loss.to_pickle(content_loss_cache)
             else:
-                content_loss = self.content_loss.type(surfaces=dataset.surfaces)
+                if getattr(self.content_loss, "type", None) is not None:
+                    content_loss = self.content_loss.type(surfaces=dataset.surfaces)
 
             training_manager = TrainingManager(
                 content_loss=content_loss, **self.training.manager.to_dict()
