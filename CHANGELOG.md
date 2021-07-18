@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--next-version-placeholder-->
 
+## v4.0.0 (2021-07-18)
+### Feature
+* Add hyper parameter tuning interface ([`d486372`](https://github.com/billsioros/thesis/commit/d486372e55c1d3a6e0ba3e233d8b1c266fe16579))
+* Make content loss optional ([`75d9b0e`](https://github.com/billsioros/thesis/commit/75d9b0e9bc843f1a1605d2fbdbd7825d1866de0d))
+
+### Breaking
+* make optimizer a parameter to `TrainingManager` ([`57f0dc8`](https://github.com/billsioros/thesis/commit/57f0dc80aeb33a9328147043b1e2d40bd429df3f))
+
+**[See all commits in this version](https://github.com/billsioros/thesis/compare/v3.1.0...v4.0.0)**
+
 ## v3.1.0 (2021-07-15)
 ### Feature
 * Separatelly log/plot `content_loss` ([`fc16be6`](https://github.com/billsioros/thesis/commit/fc16be6142c7435d900ef1538295c9826ede3d60))
