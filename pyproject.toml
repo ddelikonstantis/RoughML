@@ -18,7 +18,7 @@ pyinsect = {git = "https://github.com/billsioros/PyINSECT.git", rev = "FEATURE_I
 torchvision = "^0.10.0"
 ipython = "^7.24.1"
 tqdm = "^4.61.1"
-ray = {extras = ["tune"], version = "^1.4.0"}
+ray = {extras = ["tune"], version = "^1.4.1"}
 kaleido = "0.2.1"
 emails = "^0.6"
 Jinja2 = "^3.0.1"
