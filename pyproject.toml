@@ -22,6 +22,8 @@ ray = {extras = ["tune"], version = "^1.4.1"}
 kaleido = "0.2.1"
 emails = "^0.6"
 Jinja2 = "^3.0.1"
+click = "^8.0.1"
+rich = "^10.6.0"
 
 [tool.poetry.dev-dependencies]
 pre-commit = "^2.13.0"
@@ -30,6 +32,10 @@ black = "^21.6b0"
 python-semantic-release = "^7.16.1"
 jupytext = "^1.11.3"
 ipykernel = "^5.5.5"
+
+[tool.poetry.scripts]
+visualize = "roughml.cli.visualize:visualize"
+dataset = "roughml.cli.dataset:dataset"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

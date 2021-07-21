@@ -156,7 +156,7 @@ class NonGaussianSurfaceGenerator(SurfaceGenerator):
         )
 
 
-class BeselNonGaussianSurfaceGenerator(NonGaussianSurfaceGenerator):
+class BesselNonGaussianSurfaceGenerator(NonGaussianSurfaceGenerator):
     def __init__(
         self,
         n_points=128,
@@ -189,7 +189,7 @@ if __name__ == "__main__":
         #   as_3d_surface(surface)
         #   plot_correlation(surface)
 
-    besel_generate = BeselNonGaussianSurfaceGenerator(
+    besel_generate = BesselNonGaussianSurfaceGenerator(
         128, 1, 0, 3, 16, 16, 0.5, 4000, 4000
     )
 
