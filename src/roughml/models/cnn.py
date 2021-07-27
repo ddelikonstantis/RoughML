@@ -1,5 +1,6 @@
 import logging
 
+import torch
 from torch import nn
 
 logger = logging.getLogger(__name__)
@@ -134,3 +135,11 @@ class CNNDiscriminator(Base):
             )
 
         return batch
+
+    @classmethod
+    def from_generator(cls, generator, dtype=torch.float64, gradient_clipping=None):
+        return cls.from_device(
+            generator.device,
+            dtype=dtype,
+            gradient_clipping=gradient_clipping,
+        )

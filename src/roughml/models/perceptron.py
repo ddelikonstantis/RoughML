@@ -89,7 +89,7 @@ class PerceptronDiscriminator(Base):
 
     @classmethod
     def from_generator(cls, generator, dtype=torch.float64, gradient_clipping=None):
-        return super().from_device(
+        return cls.from_device(
             generator.device,
             generator.out_features[0] * generator.out_features[1],
             dtype=dtype,
