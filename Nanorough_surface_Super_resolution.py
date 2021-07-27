@@ -246,11 +246,13 @@ criterion = BCELoss().to(device)
 # + cellView="code" id="63114157"
 import functools
 
+from torch.optim import Adam
+
 from roughml.content.loss import NGramGraphContentLoss
 from roughml.data.loaders import load_multiple_datasets_from_pt
 from roughml.data.transforms import To, View
+from roughml.training.epoch import per_epoch
 from roughml.training.flow import TrainingFlow
-from roughml.training.manager import per_epoch
 
 training_flow = TrainingFlow(
     output_dir=OUTPUT_DIR,
@@ -265,7 +267,10 @@ training_flow = TrainingFlow(
             "criterion": {"instance": criterion},
             "n_epochs": 10,
             "train_ratio": 0.8,
-            "optimizer": {"lr": 0.0005, "weight_decay": 0},
+            "optimizer": {
+                "type": Adam,
+                "params": {"lr": 0.1, "weight_decay": 0},
+            },
             "dataloader": {
                 "batch_size": 256,
                 "shuffle": True,
@@ -286,14 +291,14 @@ training_flow = TrainingFlow(
             load_multiple_datasets_from_pt,
             DATASET_DIR,
             transforms=[To(device), View(1, 128, 128)],
-            limit=(4, 10),
+            limit=(2, 10),
         )
     },
     animation={
         "indices": [
             0,
         ],
-        "save_path": "cnn_per_epoch_animation.mp4",
+        "save_path": "perceptron_per_epoch_animation.mp4",
     },
     plot={
         "grayscale": {"limit": 10, "save_path_fmt": "grayscale/%s_%02d.png"},
@@ -324,8 +329,8 @@ def get_generator():
 from roughml.models import CNNDiscriminator
 
 
-def get_discriminator(_):
-    return CNNDiscriminator.from_device(device)
+def get_discriminator(generator):
+    return CNNDiscriminator.from_generator(generator)
 
 
 # + [markdown] id="7bbbcc22"
@@ -339,10 +344,10 @@ criterion = BCELoss().to(device)
 # + cellView="code" id="82fb12f6"
 import functools
 
-from roughml.content.loss import ArrayGraph2DContentLoss
+from torch.optim import Adam
+
 from roughml.data.transforms import To, View
-from roughml.training.flow import TrainingFlow
-from roughml.training.manager import per_epoch
+from roughml.training.epoch import per_epoch
 
 training_flow = TrainingFlow(
     output_dir=OUTPUT_DIR,
@@ -357,7 +362,10 @@ training_flow = TrainingFlow(
             "criterion": {"instance": criterion},
             "n_epochs": 10,
             "train_ratio": 0.8,
-            "optimizer": {"lr": 0.0002, "betas": (0.5, 0.999)},
+            "optimizer": {
+                "type": Adam,
+                "params": {"lr": 0.0002, "betas": (0.5, 0.999)},
+            },
             "dataloader": {
                 "batch_size": 256,
                 "shuffle": True,
@@ -369,16 +377,16 @@ training_flow = TrainingFlow(
         ],
     },
     content_loss={
-        "type": ArrayGraph2DContentLoss,
+        "type": NGramGraphContentLoss,
         # Uncomment if you want to enable checkpointing
-        # "cache": "array_graph2d_content_loss.pkl",
+        # "cache": "n_gram_graph_content_loss.pkl",
     },
     data={
         "loader": functools.partial(
             load_multiple_datasets_from_pt,
             DATASET_DIR,
             transforms=[To(device), View(1, 128, 128)],
-            limit=(4, 10),
+            limit=(2, 10),
         )
     },
     animation={
