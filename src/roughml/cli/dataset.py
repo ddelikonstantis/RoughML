@@ -57,7 +57,8 @@ def generate(generator, dataset_size, save_path):
     required=False,
     type=click.INT,
     help="The number of surfaces that should be generated",
-    default=10,
+    default=1000,
+    show_default=True,
 )
 @click.option(
     "-d",
@@ -87,6 +88,7 @@ def generate(generator, dataset_size, save_path):
     ),
     help="Specify the logging level",
     default="NOTSET",
+    show_default=True,
 )
 @click.option(
     "-n",
@@ -96,6 +98,7 @@ def generate(generator, dataset_size, save_path):
     type=click.INT,
     help="The (root of the) number of points to be used",
     default=128,
+    show_default=True,
 )
 @click.option(
     "-r",
@@ -105,6 +108,7 @@ def generate(generator, dataset_size, save_path):
     type=click.INT,
     help="The RMS of the nanorough surface",
     default=1,
+    show_default=True,
 )
 @click.option(
     "-s",
@@ -114,6 +118,7 @@ def generate(generator, dataset_size, save_path):
     type=click.INT,
     help="The skewness of the nanorough surface",
     default=0,
+    show_default=True,
 )
 @click.option(
     "-k",
@@ -122,7 +127,8 @@ def generate(generator, dataset_size, save_path):
     required=False,
     type=click.INT,
     help="The kurtosis of the nanorough surface",
-    default=0,
+    default=3,
+    show_default=True,
 )
 @click.option(
     "-c",
@@ -132,6 +138,7 @@ def generate(generator, dataset_size, save_path):
     type=(int, int),
     help="The correlation lengths of the nanorough surface",
     default=(4, 4),
+    show_default=True,
 )
 @click.option(
     "-a",
@@ -140,7 +147,8 @@ def generate(generator, dataset_size, save_path):
     required=False,
     type=click.INT,
     help="The alpha of the nanorough surface",
-    default=1,
+    default=0.4,
+    show_default=True,
 )
 @click.pass_context
 def dataset(
@@ -193,6 +201,7 @@ def standard(config):
     type=(int, int),
     help="The betas of the nanorough surface",
     default=(1, 1),
+    show_default=True,
 )
 @click.pass_obj
 def besel(config, betas):
