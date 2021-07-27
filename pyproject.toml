@@ -36,6 +36,7 @@ ipykernel = "^5.5.5"
 [tool.poetry.scripts]
 visualize = "roughml.cli.visualize:visualize"
 dataset = "roughml.cli.dataset:dataset"
+tune = "roughml.cli.tune:tune"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
