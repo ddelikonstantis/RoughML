@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--next-version-placeholder-->
 
+## v4.1.1 (2021-07-27)
+### Fix
+* Make `grayscale`/'3d' visualization full size ([`8f01807`](https://github.com/billsioros/thesis/commit/8f018076fc382874abab145cd17f03c2a75c65bd))
+
+**[See all commits in this version](https://github.com/billsioros/thesis/compare/v4.1.0...v4.1.1)**
+
 ## v4.1.0 (2021-07-27)
 ### Feature
 * Implement the tuning flow ([`81bf9c0`](https://github.com/billsioros/thesis/commit/81bf9c08bec11d414537e99555bced31be857e0b))
