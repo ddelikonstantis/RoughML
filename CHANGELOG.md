@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--next-version-placeholder-->
 
+## v4.1.2 (2021-07-27)
+### Fix
+* Use sane defaults in `dataset` CLI ([`d79941a`](https://github.com/billsioros/thesis/commit/d79941a063ad99428b0f9e741ad39958cf81abff))
+
+**[See all commits in this version](https://github.com/billsioros/thesis/compare/v4.1.1...v4.1.2)**
+
 ## v4.1.1 (2021-07-27)
 ### Fix
 * Make `grayscale`/'3d' visualization full size ([`8f01807`](https://github.com/billsioros/thesis/commit/8f018076fc382874abab145cd17f03c2a75c65bd))
