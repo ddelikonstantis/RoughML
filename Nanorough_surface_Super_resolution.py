@@ -117,9 +117,14 @@ WHEEL_VERSION = "3.0.1"
 WHEEL_FILE = "roughml-%s-py3-none-any.whl" % (WHEEL_VERSION,)
 WHEEL_PATH = THESIS_DIR / "Binaries" / WHEEL_FILE
 
+import os
+import random
+
 # + cellView="code" colab={"base_uri": "https://localhost:8080/"} id="1057687b" outputId="2ab1f525-0235-4308-cabb-a7793277473b"
 import subprocess
 import sys
+
+import numpy as np
 
 pip_freeze_output = subprocess.check_output(
     [sys.executable, "-m", "pip", "freeze"]
@@ -133,20 +138,10 @@ if "roughml" not in pip_freeze_output:
 
 # + [markdown] id="0192c059"
 # ## Initializing (a.k.a `Seeding`) the Random Number Generator(s)
-
-# + [markdown] id="fa44f756"
-# We are required to seed various random number generation engines, so that our experiments can be replicated on a later date.
-
-# + cellView="code" id="5daee8da"
-SEED = 1234
-
-import os
-import random
-
-import numpy as np
-
 # + cellView="code" id="4d6c30c9"
 import torch
+
+SEED = 1234
 
 if SEED is not None:
     np.random.seed(SEED)
@@ -162,13 +157,8 @@ if SEED is not None:
 # + [markdown] id="5ca328f8"
 # By default, we are going to be utilizing the available CPU backend, if no GPU is available.
 
-# + cellView="code" id="ebabd4a5"
-device = "cpu"
-if torch.cuda.is_available():
-    device = "cuda:0"
-
 # + cellView="code" id="520ba5c1"
-device = torch.device(device)
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 # -
 
 
