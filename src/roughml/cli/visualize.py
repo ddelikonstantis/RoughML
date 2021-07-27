@@ -49,6 +49,7 @@ logger = logging.getLogger(__name__)
     ),
     help="Specify the logging level",
     default="NOTSET",
+    show_default=True,
 )
 @click.pass_context
 def visualize(ctx, dataset_path, save_path, logging_level):
