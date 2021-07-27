@@ -39,14 +39,6 @@ def as_grayscale_image(array, save_path=None):
     fig.update_xaxes(showticklabels=False)
     fig.update_yaxes(showticklabels=False)
 
-    fig.update_layout(
-        # title=title,
-        autosize=True,
-        width=500,
-        height=500,
-        # margin=dict(l=65, r=50, b=65, t=90)
-    )
-
     if save_path is None:
         fig.show()
     else:
@@ -56,14 +48,6 @@ def as_grayscale_image(array, save_path=None):
 
 def as_3d_surface(array, save_path=False):
     fig = go.Figure(data=[go.Surface(z=array)])
-
-    fig.update_layout(
-        # title=title,
-        autosize=False,
-        width=500,
-        height=500,
-        # margin=dict(l=65, r=50, b=65, t=90)
-    )
 
     if save_path is None:
         fig.show()
