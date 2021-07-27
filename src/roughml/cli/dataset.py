@@ -107,7 +107,7 @@ def generate(generator, dataset_size, save_path):
     required=False,
     type=click.INT,
     help="The RMS of the nanorough surface",
-    default=1,
+    default=3,
     show_default=True,
 )
 @click.option(
@@ -137,7 +137,7 @@ def generate(generator, dataset_size, save_path):
     required=False,
     type=(int, int),
     help="The correlation lengths of the nanorough surface",
-    default=(4, 4),
+    default=(2, 2),
     show_default=True,
 )
 @click.option(
@@ -147,7 +147,7 @@ def generate(generator, dataset_size, save_path):
     required=False,
     type=click.INT,
     help="The alpha of the nanorough surface",
-    default=0.4,
+    default=2,
     show_default=True,
 )
 @click.pass_context
