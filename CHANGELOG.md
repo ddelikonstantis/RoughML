@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--next-version-placeholder-->
 
+## v4.2.0 (2021-08-03)
+### Feature
+* Introduce the `VectorSpaceContentLoss` ([`20248b1`](https://github.com/billsioros/thesis/commit/20248b138202c8b380545afc7012c990a413576c))
+
+### Fix
+* Remove latest `RELU` from CNN generator ([`5797205`](https://github.com/billsioros/thesis/commit/57972050440ae1665acc26068bf40db567762b87))
+
+**[See all commits in this version](https://github.com/billsioros/thesis/compare/v4.1.2...v4.2.0)**
+
 ## v4.1.2 (2021-07-27)
 ### Fix
 * Use sane defaults in `dataset` CLI ([`d79941a`](https://github.com/billsioros/thesis/commit/d79941a063ad99428b0f9e741ad39958cf81abff))
