@@ -1,4 +1,5 @@
 import concurrent
+import itertools
 import logging
 import os
 import pickle
@@ -207,7 +208,7 @@ class VectorSpaceContentLoss(ContentLoss):
         self.histograms, self.fouriers = [], []
         for surface in self.surfaces:
             self.histograms.append(np.histogram(surface)[0])
-            self.fouriers.append(fft.fft(surface))
+            self.fouriers.append(np.absolute(fft.fft(surface)))
 
     @per_row
     def __call__(self, surface):
