@@ -214,7 +214,7 @@ class VectorSpaceContentLoss(ContentLoss):
     def __call__(self, surface):
         surface = surface.reshape(-1)
 
-        (histogram, _), fourier = np.histogram(surface), fft.fft(surface)
+        (histogram, _), fourier = np.histogram(surface), np.absolute(fft.fft(surface))
 
         divisor, loss = self.n_neighbors or 1, 0
         for _histogram, _fourier in itertools.islice(
