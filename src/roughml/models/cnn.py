@@ -8,6 +8,29 @@ logger = logging.getLogger(__name__)
 from roughml.models.base import Base
 
 
+class CNNBase(Base):
+    @classmethod
+    def initialize_weights(cls, model):
+        classname = model.__class__.__name__
+        if classname.find("Conv") != -1:
+            nn.init.normal_(model.weight.data, 0.0, 0.02)
+        elif classname.find("BatchNorm") != -1:
+            nn.init.normal_(model.weight.data, 1.0, 0.02)
+            nn.init.constant_(model.bias.data, 0)
+
+    @classmethod
+    def from_device(
+        cls, device, *args, dtype=torch.float64, gradient_clipping=None, **kwargs
+    ):
+        model = super().from_device(
+            device, *args, dtype=dtype, gradient_clipping=gradient_clipping, **kwargs
+        )
+
+        model.apply(cls.initialize_weights)
+
+        return model
+
+
 class CNNGenerator(Base):
     def __init__(
         self,
@@ -64,7 +87,7 @@ class CNNGenerator(Base):
                     nn.ConvTranspose2d(
                         out_channels, training_channels, 4, 2, 1, bias=False
                     ),
-                    nn.ReLU(),
+                    # nn.ReLU(),
                 ),
             ]
         )
