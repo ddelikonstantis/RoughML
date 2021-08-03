@@ -7,6 +7,8 @@ import time
 from abc import ABC, abstractmethod
 from functools import wraps
 
+import numpy as np
+import scipy.fft as fft
 import torch
 from pyinsect.collector.NGramGraphCollector import (
     ArrayGraph2DCollector,
@@ -182,6 +184,49 @@ class HPG2DParallelContentLoss(HPG2DContentLoss):
                 statistics.mean(elapsed_time),
                 statistics.stdev(elapsed_time) if len(elapsed_time) > 1 else 0,
             )
+
+
+class VectorSpaceContentLoss(ContentLoss):
+    """
+    A content loss that represents surfaces as vectors.
+
+    The content loss calculates the historgram and the fourier transform
+    corresponding to each provided surface, in order to construct a vector
+    corresponding to that surface. It then utilizes conventional vector
+    distance metrics to calculate the loss value.
+    """
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+        self.surfaces = self.surfaces.reshape(self.surfaces.shape[0], -1)
+
+        if not hasattr(self, "n_neighbors"):
+            self.n_neighbors = None
+
+        self.histograms, self.fouriers = [], []
+        for surface in self.surfaces:
+            self.histograms.append(np.histogram(surface)[0])
+            self.fouriers.append(fft.fft(surface))
+
+    @per_row
+    def __call__(self, surface):
+        surface = surface.reshape(-1)
+
+        (histogram, _), fourier = np.histogram(surface), fft.fft(surface)
+
+        divisor, loss = self.n_neighbors or 1, 0
+        for _histogram, _fourier in itertools.islice(
+            zip(self.histograms, self.fouriers), self.n_neighbors
+        ):
+            loss += np.sqrt(np.square(np.subtract(histogram, _histogram)).mean()) / (
+                divisor * 2
+            )
+            loss += np.sqrt(np.square(np.subtract(fourier, _fourier)).mean()) / (
+                divisor * 2
+            )
+
+        return loss
 
 
 if __name__ == "__main__":
