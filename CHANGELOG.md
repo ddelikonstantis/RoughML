@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--next-version-placeholder-->
 
+## v4.2.1 (2021-08-03)
+### Fix
+* Calculate the `fft` absolute value ([`3478628`](https://github.com/billsioros/thesis/commit/347862834954ab49bfa27c1f0ad99bfddbcb8654))
+
+**[See all commits in this version](https://github.com/billsioros/thesis/compare/v4.2.0...v4.2.1)**
+
 ## v4.2.0 (2021-08-03)
 ### Feature
 * Introduce the `VectorSpaceContentLoss` ([`20248b1`](https://github.com/billsioros/thesis/commit/20248b138202c8b380545afc7012c990a413576c))
