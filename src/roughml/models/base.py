@@ -33,6 +33,16 @@ class Base(nn.Module):
 
         return model
 
+    @classmethod
+    def from_pt(cls, path):
+        device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
+        instance = cls()
+
+        instance.load_state_dict(torch.load(path, map_location=device))
+
+        return instance
+
     @property
     def device(self):
         return next(self.parameters()).device
