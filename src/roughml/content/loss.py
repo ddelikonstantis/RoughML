@@ -47,19 +47,24 @@ def per_row(method=None, *, expected_ndim=2):
 
 
 class ContentLoss(Configuration, ABC):
-    def __init__(self, **kwargs):
+    def __init__(self, skip_quantization=False, **kwargs):
         super().__init__(**kwargs)
 
-        self.quantizer = KBinsDiscretizerQuantizer(**kwargs)
+        self.skip_quantization = skip_quantization
 
-        self.surfaces = self.quantizer.surfaces
+        if self.skip_quantization is False:
+            self.quantizer = KBinsDiscretizerQuantizer(**kwargs)
+            self.surfaces = self.quantizer.surfaces
 
     def __len__(self):
         return len(self.surfaces)
 
     @abstractmethod
     def __call__(self, surface):
-        return self.quantizer(surface)
+        if self.skip_quantization is False:
+            return self.quantizer(surface)
+
+        return surface
 
     def __str__(self):
         return str({"shape": self.surfaces.shape})
@@ -198,7 +203,7 @@ class VectorSpaceContentLoss(ContentLoss):
     """
 
     def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+        super().__init__(skip_quantization=True, **kwargs)
 
         self.surfaces = self.surfaces.reshape(self.surfaces.shape[0], -1)
 
