@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--next-version-placeholder-->
 
+## v4.3.0 (2021-08-23)
+### Feature
+* Load model from `.pt` file ([`6a07e1d`](https://github.com/billsioros/thesis/commit/6a07e1ddeb353b04f8a3679890d014a46e7c6586))
+
+### Fix
+* Skip surface quantization on `VectorSpapceContentLoss` ([`54b3f21`](https://github.com/billsioros/thesis/commit/54b3f215d7fb9d5606963d425f92e9c4736513c5))
+
+**[See all commits in this version](https://github.com/billsioros/thesis/compare/v4.2.2...v4.3.0)**
+
 ## v4.2.2 (2021-08-03)
 ### Fix
 * Call absoluate on vector based content loss `__call__` ([`99fd205`](https://github.com/billsioros/thesis/commit/99fd20593901454b331c71b6ca0b0942e1d1aae0))
