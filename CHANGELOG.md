@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--next-version-placeholder-->
 
+## v4.2.2 (2021-08-03)
+### Fix
+* Call absoluate on vector based content loss `__call__` ([`99fd205`](https://github.com/billsioros/thesis/commit/99fd20593901454b331c71b6ca0b0942e1d1aae0))
+
+**[See all commits in this version](https://github.com/billsioros/thesis/compare/v4.2.1...v4.2.2)**
+
 ## v4.2.1 (2021-08-03)
 ### Fix
 * Calculate the `fft` absolute value ([`3478628`](https://github.com/billsioros/thesis/commit/347862834954ab49bfa27c1f0ad99bfddbcb8654))
