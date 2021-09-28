@@ -1,4 +1,5 @@
 import logging
+from pathlib import Path
 
 import click
 import tqdm
@@ -64,8 +65,10 @@ def generate(generator, dataset_size, save_path):
     "-d",
     "--dataset",
     "dataset_path",
-    required=True,
-    type=click.Path(exists=False, dir_okay=False),
+    required=False,
+    default=None,
+    show_default=True,
+    type=click.Path(),
     help="Where to save the resulting dataset",
 )
 @click.option(
@@ -145,9 +148,9 @@ def generate(generator, dataset_size, save_path):
     "--alpha",
     "alpha",
     required=False,
-    type=click.INT,
+    type=click.FloatRange(0, 1),
     help="The alpha of the nanorough surface",
-    default=2,
+    default=0.5,
     show_default=True,
 )
 @click.pass_context
@@ -164,9 +167,36 @@ def dataset(
     alpha,
 ):
     """Generate datasets consisting of nanorough surfaces"""
+    non_existent_fmt = (
+        "dataset_{0:04d}_{1:03d}_{2:02d}_{3:02d}_{4:02d}_{5:02d}_{6:02d}_{7:04.2f}.pt"
+    )
+
+    if dataset_path is None:
+        dataset_path = non_existent_fmt.format(
+            surfaces,
+            number_of_points,
+            rms,
+            skewness,
+            kurtosis,
+            correlation_lengths[0],
+            correlation_lengths[1],
+            alpha,
+        )
+    elif Path(dataset_path).is_dir():
+        dataset_path = Path(dataset_path) / non_existent_fmt.format(
+            surfaces,
+            number_of_points,
+            rms,
+            skewness,
+            kurtosis,
+            correlation_lengths[0],
+            correlation_lengths[1],
+            alpha,
+        )
+
     ctx.obj = {
         "surfaces": surfaces,
-        "dataset_path": dataset_path,
+        "dataset_path": Path(dataset_path),
         "number_of_points": number_of_points,
         "rms": rms,
         "skewness": skewness,
