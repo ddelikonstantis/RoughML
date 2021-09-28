@@ -3,6 +3,7 @@ import logging.config
 from datetime import datetime, timedelta
 from time import time
 
+from roughml.content.loss import VectorSpaceContentLoss
 from roughml.plot import animate_epochs, as_3d_surface, as_grayscale_image, plot_against
 from roughml.shared.configuration import Configuration
 from roughml.shared.context_managers import ExceptionLoggingHandler
@@ -115,8 +116,13 @@ class TrainingFlow(Configuration):
             path,
         )
 
+        vector_content_loss = VectorSpaceContentLoss(surfaces=dataset.surfaces.numpy())
+
         if hasattr(self.training.manager, "content_loss"):
-            training_manager = TrainingManager(**self.training.manager.to_dict())
+            training_manager = TrainingManager(
+                vector_content_loss=vector_content_loss,
+                **self.training.manager.to_dict(),
+            )
         else:
             content_loss = None
             if content_loss_cache is not None:
@@ -132,7 +138,9 @@ class TrainingFlow(Configuration):
                     content_loss = self.content_loss.type(surfaces=dataset.surfaces)
 
             training_manager = TrainingManager(
-                content_loss=content_loss, **self.training.manager.to_dict()
+                vector_content_loss=vector_content_loss,
+                content_loss=content_loss,
+                **self.training.manager.to_dict(),
             )
 
         (
@@ -141,14 +149,16 @@ class TrainingFlow(Configuration):
             discriminator_output_reals,
             discriminator_output_fakes,
             content_losses,
+            vector_content_losses,
             fixed_fakes,
         ) = list(zip(*list(training_manager(generator, discriminator, dataset))))
 
-        save_path_gen_vs_dis_loss, save_path_dis_output, save_path_bce_vs_con_loss = (
-            None,
-            None,
-            None,
-        )
+        (
+            save_path_gen_vs_dis_loss,
+            save_path_dis_output,
+            save_path_bce_vs_con_loss,
+            save_path_vector_loss,
+        ) = (None, None, None, None)
         if self.plot.against.save_path_fmt is not None:
             save_path_gen_vs_dis_loss = self.plot.against.save_path_fmt % (
                 "gen_vs_dis_loss",
@@ -158,6 +168,9 @@ class TrainingFlow(Configuration):
             )
             save_path_dis_output = self.plot.against.save_path_fmt % (
                 "discriminator_output",
+            )
+            save_path_vector_loss = self.plot.against.save_path_fmt % (
+                "content_vs_vector_loss",
             )
 
         plot_against(
@@ -188,6 +201,16 @@ class TrainingFlow(Configuration):
             ylabel="Loss",
             labels=("BCE + Content Loss", "Content Loss"),
             save_path=self.plot.save_directory / save_path_bce_vs_con_loss,
+        )
+
+        plot_against(
+            vector_content_losses,
+            content_losses,
+            title="Vector vs Content loss per epoch",
+            xlabel="Epoch",
+            ylabel="Loss",
+            labels=("Vector Loss", "Content Loss"),
+            save_path=self.plot.save_directory / save_path_vector_loss,
         )
 
         animate_epochs(

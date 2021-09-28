@@ -70,6 +70,7 @@ class TrainingManager(Configuration):
                 discriminator_output_real,
                 discriminator_output_fake,
                 content_loss,
+                vector_content_loss,
             ) = train_epoch_f(
                 generator,
                 discriminator,
@@ -78,6 +79,7 @@ class TrainingManager(Configuration):
                 optimizer_discriminator,
                 self.criterion.instance,
                 content_loss_fn=self.content_loss,
+                vector_content_loss_fn=self.vector_content_loss,
                 loss_weights=(self.content_loss_weight, self.criterion.weight),
                 log_every_n=self.log_every_n,
             )
@@ -111,10 +113,11 @@ class TrainingManager(Configuration):
                 fixed_fake = generator(fixed_noise).detach().cpu()
 
             logger.info(
-                "Epoch: %02d, Generator Loss: %7.3f (Content Loss: %7.3f), Discriminator Loss: %7.3f",
+                "Epoch: %02d, Generator Loss: %7.3f (Content Loss: %7.3f, Vector Loss: %7.3f), Discriminator Loss: %7.3f",
                 epoch,
                 generator_loss,
                 content_loss,
+                vector_content_loss,
                 discriminator_loss,
             )
 
@@ -131,5 +134,6 @@ class TrainingManager(Configuration):
                 discriminator_output_real,
                 discriminator_output_fake,
                 content_loss,
+                vector_content_loss,
                 fixed_fake,
             )

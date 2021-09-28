@@ -14,6 +14,7 @@ def per_epoch(
     optimizer_discriminator,
     criterion,
     content_loss_fn=None,
+    vector_content_loss_fn=None,
     loss_weights=None,
     log_every_n=None,
 ):
@@ -24,7 +25,7 @@ def per_epoch(
     else:
         content_loss_weight, criterion_weight = loss_weights
 
-    content_loss = 0
+    content_loss, vector_content_loss = 0, 0
     generator_loss, discriminator_loss = 0, 0
     discriminator_output_real, discriminator_output_fake = 0, 0
 
@@ -83,10 +84,18 @@ def per_epoch(
 
             content_loss += generator_content_loss.item() / len(dataloader)
 
-            discriminator_error_fake = (
-                content_loss_weight * generator_content_loss
-                + criterion_weight * criterion(output, label)
+            generator_vector_content_loss = vector_content_loss_fn(
+                fake.cpu().detach().numpy().squeeze()
             )
+            generator_vector_content_loss = torch.mean(
+                generator_vector_content_loss
+            ).to(fake.device)
+
+            vector_content_loss += generator_vector_content_loss.item() / len(
+                dataloader
+            )
+
+            discriminator_error_fake = criterion(output, label) / (0.5 + content_loss)
         # Calculate gradients for G, which propagate through the discriminator
         discriminator_error_fake.backward()
         discriminator_output_fake_batch = output.mean().item()
@@ -113,4 +122,5 @@ def per_epoch(
         discriminator_output_real,
         discriminator_output_fake,
         content_loss,
+        vector_content_loss,
     )
