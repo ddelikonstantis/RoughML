@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--next-version-placeholder-->
 
+## v4.4.0 (2021-09-29)
+### Feature
+* **loss:** Normalize `VectorSpaceContentLoss` ([`430ac52`](https://github.com/billsioros/RoughML/commit/430ac52a923e6293bbd8137ca4136a15568635cf))
+* **train:** Plot fourier/histogram based content loss ([`22c038c`](https://github.com/billsioros/RoughML/commit/22c038c6f6de29419832f676f80b942b507469ca))
+* **dataset:** Make dataset path optional on CLI ([`4c9b2a9`](https://github.com/billsioros/RoughML/commit/4c9b2a99b1d5e901d75369b4d94ef3ef46025b70))
+
+**[See all commits in this version](https://github.com/billsioros/RoughML/compare/v4.3.0...v4.4.0)**
+
 ## v4.3.0 (2021-08-23)
 ### Feature
 * Load model from `.pt` file ([`6a07e1d`](https://github.com/billsioros/thesis/commit/6a07e1ddeb353b04f8a3679890d014a46e7c6586))
