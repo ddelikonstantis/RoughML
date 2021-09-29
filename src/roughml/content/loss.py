@@ -205,63 +205,71 @@ class VectorSpaceContentLoss(ContentLoss):
     def __init__(self, **kwargs):
         super().__init__(skip_quantization=True, **kwargs)
 
-        self.surfaces = self.surfaces.reshape(self.surfaces.shape[0], -1)
+        self.surfaces = self.surfaces.numpy()
 
         if not hasattr(self, "n_neighbors"):
-            self.n_neighbors = None
+            self.n_neighbors = len(self.surfaces)
 
         self.histograms, self.fouriers = [], []
         for surface in self.surfaces:
-            self.histograms.append(np.histogram(surface)[0])
-            self.fouriers.append(np.absolute(fft.fft(surface)))
+            self.histograms.append(np.histogram(surface.reshape(-1))[0])
+            self.fouriers.append(np.absolute(fft.fft2(surface)))
 
     @per_row
     def __call__(self, surface):
-        surface = surface.reshape(-1)
+        surface = surface.numpy()
 
-        (histogram, _), fourier = np.histogram(surface), np.absolute(fft.fft(surface))
+        (histogram, _), fourier = np.histogram(surface.reshape(-1)), np.absolute(
+            fft.fft2(surface)
+        )
 
-        divisor, loss = self.n_neighbors or 1, 0
+        loss = 0
         for _histogram, _fourier in itertools.islice(
             zip(self.histograms, self.fouriers), self.n_neighbors
         ):
             loss += np.sqrt(np.square(np.subtract(histogram, _histogram)).mean()) / (
-                divisor * 2
-            )
-            loss += np.sqrt(np.square(np.subtract(fourier, _fourier)).mean()) / (
-                divisor * 2
+                self.n_neighbors * 2
             )
 
-        return loss
+            loss += np.sqrt(np.square(np.subtract(fourier, _fourier)).mean()) / (
+                self.n_neighbors * 2
+            )
+
+        return 1 / (1 + loss)
 
 
 if __name__ == "__main__":
-    tensors = torch.rand(10, 4, 4)
+    SIZE, DIM = 10, 4
 
-    print(tensors)
+    fixed_noise, tensors = torch.rand(DIM, DIM), torch.rand(SIZE, DIM, DIM)
 
+    print("\nTesting 'NGramGraphContentLoss'")
     content_loss = NGramGraphContentLoss(surfaces=tensors)
 
-    print(max([content_loss(row.reshape(-1)) for row in tensors]))
+    content_losses = [content_loss(row.reshape(-1)) for row in tensors]
 
-    print(content_loss(torch.rand(4, 4).reshape(-1)))
+    print(
+        content_loss(fixed_noise.reshape(-1)),
+        (min(content_losses), max(content_losses)),
+    )
 
-    tensors = torch.rand(10, 4, 4)
-
-    print(tensors)
-
+    print("\nTesting 'ArrayGraph2DContentLoss'")
     content_loss = ArrayGraph2DContentLoss(surfaces=tensors)
 
-    print(max([content_loss(tensors[i]) for i in range(tensors.shape[0])]))
+    content_losses = [content_loss(tensors[i]) for i in range(tensors.shape[0])]
 
-    print(content_loss(torch.rand(4, 4)))
+    print(content_loss(fixed_noise), (min(content_losses), max(content_losses)))
 
-    tensors = torch.rand(10, 4, 4)
-
-    print(tensors)
-
+    print("\nTesting 'HPG2DContentLoss'")
     content_loss = HPG2DContentLoss(surfaces=tensors)
 
-    print(max([content_loss(tensors[i]) for i in range(tensors.shape[0])]))
+    content_losses = [content_loss(tensors[i]) for i in range(tensors.shape[0])]
 
-    print(content_loss(torch.rand(4, 4)))
+    print(content_loss(fixed_noise), (min(content_losses), max(content_losses)))
+
+    print("\nTesting 'VectorSpaceContentLoss'")
+    content_loss = VectorSpaceContentLoss(surfaces=tensors)
+
+    content_losses = [content_loss(tensors[i]) for i in range(tensors.shape[0])]
+
+    print(content_loss(fixed_noise), (min(content_losses), max(content_losses)))
