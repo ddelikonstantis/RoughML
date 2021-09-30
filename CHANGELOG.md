@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--next-version-placeholder-->
 
+## v4.5.0 (2021-09-30)
+### Feature
+* **train:** Generate per epoch data csv ([`c154585`](https://github.com/billsioros/RoughML/commit/c154585fd6c78387dff82dd4d6d565ce1db1e2d6))
+
+### Fix
+* **plot:** Do not close plot on Windows ([`ee82ad8`](https://github.com/billsioros/RoughML/commit/ee82ad8eff0624292e4dd63496bc3ccec18ee0d7))
+* **loss:** `VectorSpaceContentLoss` expects numpy matrix ([`5d3acf8`](https://github.com/billsioros/RoughML/commit/5d3acf86a56b018047a6addc0ceff41d7717f1df))
+
+**[See all commits in this version](https://github.com/billsioros/RoughML/compare/v4.4.0...v4.5.0)**
+
 ## v4.4.0 (2021-09-29)
 ### Feature
 * **loss:** Normalize `VectorSpaceContentLoss` ([`430ac52`](https://github.com/billsioros/RoughML/commit/430ac52a923e6293bbd8137ca4136a15568635cf))
