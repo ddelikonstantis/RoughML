@@ -3,6 +3,9 @@ import logging.config
 from datetime import datetime, timedelta
 from time import time
 
+import numpy as np
+import pandas as pd
+
 from roughml.content.loss import VectorSpaceContentLoss
 from roughml.plot import animate_epochs, as_3d_surface, as_grayscale_image, plot_against
 from roughml.shared.configuration import Configuration
@@ -116,7 +119,7 @@ class TrainingFlow(Configuration):
             path,
         )
 
-        vector_content_loss = VectorSpaceContentLoss(surfaces=dataset.surfaces.numpy())
+        vector_content_loss = VectorSpaceContentLoss(surfaces=dataset.surfaces)
 
         if hasattr(self.training.manager, "content_loss"):
             training_manager = TrainingManager(
@@ -172,6 +175,27 @@ class TrainingFlow(Configuration):
             save_path_vector_loss = self.plot.against.save_path_fmt % (
                 "content_vs_vector_loss",
             )
+
+        pd.DataFrame(
+            data=np.array(
+                [
+                    generator_losses,
+                    discriminator_losses,
+                    discriminator_output_reals,
+                    discriminator_output_fakes,
+                    content_losses,
+                    vector_content_losses,
+                ]
+            ).T,
+            columns=[
+                "Generator Loss",
+                "Discriminator Loss",
+                "Discriminator Output (Real)",
+                "Discriminator Output (Fake)",
+                f"Content Loss ({self.content_loss.type.__name__})",
+                "Content Loss (VectorSpaceContentLoss)",
+            ],
+        ).to_csv(str(checkpoint_dir / "per_epoch_data.csv"))
 
         plot_against(
             generator_losses,
