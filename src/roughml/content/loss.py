@@ -217,8 +217,6 @@ class VectorSpaceContentLoss(ContentLoss):
 
     @per_row
     def __call__(self, surface):
-        surface = surface.numpy()
-
         (histogram, _), fourier = np.histogram(surface.reshape(-1)), np.absolute(
             fft.fft2(surface)
         )
@@ -270,6 +268,6 @@ if __name__ == "__main__":
     print("\nTesting 'VectorSpaceContentLoss'")
     content_loss = VectorSpaceContentLoss(surfaces=tensors)
 
-    content_losses = [content_loss(tensors[i]) for i in range(tensors.shape[0])]
+    content_losses = [content_loss(tensors[i].numpy()) for i in range(tensors.shape[0])]
 
-    print(content_loss(fixed_noise), (min(content_losses), max(content_losses)))
+    print(content_loss(fixed_noise.numpy()), (min(content_losses), max(content_losses)))
