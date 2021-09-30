@@ -1,3 +1,5 @@
+import os
+
 import IPython.display as ipyd
 import matplotlib.animation as animation
 import matplotlib.pyplot as plt
@@ -87,7 +89,8 @@ def animate_epochs(batches_of_tensors, indices=None, save_path=None, **kwargs):
             ]
         )
 
-    plt.close()
+    if os.name != "nt":
+        plt.close()
 
     ani = animation.ArtistAnimation(
         fig,
