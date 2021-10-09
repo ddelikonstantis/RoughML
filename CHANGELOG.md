@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--next-version-placeholder-->
 
+## v4.5.1 (2021-10-09)
+### Fix
+* **perceptron:** Remove ReLU ([`d20ed22`](https://github.com/billsioros/RoughML/commit/d20ed22957b4c21dc6b1a7baa43d3fe76a63d215))
+
+**[See all commits in this version](https://github.com/billsioros/RoughML/compare/v4.5.0...v4.5.1)**
+
 ## v4.5.0 (2021-09-30)
 ### Feature
 * **train:** Generate per epoch data csv ([`c154585`](https://github.com/billsioros/RoughML/commit/c154585fd6c78387dff82dd4d6d565ce1db1e2d6))
