@@ -17,14 +17,13 @@ class PerceptronGenerator(Base):
         self.feature_dims = (in_features, 1, 1)
 
         self.linear = nn.Linear(in_features, out_features[0] * out_features[1])
-        self.activation = nn.ReLU()
 
     def forward(self, batch):
         logger.debug("%s:Input: %s", self.__class__.__name__, batch.shape)
 
         batch_size, _, _, _ = batch.shape
 
-        batch = self.activation(self.linear(batch.view(batch_size, -1)))
+        batch = self.linear(batch.view(batch_size, -1))
 
         logger.debug("%s:Output: %s", self.__class__.__name__, batch.shape)
 
