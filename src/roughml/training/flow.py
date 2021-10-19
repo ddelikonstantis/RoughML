@@ -192,7 +192,7 @@ class TrainingFlow(Configuration):
                 "Discriminator Loss",
                 "Discriminator Output (Real)",
                 "Discriminator Output (Fake)",
-                f"Content Loss ({self.content_loss.type.__name__})",
+                f"Content Loss ({self.content_loss.type.__name__ if self.content_loss.type else 'None'})",
                 "Content Loss (VectorSpaceContentLoss)",
             ],
         ).to_csv(str(checkpoint_dir / "per_epoch_data.csv"))
