@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--next-version-placeholder-->
 
+## v4.6.0 (2021-10-19)
+### Feature
+* **cli:** `benchmark` content similarity script ([`add2ad9`](https://github.com/billsioros/RoughML/commit/add2ad941cfdeca1f9d178cc47a32a44168a0dbf))
+
+### Fix
+* **train:** `content_loss.type` null check ([`767616b`](https://github.com/billsioros/RoughML/commit/767616b70ad05c9d23cd1d8d66ade5328868cb32))
+* **loss:** Suppress `.numpy()` AttributeError ([`db2ef70`](https://github.com/billsioros/RoughML/commit/db2ef7047ac56d0642d2aeb29473502e31675a8f))
+
+**[See all commits in this version](https://github.com/billsioros/RoughML/compare/v4.5.1...v4.6.0)**
+
 ## v4.5.1 (2021-10-09)
 ### Fix
 * **perceptron:** Remove ReLU ([`d20ed22`](https://github.com/billsioros/RoughML/commit/d20ed22957b4c21dc6b1a7baa43d3fe76a63d215))
