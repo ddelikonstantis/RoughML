@@ -1,4 +1,5 @@
 import concurrent
+import contextlib
 import itertools
 import logging
 import os
@@ -133,7 +134,7 @@ class HPG2DContentLoss(ContentLoss):
 
         self._collector = HPG2DCollector()
 
-        logger.info("Constructing %02d graphs", len(self.surfaces))
+        logger.debug("Constructing %02d graphs", len(self.surfaces))
 
         elapsed_time = []
         for index, surface in enumerate(self.surfaces):
@@ -141,9 +142,9 @@ class HPG2DContentLoss(ContentLoss):
             self._collector.add(surface)
             elapsed_time.append(time.time() - start_time)
 
-            logger.info("Constructed graph %02d in %07.3fs", index, elapsed_time[-1])
+            logger.debug("Constructed graph %02d in %07.3fs", index, elapsed_time[-1])
 
-        logger.info(
+        logger.debug(
             "Constructed %02d graphs in %07.3fs [%.3f ± %.3f seconds per graph]",
             len(self.surfaces),
             time.time() - total_start_time,
@@ -169,7 +170,7 @@ class HPG2DParallelContentLoss(HPG2DContentLoss):
 
                 futures[future] = (index, time.time())
 
-            logger.info("Awaiting %02d jobs", len(self.surfaces))
+            logger.debug("Awaiting %02d jobs", len(self.surfaces))
 
             elapsed_time = [None] * len(self.surfaces)
             for future in concurrent.futures.as_completed(futures):
@@ -179,11 +180,11 @@ class HPG2DParallelContentLoss(HPG2DContentLoss):
 
                 elapsed_time[index] = time.time() - start_time
 
-                logger.info(
+                logger.debug(
                     "Job %02d completed after %07.3fs", index, elapsed_time[index]
                 )
 
-            logger.info(
+            logger.debug(
                 "Constructed %02d graphs in %07.3fs [%.3f ± %.3f seconds per graph]",
                 len(self.surfaces),
                 time.time() - total_start_time,
@@ -205,7 +206,8 @@ class VectorSpaceContentLoss(ContentLoss):
     def __init__(self, **kwargs):
         super().__init__(skip_quantization=True, **kwargs)
 
-        self.surfaces = self.surfaces.numpy()
+        with contextlib.suppress(AttributeError):
+            self.surfaces = self.surfaces.numpy()
 
         if not hasattr(self, "n_neighbors"):
             self.n_neighbors = len(self.surfaces)
