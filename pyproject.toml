@@ -14,7 +14,7 @@ matplotlib = "3.1.1"
 sympy = "^1.8"
 sklearn = "^0.0"
 pandas = "^1.2.4"
-pyinsect = {git = "https://github.com/billsioros/PyINSECT.git", rev = "FEATURE_Implementing_HPGraphCollector"}
+pyinsect = {git = "https://github.com/ggianna/PyINSECT.git", rev = "master"}
 torchvision = "^0.10.0"
 ipython = "^7.24.1"
 tqdm = "^4.61.1"
@@ -37,6 +37,7 @@ ipykernel = "^5.5.5"
 visualize = "roughml.cli.visualize:visualize"
 dataset = "roughml.cli.dataset:dataset"
 tune = "roughml.cli.tune:tune"
+benchmark = "roughml.cli.benchmark:benchmark"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
