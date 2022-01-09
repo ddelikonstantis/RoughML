@@ -24,6 +24,7 @@ emails = "^0.6"
 Jinja2 = "^3.0.1"
 click = "^8.0.1"
 rich = "^10.6.0"
+ffmpeg-python = "^0.2.0"
 
 [tool.poetry.dev-dependencies]
 pre-commit = "^2.13.0"
