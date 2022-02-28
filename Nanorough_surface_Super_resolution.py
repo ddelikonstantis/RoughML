@@ -73,7 +73,7 @@ else:
 # +
 import os
 
-LOGGING_LEVEL = os.environ.get("LOGGING_LEVEL", "CRITICAL").upper()
+LOGGING_LEVEL = os.environ.get("LOGGING_LEVEL", "INFO").upper()
 
 LOGGING_CONFIG = {
     "version": 1,

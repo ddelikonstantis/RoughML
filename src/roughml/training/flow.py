@@ -156,6 +156,18 @@ class TrainingFlow(Configuration):
             fixed_fakes,
         ) = list(zip(*list(training_manager(generator, discriminator, dataset))))
 
+        generator_losses_min, generator_losses_max = min(generator_losses), max(generator_losses)
+        generator_losses_ls = list(generator_losses)
+        for i, val in enumerate(generator_losses_ls):
+            generator_losses_ls[i] = (val - generator_losses_min) / (generator_losses_max - generator_losses_min)
+        generator_losses = tuple(generator_losses_ls)
+        
+        vector_content_losses_min, vector_content_losses_max = min(vector_content_losses), max(vector_content_losses)
+        vector_content_losses_ls = list(vector_content_losses)
+        for i, val in enumerate(vector_content_losses_ls):
+            vector_content_losses_ls[i] = (val - vector_content_losses_min) / (vector_content_losses_max - vector_content_losses_min)
+        vector_content_losses = tuple(vector_content_losses_ls)
+
         (
             save_path_gen_vs_dis_loss,
             save_path_dis_output,
