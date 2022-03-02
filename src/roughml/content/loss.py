@@ -217,6 +217,8 @@ class VectorSpaceContentLoss(ContentLoss):
             self.histograms.append(np.histogram(surface.reshape(-1))[0])
             self.fouriers.append(np.absolute(fft.fft2(surface)))
 
+
+    # TODO: examine cosine similarity
     @per_row
     def __call__(self, surface):
         (histogram, _), fourier = np.histogram(surface.reshape(-1)), np.absolute(
@@ -235,7 +237,7 @@ class VectorSpaceContentLoss(ContentLoss):
                 self.n_neighbors * 2
             )
 
-        return 1 / (1 + loss)
+        return loss
 
 
 if __name__ == "__main__":

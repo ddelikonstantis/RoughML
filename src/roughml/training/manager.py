@@ -63,6 +63,9 @@ class TrainingManager(Configuration):
             train_epoch_f = benchmark(train_epoch_f)
 
         min_generator_loss = float("inf")
+        max_generator_loss = float(0.0)
+        max_discriminator_loss = float(0.0)
+        max_vector_content_loss = float(0.0)
         for epoch in tqdm(range(self.n_epochs), desc="Epochs"):
             (
                 generator_loss,
@@ -108,6 +111,18 @@ class TrainingManager(Configuration):
                     discriminator.state_dict(),
                     self.checkpoint.directory / f"{discriminator_mt}.pt",
                 )
+
+            if generator_loss > max_generator_loss:
+                max_generator_loss = generator_loss
+            generator_loss = generator_loss / max_generator_loss
+
+            if discriminator_loss > max_discriminator_loss:
+                max_discriminator_loss = discriminator_loss
+            discriminator_loss = discriminator_loss / max_discriminator_loss
+
+            if vector_content_loss > max_vector_content_loss:
+                max_vector_content_loss = vector_content_loss
+            vector_content_loss = vector_content_loss / max_vector_content_loss
 
             with torch.no_grad():
                 fixed_fake = generator(fixed_noise).detach().cpu()
