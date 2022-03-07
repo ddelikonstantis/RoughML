@@ -770,11 +770,26 @@ python-versions = "*"
 
 [[package]]
 name = "numpy"
-version = "1.21.1"
+version = "1.21.5"
 description = "NumPy is the fundamental package for array computing with Python."
 category = "main"
 optional = false
-python-versions = ">=3.7"
+python-versions = ">=3.7,<3.11"
+
+[[package]]
+name = "opencv-python"
+version = "4.5.5.62"
+description = "Wrapper package for OpenCV python bindings."
+category = "main"
+optional = false
+python-versions = ">=3.6"
+
+[package.dependencies]
+numpy = [
+    {version = ">=1.21.2", markers = "python_version >= \"3.6\" and platform_system == \"Darwin\" and platform_machine == \"arm64\""},
+    {version = ">=1.19.3", markers = "python_version >= \"3.6\" and platform_system == \"Linux\" and platform_machine == \"aarch64\""},
+    {version = ">=1.14.5", markers = "python_version >= \"3.7\""},
+]
 
 [[package]]
 name = "packaging"
@@ -1133,7 +1148,7 @@ py = {version = "*", markers = "implementation_name == \"pypy\""}
 
 [[package]]
 name = "ray"
-version = "1.9.1"
+version = "1.10.0"
 description = "Ray provides a simple, universal API for building distributed applications."
 category = "main"
 optional = false
@@ -1156,14 +1171,14 @@ tabulate = {version = "*", optional = true, markers = "extra == \"tune\""}
 tensorboardX = {version = ">=1.9", optional = true, markers = "extra == \"tune\""}
 
 [package.extras]
-all = ["colorful", "opentelemetry-sdk (==1.1.0)", "aioredis (<2)", "opentelemetry-api (==1.1.0)", "aiohttp-cors", "gpustat (>=1.0.0b1)", "fsspec", "aiosignal", "lz4", "tensorboardX (>=1.9)", "pyarrow (>=4.0.1)", "matplotlib (!=3.4.3)", "pyyaml", "dm-tree", "frozenlist", "starlette", "tabulate", "requests", "ray-cpp (==1.9.1)", "scipy", "aiohttp (>=3.7)", "scikit-image", "opencensus", "py-spy (>=0.2.0)", "urllib3", "fastapi", "gym", "uvicorn", "prometheus-client (>=0.7.1)", "opentelemetry-exporter-otlp (==1.1.0)", "pandas", "smart-open", "kubernetes"]
-cpp = ["ray-cpp (==1.9.1)"]
-data = ["pandas", "pyarrow (>=4.0.1)", "fsspec"]
+all = ["pandas", "colorful", "aiohttp-cors", "scikit-image", "numpy (>=1.19)", "aiosignal", "gpustat (>=1.0.0b1)", "tensorboardX (>=1.9)", "scipy", "aiohttp (>=3.7)", "dm-tree", "ray-cpp (==1.10.0)", "requests", "kubernetes", "frozenlist", "urllib3", "opentelemetry-exporter-otlp (==1.1.0)", "gym", "matplotlib (!=3.4.3)", "smart-open", "fsspec", "opencensus", "aiorwlock", "py-spy (>=0.2.0)", "fastapi", "lz4", "aioredis (<2)", "tabulate", "starlette", "pyarrow (>=4.0.1)", "opentelemetry-api (==1.1.0)", "prometheus-client (>=0.7.1)", "pyyaml", "uvicorn", "opentelemetry-sdk (==1.1.0)"]
+cpp = ["ray-cpp (==1.10.0)"]
+data = ["pandas", "pyarrow (>=4.0.1)", "fsspec", "numpy (>=1.19)"]
 default = ["aiohttp (>=3.7)", "aiosignal", "aiohttp-cors", "aioredis (<2)", "colorful", "frozenlist", "py-spy (>=0.2.0)", "requests", "gpustat (>=1.0.0b1)", "opencensus", "prometheus-client (>=0.7.1)", "smart-open"]
 k8s = ["kubernetes", "urllib3"]
 observability = ["opentelemetry-api (==1.1.0)", "opentelemetry-sdk (==1.1.0)", "opentelemetry-exporter-otlp (==1.1.0)"]
 rllib = ["pandas", "tabulate", "tensorboardX (>=1.9)", "requests", "dm-tree", "gym", "lz4", "matplotlib (!=3.4.3)", "scikit-image", "pyyaml", "scipy"]
-serve = ["fastapi", "uvicorn", "colorful", "aiohttp (>=3.7)", "aioredis (<2)", "prometheus-client (>=0.7.1)", "aiohttp-cors", "gpustat (>=1.0.0b1)", "aiosignal", "smart-open", "frozenlist", "opencensus", "starlette", "py-spy (>=0.2.0)", "requests"]
+serve = ["frozenlist", "starlette", "aiohttp-cors", "colorful", "aiosignal", "gpustat (>=1.0.0b1)", "prometheus-client (>=0.7.1)", "aiorwlock", "opencensus", "py-spy (>=0.2.0)", "requests", "fastapi", "aiohttp (>=3.7)", "smart-open", "uvicorn", "aioredis (<2)"]
 tune = ["pandas", "tabulate", "tensorboardX (>=1.9)", "requests"]
 
 [[package]]
@@ -1589,7 +1604,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytes
 [metadata]
 lock-version = "1.1"
 python-versions = "3.7.1"
-content-hash = "35fb58919672cd89ce8bca47326c89211d9dd4f31ebf5b159e9cae60a48cb142"
+content-hash = "cf0ea744ded19abc1a173520dc8d153c2bdf376e7716e27376dabf761c5bce14"
 
 [metadata.files]
 appnope = [
@@ -2136,34 +2151,45 @@ nodeenv = [
     {file = "nodeenv-1.6.0.tar.gz", hash = "sha256:3ef13ff90291ba2a4a7a4ff9a979b63ffdd00a464dbe04acf0ea6471517a4c2b"},
 ]
 numpy = [
-    {file = "numpy-1.21.1-cp37-cp37m-macosx_10_9_x86_64.whl", hash = "sha256:38e8648f9449a549a7dfe8d8755a5979b45b3538520d1e735637ef28e8c2dc50"},
-    {file = "numpy-1.21.1-cp37-cp37m-manylinux_2_12_i686.manylinux2010_i686.whl", hash = "sha256:fd7d7409fa643a91d0a05c7554dd68aa9c9bb16e186f6ccfe40d6e003156e33a"},
-    {file = "numpy-1.21.1-cp37-cp37m-manylinux_2_12_x86_64.manylinux2010_x86_64.whl", hash = "sha256:a75b4498b1e93d8b700282dc8e655b8bd559c0904b3910b144646dbbbc03e062"},
-    {file = "numpy-1.21.1-cp37-cp37m-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:1412aa0aec3e00bc23fbb8664d76552b4efde98fb71f60737c83efbac24112f1"},
-    {file = "numpy-1.21.1-cp37-cp37m-manylinux_2_5_i686.manylinux1_i686.whl", hash = "sha256:e46ceaff65609b5399163de5893d8f2a82d3c77d5e56d976c8b5fb01faa6b671"},
-    {file = "numpy-1.21.1-cp37-cp37m-manylinux_2_5_x86_64.manylinux1_x86_64.whl", hash = "sha256:c6a2324085dd52f96498419ba95b5777e40b6bcbc20088fddb9e8cbb58885e8e"},
-    {file = "numpy-1.21.1-cp37-cp37m-win32.whl", hash = "sha256:73101b2a1fef16602696d133db402a7e7586654682244344b8329cdcbbb82172"},
-    {file = "numpy-1.21.1-cp37-cp37m-win_amd64.whl", hash = "sha256:7a708a79c9a9d26904d1cca8d383bf869edf6f8e7650d85dbc77b041e8c5a0f8"},
-    {file = "numpy-1.21.1-cp38-cp38-macosx_10_9_universal2.whl", hash = "sha256:95b995d0c413f5d0428b3f880e8fe1660ff9396dcd1f9eedbc311f37b5652e16"},
-    {file = "numpy-1.21.1-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:635e6bd31c9fb3d475c8f44a089569070d10a9ef18ed13738b03049280281267"},
-    {file = "numpy-1.21.1-cp38-cp38-macosx_11_0_arm64.whl", hash = "sha256:4a3d5fb89bfe21be2ef47c0614b9c9c707b7362386c9a3ff1feae63e0267ccb6"},
-    {file = "numpy-1.21.1-cp38-cp38-manylinux_2_12_i686.manylinux2010_i686.whl", hash = "sha256:8a326af80e86d0e9ce92bcc1e65c8ff88297de4fa14ee936cb2293d414c9ec63"},
-    {file = "numpy-1.21.1-cp38-cp38-manylinux_2_12_x86_64.manylinux2010_x86_64.whl", hash = "sha256:791492091744b0fe390a6ce85cc1bf5149968ac7d5f0477288f78c89b385d9af"},
-    {file = "numpy-1.21.1-cp38-cp38-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:0318c465786c1f63ac05d7c4dbcecd4d2d7e13f0959b01b534ea1e92202235c5"},
-    {file = "numpy-1.21.1-cp38-cp38-manylinux_2_5_i686.manylinux1_i686.whl", hash = "sha256:9a513bd9c1551894ee3d31369f9b07460ef223694098cf27d399513415855b68"},
-    {file = "numpy-1.21.1-cp38-cp38-manylinux_2_5_x86_64.manylinux1_x86_64.whl", hash = "sha256:91c6f5fc58df1e0a3cc0c3a717bb3308ff850abdaa6d2d802573ee2b11f674a8"},
-    {file = "numpy-1.21.1-cp38-cp38-win32.whl", hash = "sha256:978010b68e17150db8765355d1ccdd450f9fc916824e8c4e35ee620590e234cd"},
-    {file = "numpy-1.21.1-cp38-cp38-win_amd64.whl", hash = "sha256:9749a40a5b22333467f02fe11edc98f022133ee1bfa8ab99bda5e5437b831214"},
-    {file = "numpy-1.21.1-cp39-cp39-macosx_10_9_universal2.whl", hash = "sha256:d7a4aeac3b94af92a9373d6e77b37691b86411f9745190d2c351f410ab3a791f"},
-    {file = "numpy-1.21.1-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:d9e7912a56108aba9b31df688a4c4f5cb0d9d3787386b87d504762b6754fbb1b"},
-    {file = "numpy-1.21.1-cp39-cp39-macosx_11_0_arm64.whl", hash = "sha256:25b40b98ebdd272bc3020935427a4530b7d60dfbe1ab9381a39147834e985eac"},
-    {file = "numpy-1.21.1-cp39-cp39-manylinux_2_12_i686.manylinux2010_i686.whl", hash = "sha256:8a92c5aea763d14ba9d6475803fc7904bda7decc2a0a68153f587ad82941fec1"},
-    {file = "numpy-1.21.1-cp39-cp39-manylinux_2_12_x86_64.manylinux2010_x86_64.whl", hash = "sha256:05a0f648eb28bae4bcb204e6fd14603de2908de982e761a2fc78efe0f19e96e1"},
-    {file = "numpy-1.21.1-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:f01f28075a92eede918b965e86e8f0ba7b7797a95aa8d35e1cc8821f5fc3ad6a"},
-    {file = "numpy-1.21.1-cp39-cp39-win32.whl", hash = "sha256:88c0b89ad1cc24a5efbb99ff9ab5db0f9a86e9cc50240177a571fbe9c2860ac2"},
-    {file = "numpy-1.21.1-cp39-cp39-win_amd64.whl", hash = "sha256:01721eefe70544d548425a07c80be8377096a54118070b8a62476866d5208e33"},
-    {file = "numpy-1.21.1-pp37-pypy37_pp73-manylinux_2_12_x86_64.manylinux2010_x86_64.whl", hash = "sha256:2d4d1de6e6fb3d28781c73fbde702ac97f03d79e4ffd6598b880b2d95d62ead4"},
-    {file = "numpy-1.21.1.zip", hash = "sha256:dff4af63638afcc57a3dfb9e4b26d434a7a602d225b42d746ea7fe2edf1342fd"},
+    {file = "numpy-1.21.5-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:301e408a052fdcda5cdcf03021ebafc3c6ea093021bf9d1aa47c54d48bdad166"},
+    {file = "numpy-1.21.5-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:a7e8f6216f180f3fd4efb73de5d1eaefb5f5a1ee5b645c67333033e39440e63a"},
+    {file = "numpy-1.21.5-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:fc7a7d7b0ed72589fd8b8486b9b42a564f10b8762be8bd4d9df94b807af4a089"},
+    {file = "numpy-1.21.5-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:58ca1d7c8aef6e996112d0ce873ac9dfa1eaf4a1196b4ff7ff73880a09923ba7"},
+    {file = "numpy-1.21.5-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:dc4b2fb01f1b4ddbe2453468ea0719f4dbb1f5caa712c8b21bb3dd1480cd30d9"},
+    {file = "numpy-1.21.5-cp310-cp310-win_amd64.whl", hash = "sha256:cc1b30205d138d1005adb52087ff45708febbef0e420386f58664f984ef56954"},
+    {file = "numpy-1.21.5-cp37-cp37m-macosx_10_9_x86_64.whl", hash = "sha256:08de8472d9f7571f9d51b27b75e827f5296295fa78817032e84464be8bb905bc"},
+    {file = "numpy-1.21.5-cp37-cp37m-manylinux_2_12_i686.manylinux2010_i686.whl", hash = "sha256:4fe6a006557b87b352c04596a6e3f12a57d6e5f401d804947bd3188e6b0e0e76"},
+    {file = "numpy-1.21.5-cp37-cp37m-manylinux_2_12_x86_64.manylinux2010_x86_64.whl", hash = "sha256:3d893b0871322eaa2f8c7072cdb552d8e2b27645b7875a70833c31e9274d4611"},
+    {file = "numpy-1.21.5-cp37-cp37m-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:341dddcfe3b7b6427a28a27baa59af5ad51baa59bfec3264f1ab287aa3b30b13"},
+    {file = "numpy-1.21.5-cp37-cp37m-win32.whl", hash = "sha256:ca9c23848292c6fe0a19d212790e62f398fd9609aaa838859be8459bfbe558aa"},
+    {file = "numpy-1.21.5-cp37-cp37m-win_amd64.whl", hash = "sha256:025b497014bc33fc23897859350f284323f32a2fff7654697f5a5fc2a19e9939"},
+    {file = "numpy-1.21.5-cp38-cp38-macosx_10_9_universal2.whl", hash = "sha256:3a5098df115340fb17fc93867317a947e1dcd978c3888c5ddb118366095851f8"},
+    {file = "numpy-1.21.5-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:311283acf880cfcc20369201bd75da907909afc4666966c7895cbed6f9d2c640"},
+    {file = "numpy-1.21.5-cp38-cp38-macosx_11_0_arm64.whl", hash = "sha256:b545ebadaa2b878c8630e5bcdb97fc4096e779f335fc0f943547c1c91540c815"},
+    {file = "numpy-1.21.5-cp38-cp38-manylinux_2_12_i686.manylinux2010_i686.whl", hash = "sha256:c5562bcc1a9b61960fc8950ade44d00e3de28f891af0acc96307c73613d18f6e"},
+    {file = "numpy-1.21.5-cp38-cp38-manylinux_2_12_x86_64.manylinux2010_x86_64.whl", hash = "sha256:eed2afaa97ec33b4411995be12f8bdb95c87984eaa28d76cf628970c8a2d689a"},
+    {file = "numpy-1.21.5-cp38-cp38-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:61bada43d494515d5b122f4532af226fdb5ee08fe5b5918b111279843dc6836a"},
+    {file = "numpy-1.21.5-cp38-cp38-win32.whl", hash = "sha256:7b9d6b14fc9a4864b08d1ba57d732b248f0e482c7b2ff55c313137e3ed4d8449"},
+    {file = "numpy-1.21.5-cp38-cp38-win_amd64.whl", hash = "sha256:dbce7adeb66b895c6aaa1fad796aaefc299ced597f6fbd9ceddb0dd735245354"},
+    {file = "numpy-1.21.5-cp39-cp39-macosx_10_9_universal2.whl", hash = "sha256:507c05c7a37b3683eb08a3ff993bd1ee1e6c752f77c2f275260533b265ecdb6c"},
+    {file = "numpy-1.21.5-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:00c9fa73a6989895b8815d98300a20ac993c49ac36c8277e8ffeaa3631c0dbbb"},
+    {file = "numpy-1.21.5-cp39-cp39-macosx_11_0_arm64.whl", hash = "sha256:69a5a8d71c308d7ef33ef72371c2388a90e3495dbb7993430e674006f94797d5"},
+    {file = "numpy-1.21.5-cp39-cp39-manylinux_2_12_i686.manylinux2010_i686.whl", hash = "sha256:2d8adfca843bc46ac199a4645233f13abf2011a0b2f4affc5c37cd552626f27b"},
+    {file = "numpy-1.21.5-cp39-cp39-manylinux_2_12_x86_64.manylinux2010_x86_64.whl", hash = "sha256:c293d3c0321996cd8ffe84215ffe5d269fd9d1d12c6f4ffe2b597a7c30d3e593"},
+    {file = "numpy-1.21.5-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:3c978544be9e04ed12016dd295a74283773149b48f507d69b36f91aa90a643e5"},
+    {file = "numpy-1.21.5-cp39-cp39-win32.whl", hash = "sha256:2a9add27d7fc0fdb572abc3b2486eb3b1395da71e0254c5552b2aad2a18b5441"},
+    {file = "numpy-1.21.5-cp39-cp39-win_amd64.whl", hash = "sha256:1964db2d4a00348b7a60ee9d013c8cb0c566644a589eaa80995126eac3b99ced"},
+    {file = "numpy-1.21.5-pp37-pypy37_pp73-manylinux_2_12_x86_64.manylinux2010_x86_64.whl", hash = "sha256:a7c4b701ca418cd39e28ec3b496e6388fe06de83f5f0cb74794fa31cfa384c02"},
+    {file = "numpy-1.21.5.zip", hash = "sha256:6a5928bc6241264dce5ed509e66f33676fc97f464e7a919edc672fb5532221ee"},
+]
+opencv-python = [
+    {file = "opencv-python-4.5.5.62.tar.gz", hash = "sha256:3efe232b32d5e1327e7c82bc6d61230737821c5190ce5c783e64a1bc8d514e18"},
+    {file = "opencv_python-4.5.5.62-cp36-abi3-macosx_10_15_x86_64.whl", hash = "sha256:2601388def0d6b957cc30dd88f8ff74a5651ae6940dd9e488241608cfa2b15c7"},
+    {file = "opencv_python-4.5.5.62-cp36-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:71fdc49df412b102d97f14927321309043c79c4a3582cce1dc803370ff9c39c0"},
+    {file = "opencv_python-4.5.5.62-cp36-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:130cc75d56b29aa3c5de8b6ac438242dd2574ba6eaa8bccdffdcfd6b78632f7f"},
+    {file = "opencv_python-4.5.5.62-cp36-abi3-win32.whl", hash = "sha256:3a75c7ad45b032eea0c72e389aac6dd435f5c87e87f60237095c083400bc23aa"},
+    {file = "opencv_python-4.5.5.62-cp36-abi3-win_amd64.whl", hash = "sha256:c463d2276d8662b972d20ca9644702188507de200ca5405b89e1fe71c5c99989"},
+    {file = "opencv_python-4.5.5.62-cp37-abi3-macosx_11_0_arm64.whl", hash = "sha256:ac92e743e22681f30001942d78512c1e39bce53dbffc504e5645fdc45c0f2c47"},
 ]
 packaging = [
     {file = "packaging-21.0-py3-none-any.whl", hash = "sha256:c86254f9220d55e31cc94d69bade760f0847da8000def4dfe1c6b872fd14ff14"},
@@ -2474,20 +2500,20 @@ pyzmq = [
     {file = "pyzmq-22.3.0.tar.gz", hash = "sha256:8eddc033e716f8c91c6a2112f0a8ebc5e00532b4a6ae1eb0ccc48e027f9c671c"},
 ]
 ray = [
-    {file = "ray-1.9.1-cp36-cp36m-macosx_10_15_intel.whl", hash = "sha256:bf834fc806e21ef9e959020e98a83bc75c7c0e84555278fae525e4949a628b01"},
-    {file = "ray-1.9.1-cp36-cp36m-manylinux2014_x86_64.whl", hash = "sha256:e5334780d2eb07e26c09b29716409e7e749d552234944b5dd708f81f50fbc65a"},
-    {file = "ray-1.9.1-cp36-cp36m-win_amd64.whl", hash = "sha256:ac0a0a849f3988c3f4c77df6fe860bf3c2c9b2d147e1464400204c7ce1894bcd"},
-    {file = "ray-1.9.1-cp37-cp37m-macosx_10_15_intel.whl", hash = "sha256:c7ad67b6f0603e08cc0e08def134f4249441044d6ce61edd6b4940d8aeb88eeb"},
-    {file = "ray-1.9.1-cp37-cp37m-manylinux2014_x86_64.whl", hash = "sha256:57f31b2bea67dd61c4f4e930bf9e842a88b5c47d47d0559dc6af23684b22268e"},
-    {file = "ray-1.9.1-cp37-cp37m-win_amd64.whl", hash = "sha256:711c95523ebd9ffb1091e8d13017388b2867ff0398cac336af03f2a2a09c3d79"},
-    {file = "ray-1.9.1-cp38-cp38-macosx_10_15_x86_64.whl", hash = "sha256:b5cb5219968ccdddb2de409d17f5cded7aa25a0d44dfb55c3445b0720f029a96"},
-    {file = "ray-1.9.1-cp38-cp38-macosx_11_0_arm64.whl", hash = "sha256:593069c1d54ef131cd4968181729c84feaab19c0dd87bbc851431360e4910328"},
-    {file = "ray-1.9.1-cp38-cp38-manylinux2014_x86_64.whl", hash = "sha256:2e208f8aa8085cdbfebb386eda0c9b53c28fbbd52a49d46693348c8bc4862563"},
-    {file = "ray-1.9.1-cp38-cp38-win_amd64.whl", hash = "sha256:61d328de77ac21d4e9a7577b4aad1870b09e6314f5e3182f81586f74ca09091d"},
-    {file = "ray-1.9.1-cp39-cp39-macosx_10_15_x86_64.whl", hash = "sha256:87903f9cd2b199019e4823cead31ce5032a1fad6c79ce12a8a1d11dccc5ceb39"},
-    {file = "ray-1.9.1-cp39-cp39-macosx_11_0_arm64.whl", hash = "sha256:95ab43b3c4f568978069876f9103a91fc15a895545c8f00e7b5b762faf2d7a61"},
-    {file = "ray-1.9.1-cp39-cp39-manylinux2014_x86_64.whl", hash = "sha256:86ecd072a832663838a5002589478dfb84afa3a81136f6ddcd21a3f1a37f424e"},
-    {file = "ray-1.9.1-cp39-cp39-win_amd64.whl", hash = "sha256:e1bf6e79c476677675ffb6cb5512df3d993f4c209bcf7a6607c8c10b8d8ff2ab"},
+    {file = "ray-1.10.0-cp36-cp36m-macosx_10_15_intel.whl", hash = "sha256:e27172af33243604bdb6c95c6a5d005f5a1524de7fc259f17d2340675a18a0a0"},
+    {file = "ray-1.10.0-cp36-cp36m-manylinux2014_x86_64.whl", hash = "sha256:9a0e72708277be307c6a7e4628c06d19edbed9c1494bfddfe4990aa71de7caad"},
+    {file = "ray-1.10.0-cp36-cp36m-win_amd64.whl", hash = "sha256:81e251c64c5f00aa285b4292d3bab2d8c7ff52b09eaac33e927e2e8d8860961e"},
+    {file = "ray-1.10.0-cp37-cp37m-macosx_10_15_intel.whl", hash = "sha256:7b6d63c5e6bfcab725aded6394a654470ca1c2e33114bca24d33494bd754f127"},
+    {file = "ray-1.10.0-cp37-cp37m-manylinux2014_x86_64.whl", hash = "sha256:033af681fe959f9412d98a2addefee4e196bd194180170f9246b1c7756abebc2"},
+    {file = "ray-1.10.0-cp37-cp37m-win_amd64.whl", hash = "sha256:1a310ea9c5d17e04f3ba346bae2901915380455f54bfcd168c3336161cd9fbf7"},
+    {file = "ray-1.10.0-cp38-cp38-macosx_10_15_x86_64.whl", hash = "sha256:0c73ec6fc93e58e7f871f01037aa943886d2afde79bd8dbe4f2748c0a9e9cf7e"},
+    {file = "ray-1.10.0-cp38-cp38-macosx_11_0_arm64.whl", hash = "sha256:8445c615c2f621f36bfb78833b5d00caa8ccb77d2cbd8c7d16ebe6e8f7d597ea"},
+    {file = "ray-1.10.0-cp38-cp38-manylinux2014_x86_64.whl", hash = "sha256:e5992bb9128a14d47d2ac104086f07bd90300707b73ce532ce71f8c4c8a2fa4d"},
+    {file = "ray-1.10.0-cp38-cp38-win_amd64.whl", hash = "sha256:f8cf23ba4f319ca0ea202a74b738bb7e1995cb182100f10458b97a5785cb7290"},
+    {file = "ray-1.10.0-cp39-cp39-macosx_10_15_x86_64.whl", hash = "sha256:33584a13b175bddd440a12445c369b174bda3f79e3d6a5345d665a622eede0e0"},
+    {file = "ray-1.10.0-cp39-cp39-macosx_11_0_arm64.whl", hash = "sha256:669548bfaae3a0bcc2ddd7b515b874b2a66e4268b0947050b7d6f53794bd2ae3"},
+    {file = "ray-1.10.0-cp39-cp39-manylinux2014_x86_64.whl", hash = "sha256:e789b18f179ae573710c718c091a03b51a8c61205e8531b92079a323ac6379a5"},
+    {file = "ray-1.10.0-cp39-cp39-win_amd64.whl", hash = "sha256:db953540f0f7e5e666d263f847b45ad368e9de5ad02da9df4e9e5ee508d5d6b6"},
 ]
 readme-renderer = [
     {file = "readme_renderer-30.0-py2.py3-none-any.whl", hash = "sha256:3286806450d9961d6e3b5f8a59f77e61503799aca5155c8d8d40359b4e1e1adc"},
