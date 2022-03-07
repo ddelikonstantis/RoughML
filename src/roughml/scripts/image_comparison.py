@@ -15,6 +15,7 @@ def mse(img1, img2):
 cwd = Path.cwd()
 # complete path to scripts folder
 cwd = str(cwd) + "/src/" + "roughml/" + "scripts/"
+
 # input preferred images to compare
 image1 = "fake_00.png"
 image2 = "fake_00.png"
