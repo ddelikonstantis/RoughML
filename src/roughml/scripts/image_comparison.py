@@ -1,4 +1,5 @@
 import numpy as np
+import sys
 from pathlib import Path
 import cv2
 
@@ -21,6 +22,10 @@ image1 = "fake_00.png"
 image2 = "fake_00.png"
 image1 = cv2.imread(cwd + image1)
 image2 = cv2.imread(cwd + image2)
+
+# raise error flag if image is not in specified directory
+if image1 or image2 is None:
+    sys.exit("Check image directory")
 
 # get mean square error
 mymse = mse(image1, image2)

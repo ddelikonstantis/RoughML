@@ -1,4 +1,5 @@
 import numpy as np
+import sys
 from pathlib import Path
 from scipy import fftpack
 import matplotlib.pyplot as plt
@@ -13,6 +14,10 @@ cwd = str(cwd) + "/src/" + "roughml/" + "scripts/"
 # load preferred image
 image = "fake_00.png"
 image = cv2.imread(cwd + image)
+
+# raise error flag if image is not in specified directory
+if image is None:
+    sys.exit("Check image directory")
 
 # plot original image and get shape
 cv2.imshow('original image ' + str(image.shape), image)
