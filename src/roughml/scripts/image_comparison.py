@@ -1,9 +1,12 @@
 import numpy as np
 import sys
-from pathlib import Path
 import cv2
+import argparse
+
 
 def mse(img1, img2):
+	img1 = cv2.imread(img1)
+	img2 = cv2.imread(img2)
 	# get difference of images by subtracting the pixel intensities
 	# square this difference and get the sum
 	error = np.sum((img1 - img2) ** 2)
@@ -12,27 +15,18 @@ def mse(img1, img2):
 
 	return error
 
-# get current working dir
-cwd = Path.cwd()
-# complete path to scripts folder
-cwd = str(cwd) + "/src/" + "roughml/" + "scripts/"
-
-# input preferred images to compare
-image1 = "fake_00.png"
-image2 = "fake_00.png"
-image1 = cv2.imread(cwd + image1)
-image2 = cv2.imread(cwd + image2)
-
-# raise error flag if image is not in specified directory
-if image1 is None or image2 is None:
-    sys.exit("Check image directory")
+# argument parser
+parser = argparse.ArgumentParser(description = 'Image similarity comparison')
+parser.add_argument('image1', help = 'directory of first image to compare')
+parser.add_argument('image2', help = 'directory of second image to compare')
+args = parser.parse_args()
 
 # get mean square error
-mymse = mse(image1, image2)
-print("Mean Square Error: ", mymse)
+mymse = mse(args.image1, args.image2)
+# print("Mean Square Error: ", mymse)
 
 # if mean square error has a value images are different, otherwise they are equal
 if mymse > 0:
-	print("Images are different")
+	sys.exit("Images are different")
 else:
 	sys.exit("0")
