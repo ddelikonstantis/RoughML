@@ -5,6 +5,7 @@ import argparse
 
 
 def mse(img1, img2):
+	# load images
 	img1 = cv2.imread(img1)
 	img2 = cv2.imread(img2)
 	# get difference of images by subtracting the pixel intensities
@@ -23,10 +24,9 @@ args = parser.parse_args()
 
 # get mean square error
 mymse = mse(args.image1, args.image2)
-# print("Mean Square Error: ", mymse)
 
 # if mean square error has a value images are different, otherwise they are equal
 if mymse > 0:
-	sys.exit("Images are different")
+	sys.exit(mymse)
 else:
 	sys.exit("0")
