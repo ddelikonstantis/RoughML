@@ -7,6 +7,7 @@ import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 import torchvision.utils as vutils
+from PIL import Image
 
 
 def plot_against(
@@ -36,16 +37,18 @@ def plot_against(
 
 
 def as_grayscale_image(array, save_path=None):
-    fig = px.imshow(array, color_continuous_scale="gray")
-    fig.update_layout(coloraxis_showscale=False)
-    fig.update_xaxes(showticklabels=False)
-    fig.update_yaxes(showticklabels=False)
-
+    # convert tensor pixel values from [0 , 1] to [0, 255]
+    array = (((array - array.min()) / (array.max() - array.min())) * 255.9)
+    # convert the pixels from float type to int type
+    array = np.array(array, dtype=np.uint8)
+    # convert to image from array
+    img = Image.fromarray(array)
+    # save image
     if save_path is None:
-        fig.show()
+        img.show()
     else:
         with save_path.open("wb") as file:
-            fig.write_image(file)
+            img.save(file)
 
 
 def as_3d_surface(array, save_path=False):
