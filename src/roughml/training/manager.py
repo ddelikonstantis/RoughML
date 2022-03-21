@@ -113,6 +113,7 @@ class TrainingManager(Configuration):
                     self.checkpoint.directory / f"{discriminator_mt}.pt",
                 )
 
+            # normalize losses
             if generator_loss > max_generator_loss:
                 max_generator_loss = generator_loss
             generator_loss = generator_loss / max_generator_loss
