@@ -9,6 +9,7 @@ import random
 
 
 def load_image(image_filename):
+    # read image
     img = cv2.imread(image_filename)
     # convert to grayscale
     img = rgb2gray(img)
@@ -18,6 +19,9 @@ def load_image(image_filename):
     return img
 
 def get_polar_fft(img):
+    # convert to pixel values
+    img = (((img - img.min()) / (img.max() - img.min())) * 255.9)
+    img = np.array(img, dtype=np.uint8)
     # get image dimensions
     rows, clmns = img.shape[0], img.shape[1]
     # get image fft2D, shift sums to the center and plot
@@ -26,7 +30,7 @@ def get_polar_fft(img):
     plt.imshow(np.log(abs(fft2d)), cmap='gray')
     plt.show()
     # get absolute fourier values and flatten array
-    flat_fft2d = abs(fft2d.ravel())
+    flat_fft2d = abs(fft2d.ravel(order='F'))
     print('flat_fft2d: ','\n', flat_fft2d, '\n', flat_fft2d.shape, '\n')
     # get image center points
     mid_idxrow, mid_idxcol = math.floor(rows / 2), math.floor(clmns / 2)
@@ -37,7 +41,7 @@ def get_polar_fft(img):
                 dist[i][j] = math.sqrt(pow((i-mid_idxrow), 2) + pow((j-mid_idxcol), 2))
     print('dist: ','\n', dist, '\n', dist.shape, '\n')
     # convert matrix distances as 1d array
-    flat_dist = dist.ravel()
+    flat_dist = dist.ravel(order='F')
     print('flat_dist: ','\n', flat_dist, '\n', flat_dist.shape, '\n')
     # construct 2d array (first column: distances from center point, second column: corresponding fft values)
     dist_fft = np.vstack((flat_dist, flat_fft2d)).T
@@ -73,7 +77,7 @@ def get_polar_fft(img):
     plt.ylabel('Fourier amplitude (nm^{-1})')
     plt.title('polar fft')
     plt.xscale('log'), plt.yscale('log')
-    plt.plot(np.log(polar_fft[:,0]), np.log(polar_fft[:,1]))
+    plt.plot(polar_fft[:,0], polar_fft[:,1])
     plt.show()
 
     return polar_fft
@@ -94,4 +98,5 @@ if __name__ == "__main__":
     # args = parser.parse_args()
 
     img = load_image("src/roughml/scripts/fake_00.png")
+    # img = np.array([[9, 12, 24], [30, 2, 7], [20, 11, 14]])
     polar_fft = get_polar_fft(img)
