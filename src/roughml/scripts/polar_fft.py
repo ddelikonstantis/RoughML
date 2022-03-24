@@ -26,6 +26,12 @@ def get_polar_fft(img):
     rows, clmns = img.shape[0], img.shape[1]
     # get image fft2D, shift sums to the center and plot
     fft2d = np.fft.fftshift(np.fft.fft2(img))
+    # get fft2d mean column values
+    fft2d_mean_col = np.mean(fft2d, axis=0)
+    print('fft2d_mean_col: ','\n', fft2d_mean_col, '\n', fft2d_mean_col.shape, '\n')
+    # get fft2d mean row values
+    fft2d_mean_row = np.mean(fft2d, axis=1)
+    print('fft2d_mean_row: ','\n', fft2d_mean_row, '\n', fft2d_mean_row.shape, '\n')
     print('fft2d: ','\n', fft2d, '\n', fft2d.shape, '\n')
     plt.imshow(np.log(abs(fft2d)), cmap='gray')
     plt.show()
