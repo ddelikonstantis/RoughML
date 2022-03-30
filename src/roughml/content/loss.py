@@ -220,23 +220,47 @@ class VectorSpaceContentLoss(ContentLoss):
 
     # TODO: examine cosine similarity
     @per_row
+    # Returns a measurement of loss, based on the difference of (a) height distributions (b) 2D FFT components, between 
+    # the input surface and the - pre-provided - subset of training surfaces. The exact subset cardinality is based on the n_neighbors parameter
+    # of the class instance.
     def __call__(self, surface):
+        # Get (a) the histogram of the heights and (b) the real components of the 2D FFT for the evaluated surface
         (histogram, _), fourier = np.histogram(surface.reshape(-1)), np.absolute(
             fft.fft2(surface)
         )
 
-        loss = 0
+        # Initialize the difference
+        diff = 0
+        # For every (histogram of heights , fourier) tuple of each training instance (of an n_neighbors subset of the training set)
         for _histogram, _fourier in itertools.islice(
             zip(self.histograms, self.fouriers), self.n_neighbors
         ):
-            loss += np.sqrt(np.square(np.subtract(histogram, _histogram)).mean()) / (
-                self.n_neighbors * 2
-            )
+            # Calculate the histogram contribution to the loss with respect to this training instance
+            # This contribution is effectively a difference/dissimilarity measurement between histograms
+            #i.e. for every point in the evaluated surface histogram, calculate the difference of its value to the current training instance histogram 
+            # and raise this difference to the power of 2.
+            # Get the square root of the mean of these squared differences and add it to the total diff
+            # TODO: histogram ranges can vary according to height values. Alignment is needed.
+            diff += np.sqrt(np.square(np.subtract(histogram, _histogram)).mean()) 
 
-            loss += np.sqrt(np.square(np.subtract(fourier, _fourier)).mean()) / (
-                self.n_neighbors * 2
-            )
-
+            # Calculate the Fourier contribution to the loss with respect to this training instance
+            # This contribution is effectively a difference/dissimilarity measurement between Fourier transformation outputs
+            #i.e. for every point in the fourier transform of the evaluated surface, calculate the difference of its value to the 
+            # corresponding fourier transform point of the current training instance
+            # and raise the difference to the power of 2.
+            # Get the square root of the mean of these squared differences and add it to the total diff
+            # TODO: Can the semantics of fft components vary according to spectral content? Is alignment needed?
+            diff += np.sqrt(np.square(np.subtract(fourier, _fourier)).mean())
+        
+        # Normalize the total diff to reflect the average diff over all instances (each of which has 2 components contributing: histogram and Fourier)
+        diff /= self.n_neighbors * 2
+        
+        # The loss is a function of diff normalized between 0 and 1. A value of diff = 0
+        # (i.e. the evaluated surface is completely identical - in terms of histogam and Fourier - to all the training instances)
+        # will give a max loss of 1. Higher values of diff will result to lower loss values (to the limit reaching zero).
+        loss = 1 - (1 / (1 + diff))
+        
+        # Return the normalized loss
         return loss
 
 
