@@ -158,14 +158,14 @@ if SEED is not None:
 # By default, we are going to be utilizing the available CPU backend, if no GPU is available.
 
 # + cellView="code" id="520ba5c1"
-device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
+device = torch.device('cuda:1' if torch.cuda.is_available() else 'cpu')
 print(device)
-print(f"Is CUDA supported? {torch.cuda.is_available()}")
-print(f"CUDA version: {torch.version.cuda}")
-# Storing ID of current CUDA device
-cuda_id = torch.cuda.current_device()
-print(f"ID of current CUDA device: {torch.cuda.current_device()}")
-print(f"Name of current CUDA device: {torch.cuda.get_device_name(cuda_id)}")
+# print(f"Is CUDA supported? {torch.cuda.is_available()}")
+# print(f"CUDA version: {torch.version.cuda}")
+# # Storing ID of current CUDA device
+# cuda_id = torch.cuda.current_device()
+# print(f"ID of current CUDA device: {torch.cuda.current_device()}")
+# print(f"Name of current CUDA device: {torch.cuda.get_device_name(cuda_id)}")
 # -
 
 
