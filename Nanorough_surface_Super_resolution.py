@@ -1,3 +1,4 @@
+
 # -*- coding: utf-8 -*-
 # ---
 # jupyter:
@@ -158,7 +159,7 @@ if SEED is not None:
 # By default, we are going to be utilizing the available CPU backend, if no GPU is available.
 
 # + cellView="code" id="520ba5c1"
-device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print(device)
 # print(f"Is CUDA supported? {torch.cuda.is_available()}")
 # print(f"CUDA version: {torch.version.cuda}")
@@ -262,14 +263,14 @@ training_flow = TrainingFlow(
             "train_epoch": per_epoch,
             "log_every_n": 10,
             "criterion": {"instance": criterion},
-            "n_epochs": 10,
+            "n_epochs": 100,
             "train_ratio": 0.8,
             "optimizer": {
                 "type": Adam,
-                "params": {"lr": 0.1, "weight_decay": 0},
+                "params": {"lr": 0.001, "betas": (0.5, 0.999)},
             },
             "dataloader": {
-                "batch_size": 256,
+                "batch_size": 32,
                 "shuffle": True,
                 "num_workers": 0,
             },
@@ -288,7 +289,7 @@ training_flow = TrainingFlow(
             load_multiple_datasets_from_pt,
             DATASET_DIR,
             transforms=[To(device), View(1, 128, 128)],
-            limit=(2, 10),
+            limit=None,
         )
     },
     animation={
@@ -358,7 +359,7 @@ training_flow = TrainingFlow(
             "train_epoch": per_epoch,
             "log_every_n": 10,
             "criterion": {"instance": criterion},
-            "n_epochs": 10,
+            "n_epochs": 100,
             "train_ratio": 0.8,
             "optimizer": {
                 "type": Adam,
@@ -384,7 +385,7 @@ training_flow = TrainingFlow(
             load_multiple_datasets_from_pt,
             DATASET_DIR,
             transforms=[To(device), View(1, 128, 128)],
-            limit=(2, 10),
+            limit=None,
         )
     },
     animation={
