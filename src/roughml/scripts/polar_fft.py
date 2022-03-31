@@ -27,10 +27,12 @@ def get_polar_fft(img):
     # get image fft2D, shift sums to the center and plot
     fft2d = np.fft.fftshift(np.fft.fft2(img))
     # get fft2d mean column values
-    fft2d_mean_col = np.mean(fft2d, axis=0)
+    fft2d_mean_col = abs(np.mean(fft2d, axis=0))
+    fft2d_mean_col_half = fft2d_mean_col[64:128]
     print('fft2d_mean_col: ','\n', fft2d_mean_col, '\n', fft2d_mean_col.shape, '\n')
     # get fft2d mean row values
-    fft2d_mean_row = np.mean(fft2d, axis=1)
+    fft2d_mean_row = abs(np.mean(fft2d, axis=1))
+    fft2d_mean_row_half = fft2d_mean_row[64:128]
     print('fft2d_mean_row: ','\n', fft2d_mean_row, '\n', fft2d_mean_row.shape, '\n')
     print('fft2d: ','\n', fft2d, '\n', fft2d.shape, '\n')
     plt.imshow(np.log(abs(fft2d)), cmap='gray')
@@ -85,6 +87,23 @@ def get_polar_fft(img):
     plt.xscale('log'), plt.yscale('log')
     plt.plot(polar_fft[:,0], polar_fft[:,1])
     plt.show()
+
+    # plot mean rows fft
+    plt.xlabel('Spatial frequency (nm^{-1})')
+    plt.ylabel('Fourier amplitude (nm^{-1})')
+    plt.title('mean rows fft')
+    plt.xscale('log'), plt.yscale('log')
+    plt.plot(polar_fft[:,0], fft2d_mean_row_half)
+    plt.show()
+
+    # plot mean columns fft
+    plt.xlabel('Spatial frequency (nm^{-1})')
+    plt.ylabel('Fourier amplitude (nm^{-1})')
+    plt.title('mean columns fft')
+    plt.xscale('log'), plt.yscale('log')
+    plt.plot(polar_fft[:,0], fft2d_mean_col_half)
+    plt.show()
+
 
     return polar_fft
 
