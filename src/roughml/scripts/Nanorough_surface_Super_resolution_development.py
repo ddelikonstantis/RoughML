@@ -186,7 +186,7 @@ if SECRETS_DIR.is_dir():
 
     def training_callback(log_file=None, **context):
         notifier(
-            ("Vasilis Sioros", "billsioros97@gmail.com"),
+            ("Dimitris Delikonstantis", "dim.delikonstantis@gmail.com"),
             log_file=log_file,
             dataset=context["dataset"],
             generator=context["generator"],
