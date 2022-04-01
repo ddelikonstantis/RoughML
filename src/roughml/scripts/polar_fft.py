@@ -1,3 +1,4 @@
+from matplotlib import projections
 import numpy as np
 np.set_printoptions(threshold=np.inf)
 import matplotlib.pyplot as plt
@@ -80,36 +81,17 @@ def get_polar_fft(img):
         maxVal = maxVal + step
     print('polar_fft: ','\n', polar_fft, '\n')
 
-    # plot polar fft
-    plt.xlabel('Spatial frequency (nm^{-1})')
-    plt.ylabel('Fourier amplitude (nm^{-1})')
-    plt.title('polar fft')
-    plt.xscale('log'), plt.yscale('log')
-    plt.plot(polar_fft[:,0], polar_fft[:,1])
+    return polar_fft, fft2d_mean_row_half, fft2d_mean_col_half
+
+def plot(x, y, title, xlabel, ylabel, axiscale, color=None):
+    plt.xscale(axiscale)
+    plt.yscale(axiscale)
+    plt.plot(x, y)
+    plt.grid()
+    plt.title(title)
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
     plt.show()
-
-    # plot mean rows fft
-    plt.xlabel('Spatial frequency (nm^{-1})')
-    plt.ylabel('Fourier amplitude (nm^{-1})')
-    plt.title('mean rows fft')
-    plt.xscale('log'), plt.yscale('log')
-    plt.plot(polar_fft[:,0], fft2d_mean_row_half)
-    plt.show()
-
-    # plot mean columns fft
-    plt.xlabel('Spatial frequency (nm^{-1})')
-    plt.ylabel('Fourier amplitude (nm^{-1})')
-    plt.title('mean columns fft')
-    plt.xscale('log'), plt.yscale('log')
-    plt.plot(polar_fft[:,0], fft2d_mean_col_half)
-    plt.show()
-
-
-    return polar_fft
-
-def alpha_effect():
-
-    return None
 
 
 if __name__ == "__main__":
@@ -124,4 +106,12 @@ if __name__ == "__main__":
 
     img = load_image("src/roughml/scripts/fake_00.png")
     # img = np.array([[9, 12, 24], [30, 2, 7], [20, 11, 14]])
-    polar_fft = get_polar_fft(img)
+    polar_fft, mean_row, mean_col = get_polar_fft(img)
+
+    xlabel = "Spatial frequency (nm^{-1})"
+    ylabel="Fourier amplitude (nm^{-1})"
+    axiscale='log'
+    fig1=plot(polar_fft[:,0], polar_fft[:,1], "polar fft", xlabel, ylabel, axiscale)
+    fig2=plot(polar_fft[:,0], mean_row, "mean rows fft", xlabel, ylabel, axiscale)
+    fig3=plot(polar_fft[:,0], mean_col, "mean columns fft", xlabel, ylabel, axiscale)
+    
