@@ -210,11 +210,16 @@ class VectorSpaceContentLoss(ContentLoss):
             self.surfaces = self.surfaces.numpy()
 
         if not hasattr(self, "n_neighbors"):
-            self.n_neighbors = len(self.surfaces)
-
+            # neighbours is total number of surfaces
+            self.n_neighbors = len(self.surfaces)   
+        
         self.histograms, self.fouriers = [], []
         for surface in self.surfaces:
+            # normalize surface height values
+            surface = (surface - np.min(surface)) / (np.max(surface) - np.min(surface))
+            # create histogram of current surface and append to histogram list
             self.histograms.append(np.histogram(surface.reshape(-1))[0])
+            # compute fourier of current surface and append to fourier list
             self.fouriers.append(np.absolute(fft.fft2(surface)))
 
 
@@ -224,6 +229,8 @@ class VectorSpaceContentLoss(ContentLoss):
     # the input surface and the - pre-provided - subset of training surfaces. The exact subset cardinality is based on the n_neighbors parameter
     # of the class instance.
     def __call__(self, surface):
+        # normalize surface height values
+        surface = (surface - np.min(surface)) / (np.max(surface) - np.min(surface))
         # Get (a) the histogram of the heights and (b) the real components of the 2D FFT for the evaluated surface
         (histogram, _), fourier = np.histogram(surface.reshape(-1)), np.absolute(
             fft.fft2(surface)
@@ -268,6 +275,7 @@ if __name__ == "__main__":
     SIZE, DIM = 10, 4
 
     fixed_noise, tensors = torch.rand(DIM, DIM), torch.rand(SIZE, DIM, DIM)
+    print(fixed_noise, '\n', tensors)
 
     print("\nTesting 'NGramGraphContentLoss'")
     content_loss = NGramGraphContentLoss(surfaces=tensors)
