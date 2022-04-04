@@ -65,7 +65,7 @@ class TrainingManager(Configuration):
         min_generator_loss = float("inf")
         max_generator_loss = float(0.0)
         max_discriminator_loss = float(0.0)
-        max_vector_content_loss = float(0.0)
+        max_HeightHistogramAndFourierLoss = float(0.0)
         max_NGramGraphLoss = float(0.0)
         for epoch in tqdm(range(self.n_epochs), desc="Epochs"):
             (
@@ -74,7 +74,7 @@ class TrainingManager(Configuration):
                 discriminator_output_real,
                 discriminator_output_fake,
                 NGramGraphLoss,
-                vector_content_loss,
+                HeightHistogramAndFourierLoss,
             ) = train_epoch_f(
                 generator,
                 discriminator,
@@ -83,7 +83,7 @@ class TrainingManager(Configuration):
                 optimizer_discriminator,
                 self.criterion.instance,
                 content_loss_fn=self.NGramGraphLoss,
-                vector_content_loss_fn=self.vector_content_loss,
+                vector_content_loss_fn=self.HeightHistogramAndFourierLoss,
                 loss_weights=(self.content_loss_weight, self.criterion.weight),
                 log_every_n=self.log_every_n,
             )
@@ -122,9 +122,9 @@ class TrainingManager(Configuration):
                 max_discriminator_loss = discriminator_loss
             discriminator_loss = discriminator_loss / max_discriminator_loss
 
-            if vector_content_loss > max_vector_content_loss:
-                max_vector_content_loss = vector_content_loss
-            vector_content_loss = vector_content_loss / max_vector_content_loss
+            if HeightHistogramAndFourierLoss > max_HeightHistogramAndFourierLoss:
+                max_HeightHistogramAndFourierLoss = HeightHistogramAndFourierLoss
+            HeightHistogramAndFourierLoss = HeightHistogramAndFourierLoss / max_HeightHistogramAndFourierLoss
 
             if NGramGraphLoss > max_NGramGraphLoss:
                 max_NGramGraphLoss = NGramGraphLoss
@@ -134,11 +134,11 @@ class TrainingManager(Configuration):
                 fixed_fake = generator(fixed_noise).detach().cpu()
 
             logger.info(
-                "Epoch: %02d, Generator Loss: %7.3f (N-Gram Graph Loss: %7.3f, Vector Loss: %7.3f), Discriminator Loss: %7.3f",
+                "Epoch: %02d, Generator Loss: %7.3f (N-Gram Graph Loss: %7.3f, Height Histogram and Fourier Loss: %7.3f), Discriminator Loss: %7.3f",
                 epoch,
                 generator_loss,
                 NGramGraphLoss,
-                vector_content_loss,
+                HeightHistogramAndFourierLoss,
                 discriminator_loss,
             )
 
@@ -155,6 +155,6 @@ class TrainingManager(Configuration):
                 discriminator_output_real,
                 discriminator_output_fake,
                 NGramGraphLoss,
-                vector_content_loss,
+                HeightHistogramAndFourierLoss,
                 fixed_fake,
             )

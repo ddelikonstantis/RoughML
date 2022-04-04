@@ -119,11 +119,11 @@ class TrainingFlow(Configuration):
             path,
         )
 
-        vector_content_loss = VectorSpaceContentLoss(surfaces=dataset.surfaces)
+        HeightHistogramAndFourierLoss = VectorSpaceContentLoss(surfaces=dataset.surfaces)
 
         if hasattr(self.training.manager, "NGramGraphLoss"):
             training_manager = TrainingManager(
-                vector_content_loss=vector_content_loss,
+                HeightHistogramAndFourierLoss=HeightHistogramAndFourierLoss,
                 **self.training.manager.to_dict(),
             )
         else:
@@ -141,7 +141,7 @@ class TrainingFlow(Configuration):
                     NGramGraphLoss = self.NGramGraphLoss.type(surfaces=dataset.surfaces)
 
             training_manager = TrainingManager(
-                vector_content_loss=vector_content_loss,
+                HeightHistogramAndFourierLoss=HeightHistogramAndFourierLoss,
                 NGramGraphLoss=NGramGraphLoss,
                 **self.training.manager.to_dict(),
             )
@@ -152,7 +152,7 @@ class TrainingFlow(Configuration):
             discriminator_output_reals,
             discriminator_output_fakes,
             NGramGraphLosses,
-            vector_content_losses,
+            HeightHistogramAndFourierLosses,
             fixed_fakes,
         ) = list(zip(*list(training_manager(generator, discriminator, dataset))))
 
@@ -160,7 +160,7 @@ class TrainingFlow(Configuration):
             save_path_gen_vs_dis_loss,
             save_path_dis_output,
             save_path_bce_vs_ngraph_loss,
-            save_path_vector_loss,
+            save_path_fourier_loss,
         ) = (None, None, None, None)
         if self.plot.against.save_path_fmt is not None:
             save_path_gen_vs_dis_loss = self.plot.against.save_path_fmt % (
@@ -172,8 +172,8 @@ class TrainingFlow(Configuration):
             save_path_dis_output = self.plot.against.save_path_fmt % (
                 "discriminator_output",
             )
-            save_path_vector_loss = self.plot.against.save_path_fmt % (
-                "content_vs_vector_loss",
+            save_path_fourier_loss = self.plot.against.save_path_fmt % (
+                "ngraph_vs_fourier_loss",
             )
 
         pd.DataFrame(
@@ -184,7 +184,7 @@ class TrainingFlow(Configuration):
                     discriminator_output_reals,
                     discriminator_output_fakes,
                     NGramGraphLosses,
-                    vector_content_losses,
+                    HeightHistogramAndFourierLosses,
                 ]
             ).T,
             columns=[
@@ -193,7 +193,7 @@ class TrainingFlow(Configuration):
                 "Discriminator Output (Real)",
                 "Discriminator Output (Fake)",
                 f"N-Gram Graph Loss ({self.NGramGraphLoss.type.__name__ if self.NGramGraphLoss.type else 'None'})",
-                "N-Gram Graph Loss (VectorSpaceContentLoss)",
+                "N-Gram Graph Loss (HeightHistogramAndFourierLoss)",
             ],
         ).to_csv(str(checkpoint_dir / "per_epoch_data.csv"))
 
@@ -228,13 +228,13 @@ class TrainingFlow(Configuration):
         )
 
         plot_against(
-            vector_content_losses,
+            HeightHistogramAndFourierLosses,
             NGramGraphLosses,
-            title="Vector vs N-gram graph loss per epoch",
+            title="Height Histogram and Fourier Loss vs N-gram graph loss per epoch",
             xlabel="Epoch",
             ylabel="Loss",
-            labels=("Vector Loss", "N-gram graph Loss"),
-            save_path=self.plot.save_directory / save_path_vector_loss,
+            labels=("Height Histogram and Fourier Loss", "N-gram graph Loss"),
+            save_path=self.plot.save_directory / save_path_fourier_loss,
         )
 
         animate_epochs(

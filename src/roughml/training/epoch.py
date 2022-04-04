@@ -25,7 +25,7 @@ def per_epoch(
     else:
         content_loss_weight, criterion_weight = loss_weights
 
-    NGramGraphLoss, vector_content_loss = 0, 0
+    NGramGraphLoss, HeightHistogramAndFourierLoss = 0, 0
     generator_loss, discriminator_loss = 0, 0
     discriminator_output_real, discriminator_output_fake = 0, 0
 
@@ -91,7 +91,7 @@ def per_epoch(
                 generator_vector_content_loss
             ).to(fake.device)
 
-            vector_content_loss += generator_vector_content_loss.item() / len(
+            HeightHistogramAndFourierLoss += generator_vector_content_loss.item() / len(
                 dataloader
             )
 
@@ -122,5 +122,5 @@ def per_epoch(
         discriminator_output_real,
         discriminator_output_fake,
         NGramGraphLoss,
-        vector_content_loss,
+        HeightHistogramAndFourierLoss,
     )
