@@ -52,8 +52,8 @@ class TrainingFlow(Configuration):
         if not hasattr(self, "suppress_exceptions"):
             self.suppress_exceptions = True
 
-        if not hasattr(self, "content_loss"):
-            self.content_loss = Configuration(type=None, cache=None)
+        if not hasattr(self, "NGramGraphLoss"):
+            self.NGramGraphLoss = Configuration(type=None, cache=None)
 
     def __call__(self, get_generator, get_discriminator):
         for path, dataset in self.data.loader():
@@ -95,9 +95,9 @@ class TrainingFlow(Configuration):
         if hasattr(self.training.manager, "checkpoint"):
             self.training.manager.checkpoint.directory = checkpoint_dir
 
-        content_loss_cache = None
-        if getattr(self.content_loss, "cache", None) is not None:
-            content_loss_cache = checkpoint_dir / self.content_loss.cache
+        NGramGraphLoss_cache = None
+        if getattr(self.NGramGraphLoss, "cache", None) is not None:
+            NGramGraphLoss_cache = checkpoint_dir / self.NGramGraphLoss.cache
 
         logging_dir = dataset_output_dir / "Logging"
         logging_dir.mkdir(parents=True)
@@ -121,28 +121,28 @@ class TrainingFlow(Configuration):
 
         vector_content_loss = VectorSpaceContentLoss(surfaces=dataset.surfaces)
 
-        if hasattr(self.training.manager, "content_loss"):
+        if hasattr(self.training.manager, "NGramGraphLoss"):
             training_manager = TrainingManager(
                 vector_content_loss=vector_content_loss,
                 **self.training.manager.to_dict(),
             )
         else:
-            content_loss = None
-            if content_loss_cache is not None:
-                if content_loss_cache.is_file():
-                    content_loss = self.content_loss.type.from_pickle(
-                        content_loss_cache
+            NGramGraphLoss = None
+            if NGramGraphLoss_cache is not None:
+                if NGramGraphLoss_cache.is_file():
+                    NGramGraphLoss = self.NGramGraphLoss.type.from_pickle(
+                        NGramGraphLoss_cache
                     )
                 else:
-                    content_loss = self.content_loss.type(surfaces=dataset.surfaces)
-                    content_loss.to_pickle(content_loss_cache)
+                    NGramGraphLoss = self.NGramGraphLoss.type(surfaces=dataset.surfaces)
+                    NGramGraphLoss.to_pickle(NGramGraphLoss_cache)
             else:
-                if getattr(self.content_loss, "type", None) is not None:
-                    content_loss = self.content_loss.type(surfaces=dataset.surfaces)
+                if getattr(self.NGramGraphLoss, "type", None) is not None:
+                    NGramGraphLoss = self.NGramGraphLoss.type(surfaces=dataset.surfaces)
 
             training_manager = TrainingManager(
                 vector_content_loss=vector_content_loss,
-                content_loss=content_loss,
+                NGramGraphLoss=NGramGraphLoss,
                 **self.training.manager.to_dict(),
             )
 
@@ -151,7 +151,7 @@ class TrainingFlow(Configuration):
             discriminator_losses,
             discriminator_output_reals,
             discriminator_output_fakes,
-            content_losses,
+            NGramGraphLosses,
             vector_content_losses,
             fixed_fakes,
         ) = list(zip(*list(training_manager(generator, discriminator, dataset))))
@@ -159,15 +159,15 @@ class TrainingFlow(Configuration):
         (
             save_path_gen_vs_dis_loss,
             save_path_dis_output,
-            save_path_bce_vs_con_loss,
+            save_path_bce_vs_ngraph_loss,
             save_path_vector_loss,
         ) = (None, None, None, None)
         if self.plot.against.save_path_fmt is not None:
             save_path_gen_vs_dis_loss = self.plot.against.save_path_fmt % (
                 "gen_vs_dis_loss",
             )
-            save_path_bce_vs_con_loss = self.plot.against.save_path_fmt % (
-                "bce_vs_con_loss",
+            save_path_bce_vs_ngraph_loss = self.plot.against.save_path_fmt % (
+                "bce_vs_ngraph_loss",
             )
             save_path_dis_output = self.plot.against.save_path_fmt % (
                 "discriminator_output",
@@ -183,7 +183,7 @@ class TrainingFlow(Configuration):
                     discriminator_losses,
                     discriminator_output_reals,
                     discriminator_output_fakes,
-                    content_losses,
+                    NGramGraphLosses,
                     vector_content_losses,
                 ]
             ).T,
@@ -192,8 +192,8 @@ class TrainingFlow(Configuration):
                 "Discriminator Loss",
                 "Discriminator Output (Real)",
                 "Discriminator Output (Fake)",
-                f"Content Loss ({self.content_loss.type.__name__ if self.content_loss.type else 'None'})",
-                "Content Loss (VectorSpaceContentLoss)",
+                f"N-Gram Graph Loss ({self.NGramGraphLoss.type.__name__ if self.NGramGraphLoss.type else 'None'})",
+                "N-Gram Graph Loss (VectorSpaceContentLoss)",
             ],
         ).to_csv(str(checkpoint_dir / "per_epoch_data.csv"))
 
@@ -219,21 +219,21 @@ class TrainingFlow(Configuration):
 
         plot_against(
             generator_losses,
-            content_losses,
-            title="Mean Generator Total loss vs Content loss per epoch",
+            NGramGraphLosses,
+            title="Mean Generator Total loss vs N-gram graph loss per epoch",
             xlabel="Epoch",
             ylabel="Loss",
-            labels=("BCE + Content Loss", "Content Loss"),
-            save_path=self.plot.save_directory / save_path_bce_vs_con_loss,
+            labels=("BCE + N-gram graph loss", "N-gram graph loss"),
+            save_path=self.plot.save_directory / save_path_bce_vs_ngraph_loss,
         )
 
         plot_against(
             vector_content_losses,
-            content_losses,
-            title="Vector vs Content loss per epoch",
+            NGramGraphLosses,
+            title="Vector vs N-gram graph loss per epoch",
             xlabel="Epoch",
             ylabel="Loss",
-            labels=("Vector Loss", "Content Loss"),
+            labels=("Vector Loss", "N-gram graph Loss"),
             save_path=self.plot.save_directory / save_path_vector_loss,
         )
 

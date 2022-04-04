@@ -23,10 +23,10 @@ class TrainingManager(Configuration):
         if not hasattr(self, "checkpoint"):
             self.checkpoint = Configuration(directory=None, multiple=False)
 
-        if not hasattr(self, "content_loss"):
-            self.content_loss = None
+        if not hasattr(self, "NGramGraphLoss"):
+            self.NGramGraphLoss = None
 
-        if self.content_loss is None:
+        if self.NGramGraphLoss is None:
             self.criterion.weight = 1
 
         if not hasattr(self.criterion, "weight"):
@@ -66,14 +66,14 @@ class TrainingManager(Configuration):
         max_generator_loss = float(0.0)
         max_discriminator_loss = float(0.0)
         max_vector_content_loss = float(0.0)
-        max_content_loss = float(0.0)
+        max_NGramGraphLoss = float(0.0)
         for epoch in tqdm(range(self.n_epochs), desc="Epochs"):
             (
                 generator_loss,
                 discriminator_loss,
                 discriminator_output_real,
                 discriminator_output_fake,
-                content_loss,
+                NGramGraphLoss,
                 vector_content_loss,
             ) = train_epoch_f(
                 generator,
@@ -82,7 +82,7 @@ class TrainingManager(Configuration):
                 optimizer_generator,
                 optimizer_discriminator,
                 self.criterion.instance,
-                content_loss_fn=self.content_loss,
+                content_loss_fn=self.NGramGraphLoss,
                 vector_content_loss_fn=self.vector_content_loss,
                 loss_weights=(self.content_loss_weight, self.criterion.weight),
                 log_every_n=self.log_every_n,
@@ -126,18 +126,18 @@ class TrainingManager(Configuration):
                 max_vector_content_loss = vector_content_loss
             vector_content_loss = vector_content_loss / max_vector_content_loss
 
-            if content_loss > max_content_loss:
-                max_content_loss = content_loss
-            content_loss = content_loss / max_content_loss
+            if NGramGraphLoss > max_NGramGraphLoss:
+                max_NGramGraphLoss = NGramGraphLoss
+            NGramGraphLoss = NGramGraphLoss / max_NGramGraphLoss
 
             with torch.no_grad():
                 fixed_fake = generator(fixed_noise).detach().cpu()
 
             logger.info(
-                "Epoch: %02d, Generator Loss: %7.3f (Content Loss: %7.3f, Vector Loss: %7.3f), Discriminator Loss: %7.3f",
+                "Epoch: %02d, Generator Loss: %7.3f (N-Gram Graph Loss: %7.3f, Vector Loss: %7.3f), Discriminator Loss: %7.3f",
                 epoch,
                 generator_loss,
-                content_loss,
+                NGramGraphLoss,
                 vector_content_loss,
                 discriminator_loss,
             )
@@ -154,7 +154,7 @@ class TrainingManager(Configuration):
                 discriminator_loss,
                 discriminator_output_real,
                 discriminator_output_fake,
-                content_loss,
+                NGramGraphLoss,
                 vector_content_loss,
                 fixed_fake,
             )
