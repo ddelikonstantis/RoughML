@@ -213,6 +213,13 @@ class VectorSpaceContentLoss(ContentLoss):
             # neighbours is total number of surfaces
             self.n_neighbors = len(self.surfaces)   
         
+        self.HistogramMaxVal, self.HistogramMinVal = float(0.0), float('inf')
+        for surface in self.surfaces:
+            if np.min(surface) < self.HistogramMinVal:
+                self.HistogramMinVal = np.min(surface)
+            if np.max(surface) > self.HistogramMaxVal:
+                self.HistogramMaxVal = np.max(surface)
+
         self.histograms, self.fouriers = [], []
         for surface in self.surfaces:
             # normalize surface height values
