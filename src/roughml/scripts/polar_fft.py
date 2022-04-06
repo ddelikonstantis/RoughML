@@ -1,4 +1,3 @@
-from matplotlib import projections
 import numpy as np
 np.set_printoptions(threshold=np.inf)
 import matplotlib.pyplot as plt
@@ -6,7 +5,6 @@ from skimage.color import rgb2gray
 import cv2
 import math
 import argparse
-import random
 
 
 def load_image(image_filename):
@@ -81,17 +79,21 @@ def get_polar_fft(img):
         maxVal = maxVal + step
     print('polar_fft: ','\n', polar_fft, '\n')
 
-    return polar_fft, fft2d_mean_row_half, fft2d_mean_col_half
-
-def plot(x, y, title, xlabel, ylabel, axiscale, color=None):
-    plt.xscale(axiscale)
-    plt.yscale(axiscale)
-    plt.plot(x, y)
-    plt.grid()
-    plt.title(title)
-    plt.xlabel(xlabel)
-    plt.ylabel(ylabel)
+    plt.figure()
+    plt.xlabel('Spatial frequency (nm^{-1})')
+    plt.ylabel('Fourier amplitude (nm^{-1})')
+    plt.xscale('log'), plt.yscale('log')
+    plt.title('Polar FFT2D')
+    # plot polar fft2d
+    plt.plot(polar_fft[:,0], polar_fft[:,1], label = "Polar FFT2D")
+    # plot mean rows fft2d
+    plt.plot(polar_fft[:,0], fft2d_mean_row_half, label = 'Mean rows FFT2D')
+    # plot mean columns fft2d
+    plt.plot(polar_fft[:,0], fft2d_mean_col_half, label = 'Mean columns FFT2D')
+    plt.legend()
     plt.show()
+
+    return None
 
 
 if __name__ == "__main__":
@@ -104,14 +106,6 @@ if __name__ == "__main__":
     # parser.add_argument('image5', help = 'directory of fifth image to compare', action='store_false')
     # args = parser.parse_args()
 
-    img = load_image("src/roughml/scripts/fake_00.png")
-    # img = np.array([[9, 12, 24], [30, 2, 7], [20, 11, 14]])
-    polar_fft, mean_row, mean_col = get_polar_fft(img)
-
-    xlabel = "Spatial frequency (nm^{-1})"
-    ylabel="Fourier amplitude (nm^{-1})"
-    axiscale='log'
-    fig1=plot(polar_fft[:,0], polar_fft[:,1], "polar fft", xlabel, ylabel, axiscale)
-    fig2=plot(polar_fft[:,0], mean_row, "mean rows fft", xlabel, ylabel, axiscale)
-    fig3=plot(polar_fft[:,0], mean_col, "mean columns fft", xlabel, ylabel, axiscale)
+    img = load_image(r"src\roughml\scripts\dataset_1000_128_03_00_03_04_04_0.60\CNNGenerator_CNNDiscriminator\2022_04_05_07_08_49_575958\Plots\grayscale\fake_00.png")
+    polar_fft = get_polar_fft(img)
     
