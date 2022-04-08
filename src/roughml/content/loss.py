@@ -8,6 +8,7 @@ import statistics
 import time
 from abc import ABC, abstractmethod
 from functools import wraps
+import math
 
 import numpy as np
 import scipy.fft as fft
@@ -213,6 +214,7 @@ class VectorSpaceContentLoss(ContentLoss):
             # neighbours is total number of surfaces
             self.n_neighbors = len(self.surfaces)   
         
+        # get global min and max height values of all surfaces
         self.HistogramMaxVal, self.HistogramMinVal = float(0.0), float('inf')
         for surface in self.surfaces:
             if np.min(surface) < self.HistogramMinVal:
@@ -220,12 +222,15 @@ class VectorSpaceContentLoss(ContentLoss):
             if np.max(surface) > self.HistogramMaxVal:
                 self.HistogramMaxVal = np.max(surface)
 
+        # histogram bins according to image dimension
+        self.bins = max(10, 10**(math.ceil(math.log10(128**2)) - 3))
+
         self.histograms, self.fouriers = [], []
         for surface in self.surfaces:
             # normalize surface height values
             surface = (surface - np.min(surface)) / (np.max(surface) - np.min(surface))
             # create histogram of current surface and append to histogram list
-            self.histograms.append(np.histogram(surface.reshape(-1))[0])
+            self.histograms.append(np.histogram(surface.reshape(-1)[0], bins=self.bins, range=(self.HistogramMinVal, self.HistogramMaxVal)))
             # compute fourier of current surface and append to fourier list
             self.fouriers.append(np.absolute(fft.fft2(surface)))
 
@@ -239,7 +244,7 @@ class VectorSpaceContentLoss(ContentLoss):
         # normalize surface height values
         surface = (surface - np.min(surface)) / (np.max(surface) - np.min(surface))
         # Get (a) the histogram of the heights and (b) the real components of the 2D FFT for the evaluated surface
-        (histogram, _), fourier = np.histogram(surface.reshape(-1)), np.absolute(
+        (histogram, _), fourier = np.histogram(surface.reshape(-1), bins=self.bins, range=(self.HistogramMinVal, self.HistogramMaxVal)), np.absolute(
             fft.fft2(surface)
         )
 
