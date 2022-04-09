@@ -279,7 +279,7 @@ training_flow = TrainingFlow(
             training_callback,
         ],
     },
-    content_loss={
+    NGramGraphLoss={
         "type": ArrayGraph2DContentLoss,
         # Uncomment if you want to enable checkpointing
         "cache": "n_gram_graph_content_loss.pkl",
@@ -375,7 +375,7 @@ training_flow = TrainingFlow(
             training_callback,
         ],
     },
-    content_loss={
+    NGramGraphLoss={
         "type": ArrayGraph2DContentLoss,
         # Uncomment if you want to enable checkpointing
         # "cache": "n_gram_graph_content_loss.pkl",
