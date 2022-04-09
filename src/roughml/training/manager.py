@@ -116,19 +116,23 @@ class TrainingManager(Configuration):
             # normalize losses
             if generator_loss > max_generator_loss:
                 max_generator_loss = generator_loss
-            generator_loss = generator_loss / max_generator_loss
+            if max_generator_loss is not None and (max_generator_loss != 0):
+                generator_loss = generator_loss / max_generator_loss
 
             if discriminator_loss > max_discriminator_loss:
                 max_discriminator_loss = discriminator_loss
-            discriminator_loss = discriminator_loss / max_discriminator_loss
+            if max_discriminator_loss is not None and (max_discriminator_loss != 0):
+                discriminator_loss = discriminator_loss / max_discriminator_loss
 
             if HeightHistogramAndFourierLoss > max_HeightHistogramAndFourierLoss:
                 max_HeightHistogramAndFourierLoss = HeightHistogramAndFourierLoss
-            HeightHistogramAndFourierLoss = HeightHistogramAndFourierLoss / max_HeightHistogramAndFourierLoss
+            if max_HeightHistogramAndFourierLoss is not None and (max_HeightHistogramAndFourierLoss != 0):
+                HeightHistogramAndFourierLoss = HeightHistogramAndFourierLoss / max_HeightHistogramAndFourierLoss
 
             if NGramGraphLoss > max_NGramGraphLoss:
                 max_NGramGraphLoss = NGramGraphLoss
-            NGramGraphLoss = NGramGraphLoss / max_NGramGraphLoss
+            if max_NGramGraphLoss is not None and (max_NGramGraphLoss != 0):
+                NGramGraphLoss = NGramGraphLoss / max_NGramGraphLoss
 
             with torch.no_grad():
                 fixed_fake = generator(fixed_noise).detach().cpu()

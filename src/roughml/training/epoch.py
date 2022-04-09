@@ -25,9 +25,9 @@ def per_epoch(
     else:
         content_loss_weight, criterion_weight = loss_weights
 
-    NGramGraphLoss, HeightHistogramAndFourierLoss = 0, 0
-    generator_loss, discriminator_loss = 0, 0
-    discriminator_output_real, discriminator_output_fake = 0, 0
+    NGramGraphLoss, HeightHistogramAndFourierLoss = float(0.0), float(0.0)
+    generator_loss, discriminator_loss = float(0.0), float(0.0)
+    discriminator_output_real, discriminator_output_fake = float(0.0), float(0.0)
 
     start_time = time.time()
     for train_iteration, X_batch in enumerate(dataloader):
