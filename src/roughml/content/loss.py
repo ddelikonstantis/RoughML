@@ -231,7 +231,7 @@ class VectorSpaceContentLoss(ContentLoss):
         self.histograms, self.fouriers = [], []
         for surface in self.surfaces:
             # create histogram of current surface and append to histogram list
-            self.histograms.append(np.histogram(surface.reshape(-1)[0], bins=self.bins, range=(self.HistogramMinVal, self.HistogramMaxVal)))
+            self.histograms.append(np.histogram(surface.reshape(-1), bins=self.bins, range=(self.HistogramMinVal, self.HistogramMaxVal))[0])
             # compute fourier of current surface and append to fourier list
             self.fouriers.append(np.absolute(fft.fft2(surface)))
 
@@ -243,7 +243,7 @@ class VectorSpaceContentLoss(ContentLoss):
     # of the class instance.
     def __call__(self, surface):
         # Get (a) the histogram of the heights and (b) the real components of the 2D FFT for the evaluated surface
-        (histogram, _), fourier = np.histogram(surface.reshape(-1)[0], bins=self.bins, range=(self.HistogramMinVal, self.HistogramMaxVal)), np.absolute(
+        (histogram, _), fourier = np.histogram(surface.reshape(-1), bins=self.bins, range=(self.HistogramMinVal, self.HistogramMaxVal))[0], np.absolute(
             fft.fft2(surface)
         )
 
