@@ -221,14 +221,15 @@ class VectorSpaceContentLoss(ContentLoss):
                 self.HistogramMinVal = np.min(surface)
             if np.max(surface) > self.HistogramMaxVal:
                 self.HistogramMaxVal = np.max(surface)
+        # get second standard deviation of global min and max height values
+        self.HistogramMinVal = self.HistogramMinVal * 2
+        self.HistogramMaxVal = self.HistogramMaxVal * 2
 
-        # histogram bins according to image dimension
+        # histogram bins formula according to feature dimension
         self.bins = max(10, 10**(math.ceil(math.log10(128**2)) - 3))
 
         self.histograms, self.fouriers = [], []
         for surface in self.surfaces:
-            # normalize surface height values
-            surface = (surface - np.min(surface)) / (np.max(surface) - np.min(surface))
             # create histogram of current surface and append to histogram list
             self.histograms.append(np.histogram(surface.reshape(-1)[0], bins=self.bins, range=(self.HistogramMinVal, self.HistogramMaxVal)))
             # compute fourier of current surface and append to fourier list
@@ -241,10 +242,8 @@ class VectorSpaceContentLoss(ContentLoss):
     # the input surface and the - pre-provided - subset of training surfaces. The exact subset cardinality is based on the n_neighbors parameter
     # of the class instance.
     def __call__(self, surface):
-        # normalize surface height values
-        surface = (surface - np.min(surface)) / (np.max(surface) - np.min(surface))
         # Get (a) the histogram of the heights and (b) the real components of the 2D FFT for the evaluated surface
-        (histogram, _), fourier = np.histogram(surface.reshape(-1), bins=self.bins, range=(self.HistogramMinVal, self.HistogramMaxVal)), np.absolute(
+        (histogram, _), fourier = np.histogram(surface.reshape(-1)[0], bins=self.bins, range=(self.HistogramMinVal, self.HistogramMaxVal)), np.absolute(
             fft.fft2(surface)
         )
 
