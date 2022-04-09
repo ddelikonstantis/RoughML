@@ -25,9 +25,9 @@ def per_epoch(
     else:
         content_loss_weight, criterion_weight = loss_weights
 
-    content_loss, vector_content_loss = 0, 0
-    generator_loss, discriminator_loss = 0, 0
-    discriminator_output_real, discriminator_output_fake = 0, 0
+    NGramGraphLoss, HeightHistogramAndFourierLoss = float(0.0), float(0.0)
+    generator_loss, discriminator_loss = float(0.0), float(0.0)
+    discriminator_output_real, discriminator_output_fake = float(0.0), float(0.0)
 
     start_time = time.time()
     for train_iteration, X_batch in enumerate(dataloader):
@@ -82,7 +82,7 @@ def per_epoch(
             )
             generator_content_loss = torch.mean(generator_content_loss).to(fake.device)
 
-            content_loss += generator_content_loss.item() / len(dataloader)
+            NGramGraphLoss += generator_content_loss.item() / len(dataloader)
 
             generator_vector_content_loss = vector_content_loss_fn(
                 fake.cpu().detach().numpy().squeeze()
@@ -91,11 +91,11 @@ def per_epoch(
                 generator_vector_content_loss
             ).to(fake.device)
 
-            vector_content_loss += generator_vector_content_loss.item() / len(
+            HeightHistogramAndFourierLoss += generator_vector_content_loss.item() / len(
                 dataloader
             )
 
-            discriminator_error_fake = criterion(output, label) / (0.5 + content_loss)
+            discriminator_error_fake = criterion(output, label) / (0.5 + NGramGraphLoss)
         # Calculate gradients for G, which propagate through the discriminator
         discriminator_error_fake.backward()
         discriminator_output_fake_batch = output.mean().item()
@@ -121,6 +121,6 @@ def per_epoch(
         discriminator_loss,
         discriminator_output_real,
         discriminator_output_fake,
-        content_loss,
-        vector_content_loss,
+        NGramGraphLoss,
+        HeightHistogramAndFourierLoss,
     )

@@ -159,13 +159,6 @@ if SEED is not None:
 
 # + cellView="code" id="520ba5c1"
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-print(device)
-# print(f"Is CUDA supported? {torch.cuda.is_available()}")
-# print(f"CUDA version: {torch.version.cuda}")
-# # Storing ID of current CUDA device
-# cuda_id = torch.cuda.current_device()
-# print(f"ID of current CUDA device: {torch.cuda.current_device()}")
-# print(f"Name of current CUDA device: {torch.cuda.get_device_name(cuda_id)}")
 # -
 
 
@@ -278,7 +271,7 @@ training_flow = TrainingFlow(
             training_callback,
         ],
     },
-    content_loss={
+    NGramGraphLoss={
         "type": ArrayGraph2DContentLoss,
         # Uncomment if you want to enable checkpointing
         # "cache": "n_gram_graph_content_loss.pkl",
@@ -374,7 +367,7 @@ training_flow = TrainingFlow(
             training_callback,
         ],
     },
-    content_loss={
+    NGramGraphLoss={
         "type": ArrayGraph2DContentLoss,
         # Uncomment if you want to enable checkpointing
         # "cache": "n_gram_graph_content_loss.pkl",

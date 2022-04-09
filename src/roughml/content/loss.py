@@ -8,6 +8,7 @@ import statistics
 import time
 from abc import ABC, abstractmethod
 from functools import wraps
+import math
 
 import numpy as np
 import scipy.fft as fft
@@ -213,12 +214,24 @@ class VectorSpaceContentLoss(ContentLoss):
             # neighbours is total number of surfaces
             self.n_neighbors = len(self.surfaces)   
         
+        # get global min and max height values of all surfaces
+        self.HistogramMaxVal, self.HistogramMinVal = float(0.0), float('inf')
+        for surface in self.surfaces:
+            if np.min(surface) < self.HistogramMinVal:
+                self.HistogramMinVal = np.min(surface)
+            if np.max(surface) > self.HistogramMaxVal:
+                self.HistogramMaxVal = np.max(surface)
+        # get second standard deviation of global min and max height values
+        # self.HistogramMinVal = self.HistogramMinVal * 2
+        # self.HistogramMaxVal = self.HistogramMaxVal * 2
+
+        # histogram bins formula according to feature dimension
+        self.bins = max(10, 10**(math.ceil(math.log10(128**2)) - 3))
+
         self.histograms, self.fouriers = [], []
         for surface in self.surfaces:
-            # normalize surface height values
-            surface = (surface - np.min(surface)) / (np.max(surface) - np.min(surface))
             # create histogram of current surface and append to histogram list
-            self.histograms.append(np.histogram(surface.reshape(-1))[0])
+            self.histograms.append(np.histogram(surface.reshape(-1), bins=self.bins, range=(self.HistogramMinVal, self.HistogramMaxVal))[0])
             # compute fourier of current surface and append to fourier list
             self.fouriers.append(np.absolute(fft.fft2(surface)))
 
@@ -229,10 +242,9 @@ class VectorSpaceContentLoss(ContentLoss):
     # the input surface and the - pre-provided - subset of training surfaces. The exact subset cardinality is based on the n_neighbors parameter
     # of the class instance.
     def __call__(self, surface):
-        # normalize surface height values
-        surface = (surface - np.min(surface)) / (np.max(surface) - np.min(surface))
         # Get (a) the histogram of the heights and (b) the real components of the 2D FFT for the evaluated surface
-        (histogram, _), fourier = np.histogram(surface.reshape(-1)), np.absolute(
+        #TODO: exception error: too many values to unpack
+        (histogram, _), fourier = np.histogram(surface.reshape(-1), bins=self.bins, range=(self.HistogramMinVal, self.HistogramMaxVal))[0], np.absolute(
             fft.fft2(surface)
         )
 

@@ -23,10 +23,10 @@ class TrainingManager(Configuration):
         if not hasattr(self, "checkpoint"):
             self.checkpoint = Configuration(directory=None, multiple=False)
 
-        if not hasattr(self, "content_loss"):
-            self.content_loss = None
+        if not hasattr(self, "NGramGraphLoss"):
+            self.NGramGraphLoss = None
 
-        if self.content_loss is None:
+        if self.NGramGraphLoss is None:
             self.criterion.weight = 1
 
         if not hasattr(self.criterion, "weight"):
@@ -65,16 +65,16 @@ class TrainingManager(Configuration):
         min_generator_loss = float("inf")
         max_generator_loss = float(0.0)
         max_discriminator_loss = float(0.0)
-        max_vector_content_loss = float(0.0)
-        max_content_loss = float(0.0)
+        max_HeightHistogramAndFourierLoss = float(0.0)
+        max_NGramGraphLoss = float(0.0)
         for epoch in tqdm(range(self.n_epochs), desc="Epochs"):
             (
                 generator_loss,
                 discriminator_loss,
                 discriminator_output_real,
                 discriminator_output_fake,
-                content_loss,
-                vector_content_loss,
+                NGramGraphLoss,
+                HeightHistogramAndFourierLoss,
             ) = train_epoch_f(
                 generator,
                 discriminator,
@@ -82,8 +82,8 @@ class TrainingManager(Configuration):
                 optimizer_generator,
                 optimizer_discriminator,
                 self.criterion.instance,
-                content_loss_fn=self.content_loss,
-                vector_content_loss_fn=self.vector_content_loss,
+                content_loss_fn=self.NGramGraphLoss,
+                vector_content_loss_fn=self.HeightHistogramAndFourierLoss,
                 loss_weights=(self.content_loss_weight, self.criterion.weight),
                 log_every_n=self.log_every_n,
             )
@@ -113,32 +113,15 @@ class TrainingManager(Configuration):
                     self.checkpoint.directory / f"{discriminator_mt}.pt",
                 )
 
-            # normalize losses
-            if generator_loss > max_generator_loss:
-                max_generator_loss = generator_loss
-            generator_loss = generator_loss / max_generator_loss
-
-            if discriminator_loss > max_discriminator_loss:
-                max_discriminator_loss = discriminator_loss
-            discriminator_loss = discriminator_loss / max_discriminator_loss
-
-            if vector_content_loss > max_vector_content_loss:
-                max_vector_content_loss = vector_content_loss
-            vector_content_loss = vector_content_loss / max_vector_content_loss
-
-            if content_loss > max_content_loss:
-                max_content_loss = content_loss
-            content_loss = content_loss / max_content_loss
-
             with torch.no_grad():
                 fixed_fake = generator(fixed_noise).detach().cpu()
 
             logger.info(
-                "Epoch: %02d, Generator Loss: %7.3f (Content Loss: %7.3f, Vector Loss: %7.3f), Discriminator Loss: %7.3f",
+                "Epoch: %02d, Generator Loss: %7.3f (N-Gram Graph Loss: %7.3f, Height Histogram and Fourier Loss: %7.3f), Discriminator Loss: %7.3f",
                 epoch,
                 generator_loss,
-                content_loss,
-                vector_content_loss,
+                NGramGraphLoss,
+                HeightHistogramAndFourierLoss,
                 discriminator_loss,
             )
 
@@ -149,12 +132,33 @@ class TrainingManager(Configuration):
                 discriminator_output_fake,
             )
 
+            # normalize all losses
+            if generator_loss > max_generator_loss:
+                max_generator_loss = generator_loss
+            if max_generator_loss is not None and (max_generator_loss != 0):
+                generator_loss = generator_loss / max_generator_loss
+
+            if discriminator_loss > max_discriminator_loss:
+                max_discriminator_loss = discriminator_loss
+            if max_discriminator_loss is not None and (max_discriminator_loss != 0):
+                discriminator_loss = discriminator_loss / max_discriminator_loss
+
+            if HeightHistogramAndFourierLoss > max_HeightHistogramAndFourierLoss:
+                max_HeightHistogramAndFourierLoss = HeightHistogramAndFourierLoss
+            if max_HeightHistogramAndFourierLoss is not None and (max_HeightHistogramAndFourierLoss != 0):
+                HeightHistogramAndFourierLoss = HeightHistogramAndFourierLoss / max_HeightHistogramAndFourierLoss
+
+            if NGramGraphLoss > max_NGramGraphLoss:
+                max_NGramGraphLoss = NGramGraphLoss
+            if max_NGramGraphLoss is not None and (max_NGramGraphLoss != 0):
+                NGramGraphLoss = NGramGraphLoss / max_NGramGraphLoss
+
             yield (
                 generator_loss,
                 discriminator_loss,
                 discriminator_output_real,
                 discriminator_output_fake,
-                content_loss,
-                vector_content_loss,
+                NGramGraphLoss,
+                HeightHistogramAndFourierLoss,
                 fixed_fake,
             )
