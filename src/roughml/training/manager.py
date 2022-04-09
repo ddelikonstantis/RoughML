@@ -113,7 +113,26 @@ class TrainingManager(Configuration):
                     self.checkpoint.directory / f"{discriminator_mt}.pt",
                 )
 
-            # normalize losses
+            with torch.no_grad():
+                fixed_fake = generator(fixed_noise).detach().cpu()
+
+            logger.info(
+                "Epoch: %02d, Generator Loss: %7.3f (N-Gram Graph Loss: %7.3f, Height Histogram and Fourier Loss: %7.3f), Discriminator Loss: %7.3f",
+                epoch,
+                generator_loss,
+                NGramGraphLoss,
+                HeightHistogramAndFourierLoss,
+                discriminator_loss,
+            )
+
+            logger.info(
+                "Epoch: %02d, Discriminator Output: [Real: %7.3f, Fake: %7.3f]",
+                epoch,
+                discriminator_output_real,
+                discriminator_output_fake,
+            )
+
+            # normalize all losses
             if generator_loss > max_generator_loss:
                 max_generator_loss = generator_loss
             if max_generator_loss is not None and (max_generator_loss != 0):
@@ -133,25 +152,6 @@ class TrainingManager(Configuration):
                 max_NGramGraphLoss = NGramGraphLoss
             if max_NGramGraphLoss is not None and (max_NGramGraphLoss != 0):
                 NGramGraphLoss = NGramGraphLoss / max_NGramGraphLoss
-
-            with torch.no_grad():
-                fixed_fake = generator(fixed_noise).detach().cpu()
-
-            logger.info(
-                "Epoch: %02d, Generator Loss: %7.3f (N-Gram Graph Loss: %7.3f, Height Histogram and Fourier Loss: %7.3f), Discriminator Loss: %7.3f",
-                epoch,
-                generator_loss,
-                NGramGraphLoss,
-                HeightHistogramAndFourierLoss,
-                discriminator_loss,
-            )
-
-            logger.info(
-                "Epoch: %02d, Discriminator Output: [Real: %7.3f, Fake: %7.3f]",
-                epoch,
-                discriminator_output_real,
-                discriminator_output_fake,
-            )
 
             yield (
                 generator_loss,
