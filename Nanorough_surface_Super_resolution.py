@@ -388,8 +388,8 @@ training_flow = TrainingFlow(
     },
     # TODO: make / outside of "", make path OS independent
     plot={
-        "grayscale": {"limit": 10, "save_path_fmt": "grayscale\/%s_%02d.png"},
-        "surface": {"limit": 10, "save_path_fmt": "surface\/%s_%02d.png"},
+        "grayscale": {"limit": 10, "save_path_fmt": "grayscale/%s_%02d.png"},
+        "surface": {"limit": 10, "save_path_fmt": "surface/%s_%02d.png"},
         "against": {"save_path_fmt": "against_%s.png"},
     },
     suppress_exceptions=False,
