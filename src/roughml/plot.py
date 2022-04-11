@@ -1,5 +1,6 @@
 import os
 
+import logging
 import IPython.display as ipyd
 import matplotlib.animation as animation
 import matplotlib.pyplot as plt
@@ -8,6 +9,8 @@ import plotly.express as px
 import plotly.graph_objects as go
 import torchvision.utils as vutils
 from PIL import Image
+
+logger = logging.getLogger(__name__)
 
 
 def plot_against(
@@ -32,6 +35,12 @@ def plot_against(
     else:
         with save_path.open("wb") as file:
             plt.savefig(file, bbox_inches="tight")
+
+        logger.info(
+            "Saved plot with title: %s on path: %s",
+            title,
+            save_path
+        )
 
         plt.close()
 
@@ -62,6 +71,14 @@ def as_3d_surface(array, save_path=False):
 
 
 def animate_epochs(batches_of_tensors, indices=None, save_path=None, **kwargs):
+    # exit function in case of unsupported Operating System
+    if os.name != "nt":
+        logger.info(
+            "Current OS is incompatible in order to animate epochs: %s",
+            os.name
+        )
+        return
+
     fig = plt.figure(figsize=(8, 8))
     axes = fig.add_subplot(111)
 
@@ -91,9 +108,6 @@ def animate_epochs(batches_of_tensors, indices=None, save_path=None, **kwargs):
                 ),
             ]
         )
-
-    if os.name != "nt":
-        plt.close()
 
     ani = animation.ArtistAnimation(
         fig,

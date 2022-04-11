@@ -174,6 +174,7 @@ class TrainingFlow(Configuration):
             save_path_bce_vs_ngraph_loss,
             save_path_fourier_loss,
         ) = (None, None, None, None)
+        
         if self.plot.against.save_path_fmt is not None:
             save_path_gen_vs_dis_loss = self.plot.against.save_path_fmt % (
                 "gen_vs_dis_loss",
@@ -249,13 +250,6 @@ class TrainingFlow(Configuration):
             save_path=self.plot.save_directory / save_path_fourier_loss,
         )
 
-        animate_epochs(
-            fixed_fakes,
-            indices=self.animation.indices,
-            save_path=animation_save_path,
-            **self.animation.parameters.to_dict(),
-        )
-
         if self.plot.save_directory is not None:
             (self.plot.save_directory / self.plot.grayscale.save_path_fmt).parent.mkdir(
                 parents=True, exist_ok=True
@@ -277,6 +271,11 @@ class TrainingFlow(Configuration):
                         / (self.plot.grayscale.save_path_fmt % ("fake", i)),
                     )
 
+                logger.info(
+                    "Saved grayscale images on path: %s",
+                    self.plot.save_directory / (self.plot.grayscale.save_path_fmt.split("/")[0])
+                )
+
             if self.plot.surface.save_path_fmt is not None:
                 (
                     self.plot.save_directory / self.plot.surface.save_path_fmt
@@ -296,3 +295,15 @@ class TrainingFlow(Configuration):
                         self.plot.save_directory
                         / (self.plot.surface.save_path_fmt % ("fake", i)),
                     )
+
+                logger.info(
+                    "Saved 3D surface images on path: %s",
+                    self.plot.save_directory / (self.plot.surface.save_path_fmt.split("/")[0])
+                )
+
+        animate_epochs(
+            fixed_fakes,
+            indices=self.animation.indices,
+            save_path=animation_save_path,
+            **self.animation.parameters.to_dict(),
+        )
