@@ -71,6 +71,11 @@ def as_3d_surface(array, save_path=False):
 
 
 def animate_epochs(batches_of_tensors, indices=None, save_path=None, **kwargs):
+
+    logger.info("Animation path: %s",
+        os.name
+    )
+    
     fig = plt.figure(figsize=(8, 8))
     axes = fig.add_subplot(111)
 
@@ -101,8 +106,6 @@ def animate_epochs(batches_of_tensors, indices=None, save_path=None, **kwargs):
             ]
         )
 
-    logger.info("%s",
-        os.name)
     if os.name != "nt":
         plt.close()
 
