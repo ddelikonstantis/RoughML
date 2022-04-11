@@ -282,6 +282,11 @@ class TrainingFlow(Configuration):
                     self.plot.save_directory
                 )
 
+                logger.info(
+                    "Saved grayscale images on path: %s",
+                    self.plot.grayscale.save_path_fmt
+                )
+
             if self.plot.surface.save_path_fmt is not None:
                 (
                     self.plot.save_directory / self.plot.surface.save_path_fmt
