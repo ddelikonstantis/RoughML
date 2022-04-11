@@ -174,6 +174,7 @@ class TrainingFlow(Configuration):
             save_path_bce_vs_ngraph_loss,
             save_path_fourier_loss,
         ) = (None, None, None, None)
+        
         if self.plot.against.save_path_fmt is not None:
             save_path_gen_vs_dis_loss = self.plot.against.save_path_fmt % (
                 "gen_vs_dis_loss",
@@ -187,7 +188,7 @@ class TrainingFlow(Configuration):
             save_path_fourier_loss = self.plot.against.save_path_fmt % (
                 "ngraph_vs_fourier_loss",
             )
-
+        # TODO: make log regarding the status of the folder creation
         pd.DataFrame(
             data=np.array(
                 [
@@ -255,7 +256,7 @@ class TrainingFlow(Configuration):
             save_path=animation_save_path,
             **self.animation.parameters.to_dict(),
         )
-
+        #TODO: add logger here to see where it fails
         if self.plot.save_directory is not None:
             (self.plot.save_directory / self.plot.grayscale.save_path_fmt).parent.mkdir(
                 parents=True, exist_ok=True

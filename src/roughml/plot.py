@@ -9,7 +9,7 @@ import plotly.graph_objects as go
 import torchvision.utils as vutils
 from PIL import Image
 
-
+# TODO: write the path on output log
 def plot_against(
     first, second, title="", xlabel="", ylabel="", labels=("", ""), save_path=None
 ):

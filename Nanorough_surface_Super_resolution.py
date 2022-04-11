@@ -290,6 +290,7 @@ training_flow = TrainingFlow(
         ],
         "save_path": "perceptron_per_epoch_animation.mp4",
     },
+    # TODO: make / outside of "", make path OS independent
     plot={
         "grayscale": {"limit": 10, "save_path_fmt": "grayscale/%s_%02d.png"},
         "surface": {"limit": 10, "save_path_fmt": "surface/%s_%02d.png"},

@@ -244,7 +244,7 @@ class VectorSpaceContentLoss(ContentLoss):
     def __call__(self, surface):
         # Get (a) the histogram of the heights and (b) the real components of the 2D FFT for the evaluated surface
         #TODO: exception error: too many values to unpack
-        (histogram, _), fourier = np.histogram(surface.reshape(-1), bins=self.bins, range=(self.HistogramMinVal, self.HistogramMaxVal))[0], np.absolute(
+        (histogram, _), fourier = np.histogram(surface.reshape(-1), bins=self.bins, range=(self.HistogramMinVal, self.HistogramMaxVal)), np.absolute(
             fft.fft2(surface)
         )
 
