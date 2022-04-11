@@ -256,7 +256,6 @@ class TrainingFlow(Configuration):
             save_path=animation_save_path,
             **self.animation.parameters.to_dict(),
         )
-        # TODO: add logger here to see where it fails
         if self.plot.save_directory is not None:
             (self.plot.save_directory / self.plot.grayscale.save_path_fmt).parent.mkdir(
                 parents=True, exist_ok=True
@@ -278,6 +277,11 @@ class TrainingFlow(Configuration):
                         / (self.plot.grayscale.save_path_fmt % ("fake", i)),
                     )
 
+                logger.info(
+                    "Saved grayscale images on path: %s",
+                    self.plot.save_directory
+                )
+
             if self.plot.surface.save_path_fmt is not None:
                 (
                     self.plot.save_directory / self.plot.surface.save_path_fmt
@@ -297,3 +301,8 @@ class TrainingFlow(Configuration):
                         self.plot.save_directory
                         / (self.plot.surface.save_path_fmt % ("fake", i)),
                     )
+
+                logger.info(
+                    "Saved 3D surface images on path: %s",
+                    self.plot.save_directory
+                )
