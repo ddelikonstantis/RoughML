@@ -273,13 +273,7 @@ class TrainingFlow(Configuration):
 
                 logger.info(
                     "Saved grayscale images on path: %s",
-                    self.plot.save_directory
-                )
-
-                logger.info(
-                    "Saved grayscale images on path: %s",
-                    self.plot.save_directory
-                        / (self.plot.grayscale.save_path_fmt % ("true", i))
+                    self.plot.save_directory / (self.plot.grayscale.save_path_fmt.split("/")[0])
                 )
 
             if self.plot.surface.save_path_fmt is not None:
@@ -304,7 +298,7 @@ class TrainingFlow(Configuration):
 
                 logger.info(
                     "Saved 3D surface images on path: %s",
-                    self.plot.save_directory
+                    self.plot.save_directory / (self.plot.surface.save_path_fmt.split("/")[0])
                 )
 
         animate_epochs(
