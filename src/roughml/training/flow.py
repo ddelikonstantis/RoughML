@@ -250,12 +250,6 @@ class TrainingFlow(Configuration):
             save_path=self.plot.save_directory / save_path_fourier_loss,
         )
 
-        # animate_epochs(
-        #     fixed_fakes,
-        #     indices=self.animation.indices,
-        #     save_path=animation_save_path,
-        #     **self.animation.parameters.to_dict(),
-        # )
         if self.plot.save_directory is not None:
             (self.plot.save_directory / self.plot.grayscale.save_path_fmt).parent.mkdir(
                 parents=True, exist_ok=True
@@ -282,6 +276,12 @@ class TrainingFlow(Configuration):
                     self.plot.save_directory
                 )
 
+                logger.info(
+                    "Saved grayscale images on path: %s",
+                    self.plot.save_directory
+                        / (self.plot.grayscale.save_path_fmt % ("true", i))
+                )
+
             if self.plot.surface.save_path_fmt is not None:
                 (
                     self.plot.save_directory / self.plot.surface.save_path_fmt
@@ -306,3 +306,10 @@ class TrainingFlow(Configuration):
                     "Saved 3D surface images on path: %s",
                     self.plot.save_directory
                 )
+
+        animate_epochs(
+            fixed_fakes,
+            indices=self.animation.indices,
+            save_path=animation_save_path,
+            **self.animation.parameters.to_dict(),
+        )
