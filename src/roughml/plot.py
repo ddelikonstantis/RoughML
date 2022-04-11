@@ -72,10 +72,13 @@ def as_3d_surface(array, save_path=False):
 
 def animate_epochs(batches_of_tensors, indices=None, save_path=None, **kwargs):
 
-    logger.info("Animation path: %s",
-        os.name
-    )
-    
+    if os.name != "nt":
+        logger.info(
+            "Supported OS is incompatible in order to animate epochs: %s",
+            os.name
+        )
+        return
+
     fig = plt.figure(figsize=(8, 8))
     axes = fig.add_subplot(111)
 
@@ -105,9 +108,6 @@ def animate_epochs(batches_of_tensors, indices=None, save_path=None, **kwargs):
                 ),
             ]
         )
-
-    if os.name != "nt":
-        plt.close()
 
     ani = animation.ArtistAnimation(
         fig,
