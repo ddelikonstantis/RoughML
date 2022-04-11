@@ -250,12 +250,12 @@ class TrainingFlow(Configuration):
             save_path=self.plot.save_directory / save_path_fourier_loss,
         )
 
-        animate_epochs(
-            fixed_fakes,
-            indices=self.animation.indices,
-            save_path=animation_save_path,
-            **self.animation.parameters.to_dict(),
-        )
+        # animate_epochs(
+        #     fixed_fakes,
+        #     indices=self.animation.indices,
+        #     save_path=animation_save_path,
+        #     **self.animation.parameters.to_dict(),
+        # )
         if self.plot.save_directory is not None:
             (self.plot.save_directory / self.plot.grayscale.save_path_fmt).parent.mkdir(
                 parents=True, exist_ok=True
