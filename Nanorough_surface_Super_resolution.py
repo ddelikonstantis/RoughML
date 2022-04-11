@@ -290,7 +290,6 @@ training_flow = TrainingFlow(
         ],
         "save_path": "perceptron_per_epoch_animation.mp4",
     },
-    # TODO: make / outside of "", make path OS independent
     plot={
         "grayscale": {"limit": 10, "save_path_fmt": "grayscale/%s_%02d.png"},
         "surface": {"limit": 10, "save_path_fmt": "surface/%s_%02d.png"},
@@ -352,7 +351,7 @@ training_flow = TrainingFlow(
             "train_epoch": per_epoch,
             "log_every_n": 10,
             "criterion": {"instance": criterion},
-            "n_epochs": 10,
+            "n_epochs": 1,
             "train_ratio": 0.8,
             "optimizer": {
                 "type": Adam,
@@ -387,6 +386,7 @@ training_flow = TrainingFlow(
         ],
         "save_path": "cnn_per_epoch_animation.mp4",
     },
+    # TODO: make / outside of "", make path OS independent
     plot={
         "grayscale": {"limit": 10, "save_path_fmt": "grayscale/%s_%02d.png"},
         "surface": {"limit": 10, "save_path_fmt": "surface/%s_%02d.png"},

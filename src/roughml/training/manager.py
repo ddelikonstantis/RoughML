@@ -125,13 +125,6 @@ class TrainingManager(Configuration):
                 discriminator_loss,
             )
 
-            logger.info(
-                "Epoch: %02d, Discriminator Output: [Real: %7.3f, Fake: %7.3f]",
-                epoch,
-                discriminator_output_real,
-                discriminator_output_fake,
-            )
-
             # normalize all losses
             if generator_loss > max_generator_loss:
                 max_generator_loss = generator_loss
@@ -152,6 +145,22 @@ class TrainingManager(Configuration):
                 max_NGramGraphLoss = NGramGraphLoss
             if max_NGramGraphLoss is not None and (max_NGramGraphLoss != 0):
                 NGramGraphLoss = NGramGraphLoss / max_NGramGraphLoss
+
+            logger.info(
+                "Epoch: %02d, Normalized Generator Loss: %7.3f (Normalized N-Gram Graph Loss: %7.3f, Normalized Height Histogram and Fourier Loss: %7.3f), Normalized Discriminator Loss: %7.3f",
+                epoch,
+                generator_loss,
+                NGramGraphLoss,
+                HeightHistogramAndFourierLoss,
+                discriminator_loss,
+            )
+
+            logger.info(
+                "Epoch: %02d, Discriminator Output: [Real: %7.3f, Fake: %7.3f]",
+                epoch,
+                discriminator_output_real,
+                discriminator_output_fake,
+            )
 
             yield (
                 generator_loss,

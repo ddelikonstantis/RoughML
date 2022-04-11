@@ -1,5 +1,6 @@
 import os
 
+import logging
 import IPython.display as ipyd
 import matplotlib.animation as animation
 import matplotlib.pyplot as plt
@@ -9,7 +10,9 @@ import plotly.graph_objects as go
 import torchvision.utils as vutils
 from PIL import Image
 
-# TODO: write the path on output log
+logger = logging.getLogger(__name__)
+
+
 def plot_against(
     first, second, title="", xlabel="", ylabel="", labels=("", ""), save_path=None
 ):
@@ -32,6 +35,12 @@ def plot_against(
     else:
         with save_path.open("wb") as file:
             plt.savefig(file, bbox_inches="tight")
+
+        logger.info(
+            "Saved plot with title: %s on path: %s",
+            title,
+            save_path
+        )
 
         plt.close()
 
