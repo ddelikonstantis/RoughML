@@ -101,6 +101,8 @@ def animate_epochs(batches_of_tensors, indices=None, save_path=None, **kwargs):
             ]
         )
 
+    logger.info("%s",
+        os.name)
     if os.name != "nt":
         plt.close()
 
