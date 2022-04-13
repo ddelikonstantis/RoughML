@@ -71,22 +71,6 @@ def as_3d_surface(array, save_path=False):
 
 
 def animate_epochs(batches_of_tensors, indices=None, save_path=None, **kwargs):
-
-    # TODO: try catch when ffmpeg occurs
-    # try:
-    #     # Run ffmpeg
-    #     ....
-    # except Error as execErr:
-    #     addlogger("OS error: {0}".format(execErr))
-
-    # exit function in case of unsupported Operating System
-    if os.name != "nt":
-        logger.info(
-            "Current OS is incompatible in order to animate epochs: %s",
-            os.name
-        )
-        return
-
     fig = plt.figure(figsize=(8, 8))
     axes = fig.add_subplot(111)
 
@@ -120,19 +104,26 @@ def animate_epochs(batches_of_tensors, indices=None, save_path=None, **kwargs):
     if os.name != "nt":
         plt.close()
 
-    ani = animation.ArtistAnimation(
-        fig,
-        artists,
-        interval=kwargs.get("interval", 1000),
-        repeat_delay=kwargs.get("repeat_delay", 1000),
-        blit=kwargs.get("blit", True),
-    )
+    try:
+        ani = animation.ArtistAnimation(
+            fig,
+            artists,
+            interval=kwargs.get("interval", 1000),
+            repeat_delay=kwargs.get("repeat_delay", 1000),
+            blit=kwargs.get("blit", True),
+        )
 
-    ipyd.display(ipyd.HTML(ani.to_jshtml()))
+        ipyd.display(ipyd.HTML(ani.to_jshtml()))
 
-    if save_path is not None:
-        # Set up formatting for the movie files
-        Writer = animation.writers["ffmpeg"]
-        writer = Writer(fps=kwargs.get("fps", 15), bitrate=kwargs.get("bitrate", 1800))
+        if save_path is not None:
+            # Set up formatting for the movie files
+            Writer = animation.writers["ffmpeg"]
+            writer = Writer(fps=kwargs.get("fps", 15), bitrate=kwargs.get("bitrate", 1800))
 
-        ani.save(str(save_path), writer=writer)
+            ani.save(str(save_path), writer=writer)
+            
+    except Exception as execErr:
+        logger.info(
+            "OS error: %s",
+            execErr
+        )
