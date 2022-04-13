@@ -219,7 +219,7 @@ class VectorSpaceContentLoss(ContentLoss):
             self.bins = max(10, 10**(math.ceil(math.log10(self.surfaces.shape[1]**2)) - 3))
         
         # get global min and max height values of all surfaces to create histogram bins range
-        self.HistogramMaxVal, self.HistogramMinVal = float(0.0), float('inf')
+        self.HistogramMaxVal, self.HistogramMinVal = -float('inf'), float('inf')
         for surface in self.surfaces:
             if np.min(surface) < self.HistogramMinVal:
                 self.HistogramMinVal = np.min(surface)
@@ -270,7 +270,7 @@ class VectorSpaceContentLoss(ContentLoss):
             # Normalize histogram diff
             if self.MaxHistDiff < HistDiff:
                 self.MaxHistDiff = HistDiff
-            if self.MaxHistDiff is not None and (self.MaxHistDiff != 0):
+            if self.MaxHistDiff != 0:
                 HistDiff /= self.MaxHistDiff
 
             # Calculate the Fourier contribution to the loss with respect to this training instance
@@ -283,7 +283,7 @@ class VectorSpaceContentLoss(ContentLoss):
             # Normalize fourier diff
             if self.MaxFourierDiff < FourierDiff:
                 self.MaxFourierDiff = FourierDiff
-            if self.MaxFourierDiff is not None and (self.MaxFourierDiff != 0):
+            if self.MaxFourierDiff != 0:
                 FourierDiff /= self.MaxFourierDiff
 
             diff = HistDiff + FourierDiff
@@ -291,6 +291,9 @@ class VectorSpaceContentLoss(ContentLoss):
 
         # Normalize the total diff to reflect the average diff over all instances (each of which has 2 components contributing: histogram and Fourier)
         diff /= self.n_neighbors * 2
+
+        # Equalize the histogram and fourier diff to sum to 1
+        diff /= 2
 
         # The loss is a function of diff normalized between 0 and 1. A value of diff = 0
         # (i.e. the evaluated surface is completely identical - in terms of histogam and Fourier - to all the training instances)
