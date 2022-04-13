@@ -210,15 +210,15 @@ class VectorSpaceContentLoss(ContentLoss):
         with contextlib.suppress(AttributeError):
             self.surfaces = self.surfaces.numpy()
 
+        # neighbours is total number of surfaces
         if not hasattr(self, "n_neighbors"):
-            # neighbours is total number of surfaces
             self.n_neighbors = len(self.surfaces)
         
-        # histogram bins formula depending on feature dimension
-        if not hasattr(self, "histogram_bins"):
+        # histogram bins formula depending on image dimension
+        if not hasattr(self, "bins"):
             self.bins = max(10, 10**(math.ceil(math.log10(self.surfaces.shape[0]**2)) - 3))
         
-        # get global min and max height values of all surfaces
+        # get global min and max height values of all surfaces to create histogram bins range
         self.HistogramMaxVal, self.HistogramMinVal = float(0.0), float('inf')
         for surface in self.surfaces:
             if np.min(surface) < self.HistogramMinVal:
@@ -226,7 +226,7 @@ class VectorSpaceContentLoss(ContentLoss):
             if np.max(surface) > self.HistogramMaxVal:
                 self.HistogramMaxVal = np.max(surface)
         # get second standard deviation of global min and max height values
-        # TODO: get standard deviation of samples and then extend to second deviation
+        # TODO: the correct way to do it is to get the standard deviation of samples and then extend to second deviation
         # self.HistogramMinVal = self.HistogramMinVal * 2
         # self.HistogramMaxVal = self.HistogramMaxVal * 2
 
@@ -236,6 +236,9 @@ class VectorSpaceContentLoss(ContentLoss):
             self.histograms.append(np.histogram(surface.reshape(-1), bins=self.bins, range=(self.HistogramMinVal, self.HistogramMaxVal))[0])
             # compute fourier of current surface and append to fourier list
             self.fouriers.append(np.absolute(fft.fft2(surface)))
+
+        # Initialize MaxDiff for normalization so that histogram and fourier present the same weight loss
+        self.MaxDiff = float(0.0)
 
 
     # TODO: examine cosine similarity
@@ -260,8 +263,6 @@ class VectorSpaceContentLoss(ContentLoss):
             #i.e. for every point in the evaluated surface histogram, calculate the difference of its value to the current training instance histogram 
             # and raise this difference to the power of 2.
             # Get the square root of the mean of these squared differences and add it to the total diff
-            # TODO: histogram ranges can vary according to height values. Alignment is needed.
-            # TODO: normalize histogram and fourier values!!!!!
             diff += np.sqrt(np.square(np.subtract(histogram, _histogram)).mean()) 
 
             # Calculate the Fourier contribution to the loss with respect to this training instance
@@ -270,12 +271,17 @@ class VectorSpaceContentLoss(ContentLoss):
             # corresponding fourier transform point of the current training instance
             # and raise the difference to the power of 2.
             # Get the square root of the mean of these squared differences and add it to the total diff
-            # TODO: Can the semantics of fft components vary according to spectral content? Is alignment needed?
             diff += np.sqrt(np.square(np.subtract(fourier, _fourier)).mean())
         
         # Normalize the total diff to reflect the average diff over all instances (each of which has 2 components contributing: histogram and Fourier)
         diff /= self.n_neighbors * 2
         
+        # Normalize diff so that histogram and fourier present the same weight loss
+        if self.MaxDiff < diff:
+            self.MaxDiff = diff
+        if self.MaxDiff is not None and (self.MaxDiff != 0):
+            diff /= self.MaxDiff
+
         # The loss is a function of diff normalized between 0 and 1. A value of diff = 0
         # (i.e. the evaluated surface is completely identical - in terms of histogam and Fourier - to all the training instances)
         # will give a max loss of 1. Higher values of diff will result to lower loss values (to the limit reaching zero).
