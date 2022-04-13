@@ -36,13 +36,13 @@ def plot_against(
         with save_path.open("wb") as file:
             plt.savefig(file, bbox_inches="tight")
 
+        plt.close()
+
         logger.info(
             "Saved plot with title: %s on path: %s",
             title,
             save_path
         )
-
-        plt.close()
 
 
 def as_grayscale_image(array, save_path=None):
