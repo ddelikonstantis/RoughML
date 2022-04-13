@@ -210,23 +210,25 @@ class VectorSpaceContentLoss(ContentLoss):
         with contextlib.suppress(AttributeError):
             self.surfaces = self.surfaces.numpy()
 
+        # neighbours is total number of surfaces
         if not hasattr(self, "n_neighbors"):
-            # neighbours is total number of surfaces
-            self.n_neighbors = len(self.surfaces)   
+            self.n_neighbors = len(self.surfaces)
         
-        # get global min and max height values of all surfaces
-        self.HistogramMaxVal, self.HistogramMinVal = float(0.0), float('inf')
+        # histogram bins formula depending on image dimension
+        if not hasattr(self, "bins"):
+            self.bins = max(10, 10**(math.ceil(math.log10(self.surfaces.shape[1]**2)) - 3))
+        
+        # get global min and max height values of all surfaces to create histogram bins range
+        self.HistogramMaxVal, self.HistogramMinVal = -float('inf'), float('inf')
         for surface in self.surfaces:
             if np.min(surface) < self.HistogramMinVal:
                 self.HistogramMinVal = np.min(surface)
             if np.max(surface) > self.HistogramMaxVal:
                 self.HistogramMaxVal = np.max(surface)
         # get second standard deviation of global min and max height values
+        # TODO: the correct way to do it is to get the standard deviation of samples and then extend to second deviation
         # self.HistogramMinVal = self.HistogramMinVal * 2
         # self.HistogramMaxVal = self.HistogramMaxVal * 2
-
-        # histogram bins formula according to feature dimension
-        self.bins = max(10, 10**(math.ceil(math.log10(128**2)) - 3))
 
         self.histograms, self.fouriers = [], []
         for surface in self.surfaces:
@@ -234,6 +236,10 @@ class VectorSpaceContentLoss(ContentLoss):
             self.histograms.append(np.histogram(surface.reshape(-1), bins=self.bins, range=(self.HistogramMinVal, self.HistogramMaxVal))[0])
             # compute fourier of current surface and append to fourier list
             self.fouriers.append(np.absolute(fft.fft2(surface)))
+
+        # Initialize normalization flags so that histogram and fourier present the same loss weight
+        self.MaxHistDiff = float(0.0)
+        self.MaxFourierDiff = float(0.0)
 
 
     # TODO: examine cosine similarity
@@ -249,6 +255,8 @@ class VectorSpaceContentLoss(ContentLoss):
 
         # Initialize the difference
         diff = 0
+        HistDiff = 0
+        FourierDiff = 0
         # For every (histogram of heights , fourier) tuple of each training instance (of an n_neighbors subset of the training set)
         for _histogram, _fourier in itertools.islice(
             zip(self.histograms, self.fouriers), self.n_neighbors
@@ -258,8 +266,12 @@ class VectorSpaceContentLoss(ContentLoss):
             #i.e. for every point in the evaluated surface histogram, calculate the difference of its value to the current training instance histogram 
             # and raise this difference to the power of 2.
             # Get the square root of the mean of these squared differences and add it to the total diff
-            # TODO: histogram ranges can vary according to height values. Alignment is needed.
-            diff += np.sqrt(np.square(np.subtract(histogram, _histogram)).mean()) 
+            HistDiff += np.sqrt(np.square(np.subtract(histogram, _histogram)).mean()) 
+            # Normalize histogram diff
+            if self.MaxHistDiff < HistDiff:
+                self.MaxHistDiff = HistDiff
+            if self.MaxHistDiff != 0:
+                HistDiff /= self.MaxHistDiff
 
             # Calculate the Fourier contribution to the loss with respect to this training instance
             # This contribution is effectively a difference/dissimilarity measurement between Fourier transformation outputs
@@ -267,12 +279,22 @@ class VectorSpaceContentLoss(ContentLoss):
             # corresponding fourier transform point of the current training instance
             # and raise the difference to the power of 2.
             # Get the square root of the mean of these squared differences and add it to the total diff
-            # TODO: Can the semantics of fft components vary according to spectral content? Is alignment needed?
-            diff += np.sqrt(np.square(np.subtract(fourier, _fourier)).mean())
-        
+            FourierDiff += np.sqrt(np.square(np.subtract(fourier, _fourier)).mean())
+            # Normalize fourier diff
+            if self.MaxFourierDiff < FourierDiff:
+                self.MaxFourierDiff = FourierDiff
+            if self.MaxFourierDiff != 0:
+                FourierDiff /= self.MaxFourierDiff
+
+            diff = HistDiff + FourierDiff
+
+
         # Normalize the total diff to reflect the average diff over all instances (each of which has 2 components contributing: histogram and Fourier)
         diff /= self.n_neighbors * 2
-        
+
+        # Equalize the histogram and fourier diff to sum to 1
+        diff /= 2
+
         # The loss is a function of diff normalized between 0 and 1. A value of diff = 0
         # (i.e. the evaluated surface is completely identical - in terms of histogam and Fourier - to all the training instances)
         # will give a max loss of 1. Higher values of diff will result to lower loss values (to the limit reaching zero).

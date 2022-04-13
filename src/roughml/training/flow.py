@@ -113,15 +113,15 @@ class TrainingFlow(Configuration):
         animation_save_path = plotting_dir / self.animation.save_path
         self.plot.save_directory = plotting_dir
 
-        cuda_avail = torch.cuda.is_available()
-        cuda_id = torch.cuda.current_device()
-        cuda_name = torch.cuda.get_device_name(cuda_id)
+        self.cuda_available = torch.cuda.is_available()
+        self.cuda_id = torch.cuda.current_device()
+        self.cuda_name = torch.cuda.get_device_name(self.cuda_id)
 
         logger.info(
             "Is CUDA supported? %s. Running the framework on device ID:%s with name: %s",
-            cuda_avail,
-            cuda_id,
-            cuda_name
+            self.cuda_available,
+            self.cuda_id,
+            self.cuda_name
         )
 
         logger.info(

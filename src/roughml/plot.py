@@ -36,13 +36,13 @@ def plot_against(
         with save_path.open("wb") as file:
             plt.savefig(file, bbox_inches="tight")
 
+        plt.close()
+
         logger.info(
             "Saved plot with title: %s on path: %s",
             title,
             save_path
         )
-
-        plt.close()
 
 
 def as_grayscale_image(array, save_path=None):
@@ -71,14 +71,6 @@ def as_3d_surface(array, save_path=False):
 
 
 def animate_epochs(batches_of_tensors, indices=None, save_path=None, **kwargs):
-    # exit function in case of unsupported Operating System
-    if os.name != "nt":
-        logger.info(
-            "Current OS is incompatible in order to animate epochs: %s",
-            os.name
-        )
-        return
-
     fig = plt.figure(figsize=(8, 8))
     axes = fig.add_subplot(111)
 
@@ -109,19 +101,29 @@ def animate_epochs(batches_of_tensors, indices=None, save_path=None, **kwargs):
             ]
         )
 
-    ani = animation.ArtistAnimation(
-        fig,
-        artists,
-        interval=kwargs.get("interval", 1000),
-        repeat_delay=kwargs.get("repeat_delay", 1000),
-        blit=kwargs.get("blit", True),
-    )
+    if os.name != "nt":
+        plt.close()
 
-    ipyd.display(ipyd.HTML(ani.to_jshtml()))
+    try:
+        ani = animation.ArtistAnimation(
+            fig,
+            artists,
+            interval=kwargs.get("interval", 1000),
+            repeat_delay=kwargs.get("repeat_delay", 1000),
+            blit=kwargs.get("blit", True),
+        )
 
-    if save_path is not None:
-        # Set up formatting for the movie files
-        Writer = animation.writers["ffmpeg"]
-        writer = Writer(fps=kwargs.get("fps", 15), bitrate=kwargs.get("bitrate", 1800))
+        ipyd.display(ipyd.HTML(ani.to_jshtml()))
 
-        ani.save(str(save_path), writer=writer)
+        if save_path is not None:
+            # Set up formatting for the movie files
+            Writer = animation.writers["ffmpeg"]
+            writer = Writer(fps=kwargs.get("fps", 15), bitrate=kwargs.get("bitrate", 1800))
+
+            ani.save(str(save_path), writer=writer)
+            
+    except Exception as execErr:
+        logger.info(
+            "OS error: %s",
+            execErr
+        )
