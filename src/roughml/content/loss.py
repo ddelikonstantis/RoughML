@@ -212,7 +212,11 @@ class VectorSpaceContentLoss(ContentLoss):
 
         if not hasattr(self, "n_neighbors"):
             # neighbours is total number of surfaces
-            self.n_neighbors = len(self.surfaces)   
+            self.n_neighbors = len(self.surfaces)
+        
+        # histogram bins formula depending on feature dimension
+        if not hasattr(self, "histogram_bins"):
+            self.bins = max(10, 10**(math.ceil(math.log10(self.surfaces.shape[0]**2)) - 3))
         
         # get global min and max height values of all surfaces
         self.HistogramMaxVal, self.HistogramMinVal = float(0.0), float('inf')
@@ -222,11 +226,9 @@ class VectorSpaceContentLoss(ContentLoss):
             if np.max(surface) > self.HistogramMaxVal:
                 self.HistogramMaxVal = np.max(surface)
         # get second standard deviation of global min and max height values
+        # TODO: get standard deviation of samples and then extend to second deviation
         # self.HistogramMinVal = self.HistogramMinVal * 2
         # self.HistogramMaxVal = self.HistogramMaxVal * 2
-
-        # histogram bins formula according to feature dimension
-        self.bins = max(10, 10**(math.ceil(math.log10(128**2)) - 3))
 
         self.histograms, self.fouriers = [], []
         for surface in self.surfaces:
@@ -259,6 +261,7 @@ class VectorSpaceContentLoss(ContentLoss):
             # and raise this difference to the power of 2.
             # Get the square root of the mean of these squared differences and add it to the total diff
             # TODO: histogram ranges can vary according to height values. Alignment is needed.
+            # TODO: normalize histogram and fourier values!!!!!
             diff += np.sqrt(np.square(np.subtract(histogram, _histogram)).mean()) 
 
             # Calculate the Fourier contribution to the loss with respect to this training instance

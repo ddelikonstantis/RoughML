@@ -71,6 +71,14 @@ def as_3d_surface(array, save_path=False):
 
 
 def animate_epochs(batches_of_tensors, indices=None, save_path=None, **kwargs):
+
+    # TODO: try catch when ffmpeg occurs
+    # try:
+    #     # Run ffmpeg
+    #     ....
+    # except Error as execErr:
+    #     addlogger("OS error: {0}".format(execErr))
+
     # exit function in case of unsupported Operating System
     if os.name != "nt":
         logger.info(
@@ -108,6 +116,9 @@ def animate_epochs(batches_of_tensors, indices=None, save_path=None, **kwargs):
                 ),
             ]
         )
+
+    if os.name != "nt":
+        plt.close()
 
     ani = animation.ArtistAnimation(
         fig,
