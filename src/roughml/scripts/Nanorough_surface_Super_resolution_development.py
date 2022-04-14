@@ -347,7 +347,7 @@ training_flow = TrainingFlow(
         "manager": {
             "benchmark": True,
             # Uncomment if you want to enable checkpointing
-            "checkpoint": {"multiple": True},
+            "checkpoint": {"multiple": False},
             "train_epoch": per_epoch,
             "log_every_n": 10,
             "criterion": {"instance": criterion},
