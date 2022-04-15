@@ -13,7 +13,7 @@ def load_image(image_filename):
     # convert to grayscale
     img = rgb2gray(img)
     # plot grayscale image and get shape
-    # cv2.imshow('grayscale image ' + str(img.shape), img)
+    cv2.imshow('grayscale image ' + str(img.shape), img)
 
     return img
 
@@ -26,11 +26,11 @@ def get_polar_fft(img):
     # get image fft2D, shift sums to the center and plot
     fft2d = np.fft.fftshift(np.fft.fft2(img))
     # get fft2d mean column values
-    fft2d_mean_col = np.mean(abs(fft2d), axis=0)
+    fft2d_mean_col = abs(np.mean(fft2d, axis=0))
     fft2d_mean_col_half = fft2d_mean_col[64:128]
     print('fft2d_mean_col: ','\n', fft2d_mean_col, '\n', fft2d_mean_col.shape, '\n')
     # get fft2d mean row values
-    fft2d_mean_row = np.mean(abs(fft2d), axis=1)
+    fft2d_mean_row = abs(np.mean(fft2d, axis=1))
     fft2d_mean_row_half = fft2d_mean_row[64:128]
     print('fft2d_mean_row: ','\n', fft2d_mean_row, '\n', fft2d_mean_row.shape, '\n')
     print('fft2d: ','\n', fft2d, '\n', fft2d.shape, '\n')
@@ -106,6 +106,6 @@ if __name__ == "__main__":
     # parser.add_argument('image5', help = 'directory of fifth image to compare', action='store_false')
     # args = parser.parse_args()
 
-    img = load_image(r"src\roughml\scripts\fake_00.png")
+    img = load_image(r"src\roughml\scripts\dataset_1000_128_03_00_03_04_04_0.60\CNNGenerator_CNNDiscriminator\2022_04_05_07_08_49_575958\Plots\grayscale\fake_00.png")
     polar_fft = get_polar_fft(img)
     
