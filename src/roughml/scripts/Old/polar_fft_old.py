@@ -7,7 +7,12 @@ import math
 import argparse
 
 
-def load_image(image_filename):
+def load_image(image_filename=None):
+    # img = []
+    # for i in image_filename:
+    #     im = cv2.imread(i)
+    #     im = rgb2gray(im)
+    #     img.append(im)
     # read image
     img = cv2.imread(image_filename)
     # convert to grayscale
@@ -17,45 +22,47 @@ def load_image(image_filename):
 
     return img
 
-def get_polar_fft(img):
+def get_polar_fft(img=None, save_path=None):
     # convert to pixel values
     img = (((img - img.min()) / (img.max() - img.min())) * 255.9)
     img = np.array(img, dtype=np.uint8)
-    # get image dimensions
+    # get image dimension
     rows, clmns = img.shape[0], img.shape[1]
-    # get image fft2D, shift sums to the center and plot
+    # get image FFT2D and shift sums to the center
     fft2d = np.fft.fftshift(np.fft.fft2(img))
-    # get fft2d mean column values
+    # print('fft2d: ','\n', fft2d, '\n', fft2d.shape, '\n')
+    # plt.imshow(np.log(abs(fft2d)), cmap='gray')
+    # plt.show()
+    # get FFT2D mean column values
     fft2d_mean_col = np.mean(abs(fft2d), axis=0)
+    # keep only second half of the mean FFT matrices
     fft2d_mean_col_half = fft2d_mean_col[64:128]
-    print('fft2d_mean_col: ','\n', fft2d_mean_col, '\n', fft2d_mean_col.shape, '\n')
-    # get fft2d mean row values
+    # print('fft2d_mean_col: ','\n', fft2d_mean_col, '\n', fft2d_mean_col.shape, '\n')
+    # get FFT2D mean row values
     fft2d_mean_row = np.mean(abs(fft2d), axis=1)
+    # keep only second half of the mean FFT matrices
     fft2d_mean_row_half = fft2d_mean_row[64:128]
-    print('fft2d_mean_row: ','\n', fft2d_mean_row, '\n', fft2d_mean_row.shape, '\n')
-    print('fft2d: ','\n', fft2d, '\n', fft2d.shape, '\n')
-    plt.imshow(np.log(abs(fft2d)), cmap='gray')
-    plt.show()
+    # print('fft2d_mean_row: ','\n', fft2d_mean_row, '\n', fft2d_mean_row.shape, '\n')
     # get absolute fourier values and flatten array
     flat_fft2d = abs(fft2d.ravel(order='F'))
-    print('flat_fft2d: ','\n', flat_fft2d, '\n', flat_fft2d.shape, '\n')
+    # print('flat_fft2d: ','\n', flat_fft2d, '\n', flat_fft2d.shape, '\n')
     # get image center points
     mid_idxrow, mid_idxcol = math.floor(rows / 2), math.floor(clmns / 2)
     dist = np.zeros(shape=(rows, clmns), dtype='float')
-    # get image distances from center point
+    # get indexes of the middle element of a matrix
     for i in range(rows):
             for j in range(clmns):
                 dist[i][j] = math.sqrt(pow((i-mid_idxrow), 2) + pow((j-mid_idxcol), 2))
-    print('dist: ','\n', dist, '\n', dist.shape, '\n')
-    # convert matrix distances as 1d array
+    # print('dist: ','\n', dist, '\n', dist.shape, '\n')
+    # convert distance matrix as a column matrix
     flat_dist = dist.ravel(order='F')
-    print('flat_dist: ','\n', flat_dist, '\n', flat_dist.shape, '\n')
+    # print('flat_dist: ','\n', flat_dist, '\n', flat_dist.shape, '\n')
     # construct 2d array (first column: distances from center point, second column: corresponding fft values)
     dist_fft = np.vstack((flat_dist, flat_fft2d)).T
-    print('dist fft: ', '\n', dist_fft, '\n', dist_fft.shape, '\n')
-    # Sort 2d array by distances from center point
+    # print('dist fft: ', '\n', dist_fft, '\n', dist_fft.shape, '\n')
+    # Sort 2d array based on 1st column
     dist_fft_sorted = dist_fft[dist_fft[:,0].argsort()]
-    print('dist_fft_sorted: ','\n', dist_fft_sorted, '\n')
+    # print('dist_fft_sorted: ','\n', dist_fft_sorted, '\n')
     # get polar fft for surface
     minVal, maxVal = float(0.0), float(1.0)
     if rows < clmns:
@@ -77,7 +84,7 @@ def get_polar_fft(img):
         polar_fft[j][1] = sum_fft / count
         minVal = maxVal
         maxVal = maxVal + step
-    print('polar_fft: ','\n', polar_fft, '\n')
+    # print('polar_fft: ','\n', polar_fft, '\n')
 
     plt.figure()
     plt.xlabel('Spatial frequency (nm^{-1})')
@@ -91,7 +98,10 @@ def get_polar_fft(img):
     # plot mean columns fft2d
     plt.plot(polar_fft[:,0], fft2d_mean_col_half, label = 'Mean columns FFT2D')
     plt.legend()
-    plt.show()
+    plt.savefig(save_path)
+    plt.close
+
+    Polar_mean = np.average(polar_fft)
 
     return None
 
@@ -100,12 +110,14 @@ if __name__ == "__main__":
     # argument parser
     # parser = argparse.ArgumentParser(description = 'Image polar fft')
     # parser.add_argument('image1', help = 'directory of first image to compare')
-    # parser.add_argument('image2', help = 'directory of second image to compare', action='store_false')
-    # parser.add_argument('image3', help = 'directory of third image to compare', action='store_false')
-    # parser.add_argument('image4', help = 'directory of fourth image to compare', action='store_false')
-    # parser.add_argument('image5', help = 'directory of fifth image to compare', action='store_false')
+    # parser.add_argument('image2', help = 'directory of second image to compare')
+    # # parser.add_argument('image3', help = 'directory of third image to compare')
+    # # parser.add_argument('image4', help = 'directory of fourth image to compare')
+    # # parser.add_argument('image5', help = 'directory of fifth image to compare')
     # args = parser.parse_args()
 
-    img = load_image(r"src\roughml\scripts\fake_00.png")
-    polar_fft = get_polar_fft(img)
-    
+    # img = load_image(r"src\roughml\scripts\Alpha effect\alpha 0.5\fake_00.png")
+    # polar_fft = get_polar_fft(img)
+
+    img = load_image(r"src\roughml\scripts\Alpha effect\alpha 0.5\fake_00.png") 
+    polar_fft = get_polar_fft(img, save_path=r"src\roughml\scripts\Alpha effect\Plots\figure.png")
