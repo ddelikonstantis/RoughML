@@ -1,15 +1,15 @@
-from genericpath import exists
 import numpy as np
 import matplotlib.pyplot as plt
 import cv2
 import math
 import argparse
-from pathlib import Path
-import os, errno
+import os
 import sys
+from scipy.stats import spearmanr
 
 
 def polar_fft2d(*args):
+    spr = []
     for iter, arg in enumerate(args):
         # get image alpha value
         alpha, alpha_val = None, ["0.5","0.6","0.7","0.8","0.9","1.0"]
@@ -81,6 +81,7 @@ def polar_fft2d(*args):
             # directory already exists
             pass
 
+        filename = "image_" + str(iter)
         plt.figure()
         plt.xlabel('Spatial frequency (nm^{-1})')
         plt.ylabel('Fourier amplitude (nm^{-1})')
@@ -93,11 +94,14 @@ def polar_fft2d(*args):
         # plot mean columns fft2d
         plt.plot(polar_fft[:,0], fft2d_mean_col_half, label = 'Mean columns FFT2D')
         plt.legend()
-        filename = "image_" + str(iter)
         plt.savefig(path + filename)
 
-        Polar_mean = np.average(polar_fft)
+        # get average fourier values
+        fft2d_mean = np.average(flat_fft2d)
+        spr.append(np.array([float(alpha), fft2d_mean]))
 
+    coef, p = spearmanr(spr)
+    
     return None
 
 
@@ -113,9 +117,10 @@ if __name__ == "__main__":
     # args = parser.parse_args()
 
     arg1=r"Output\Alpha effect\Standard\dataset_1000_128_03_00_03_04_04_0.50\CNNGenerator_CNNDiscriminator\2022_04_17_13_40_13_880276\Plots\grayscale\fake_00.png"
-    arg2=r"Output\Alpha effect\Standard\dataset_1000_128_03_00_03_04_04_0.50\CNNGenerator_CNNDiscriminator\2022_04_17_13_40_13_880276\Plots\grayscale\fake_01.png"
-    arg3=r"Output\Alpha effect\Standard\dataset_1000_128_03_00_03_04_04_0.50\CNNGenerator_CNNDiscriminator\2022_04_17_13_40_13_880276\Plots\grayscale\fake_02.png"
-    arg4=r"Output\Alpha effect\Standard\dataset_1000_128_03_00_03_04_04_0.50\CNNGenerator_CNNDiscriminator\2022_04_17_13_40_13_880276\Plots\grayscale\fake_03.png"
-    arg5=r"Output\Alpha effect\Standard\dataset_1000_128_03_00_03_04_04_0.50\CNNGenerator_CNNDiscriminator\2022_04_17_13_40_13_880276\Plots\grayscale\fake_05.png"
+    arg2=r"Output\Alpha effect\Standard\dataset_1000_128_03_00_03_04_04_0.60\CNNGenerator_CNNDiscriminator\2022_04_17_13_52_19_685991\Plots\grayscale\fake_00.png"
+    arg3=r"Output\Alpha effect\Standard\dataset_1000_128_03_00_03_04_04_0.70\CNNGenerator_CNNDiscriminator\2022_04_17_14_03_17_474457\Plots\grayscale\fake_00.png"
+    arg4=r"Output\Alpha effect\Standard\dataset_1000_128_03_00_03_04_04_0.80\CNNGenerator_CNNDiscriminator\2022_04_17_14_18_35_852794\Plots\grayscale\fake_00.png"
+    arg5=r"Output\Alpha effect\Standard\dataset_1000_128_03_00_03_04_04_0.90\CNNGenerator_CNNDiscriminator\2022_04_17_14_29_03_199460\Plots\grayscale\fake_00.png"
+    arg6=r"Output\Alpha effect\Standard\dataset_1000_128_03_00_03_04_04_1.00\CNNGenerator_CNNDiscriminator\2022_04_17_14_39_45_776175\Plots\grayscale\fake_00.png"
 
-    polar_fft2d(arg1, arg2, arg3, arg4, arg5)
+    polar_fft2d(arg1, arg2, arg3, arg4, arg5, arg6)
