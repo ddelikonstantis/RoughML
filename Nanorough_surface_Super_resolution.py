@@ -255,14 +255,14 @@ training_flow = TrainingFlow(
             "train_epoch": per_epoch,
             "log_every_n": 10,
             "criterion": {"instance": criterion},
-            "n_epochs": 100,
+            "n_epochs": 10,
             "train_ratio": 0.8,
             "optimizer": {
                 "type": Adam,
-                "params": {"lr": 0.001, "betas": (0.5, 0.999)},
+                "params": {"lr": 0.1, "weight_decay": 0},
             },
             "dataloader": {
-                "batch_size": 32,
+                "batch_size": 256,
                 "shuffle": True,
                 "num_workers": 0,
             },
@@ -281,7 +281,7 @@ training_flow = TrainingFlow(
             load_multiple_datasets_from_pt,
             DATASET_DIR,
             transforms=[To(device), View(1, 128, 128)],
-            limit=None,
+            limit=(2, 10),
         )
     },
     animation={
@@ -347,11 +347,11 @@ training_flow = TrainingFlow(
         "manager": {
             "benchmark": True,
             # Uncomment if you want to enable checkpointing
-            "checkpoint": {"multiple": False},
+            # "checkpoint": {"multiple": False},
             "train_epoch": per_epoch,
             "log_every_n": 10,
             "criterion": {"instance": criterion},
-            "n_epochs": 200,
+            "n_epochs": 10,
             "train_ratio": 0.8,
             "optimizer": {
                 "type": Adam,
@@ -370,14 +370,14 @@ training_flow = TrainingFlow(
     NGramGraphLoss={
         "type": ArrayGraph2DContentLoss,
         # Uncomment if you want to enable checkpointing
-        "cache": "n_gram_graph_content_loss.pkl",
+        # "cache": "n_gram_graph_content_loss.pkl",
     },
     data={
         "loader": functools.partial(
             load_multiple_datasets_from_pt,
             DATASET_DIR,
             transforms=[To(device), View(1, 128, 128)],
-            limit=None,
+            limit=(2, 10),
         )
     },
     animation={
