@@ -126,7 +126,7 @@ if __name__ == "__main__":
     arg5=r"Output\Alpha effect\Standard\dataset_1000_128_03_00_03_04_04_1.00\CNNGenerator_CNNDiscriminator\2022_04_17_14_39_45_776175\Plots\grayscale\fake_04.png"
     arg6=r"Output\Alpha effect\Standard\dataset_1000_128_03_00_03_04_04_1.00\CNNGenerator_CNNDiscriminator\2022_04_17_14_39_45_776175\Plots\grayscale\fake_05.png"
 
-    polar_fft2d(arg1, arg2, arg3, arg4, arg5, arg6)
+    # polar_fft2d(arg1, arg2, arg3, arg4, arg5, arg6)
 
     df1 = pd.read_csv(r'src\roughml\scripts\output\0.5\df.csv')
     df1 = np.array(df1)
@@ -154,7 +154,17 @@ if __name__ == "__main__":
     df_mean_total.append(df4_mean)
     df_mean_total.append(df5_mean)
     df_mean_total.append(df6_mean)
-    print(df_mean_total)
+    
+    path = os.path.join(os.path.dirname( __file__ ), 'output/').replace('\\', '/')
+    try:
+        os.mkdir(path)
+    except FileExistsError:
+        # directory already exists
+        pass
+    
+    df_total = pd.DataFrame(df_mean_total, columns = ['Alpha', 'Total Mean Fourier'])
+    df_filename = '/df_mean_total.csv'
+    df_total.to_csv(path + df_filename)
 
     coef, p = spearmanr(df_mean_total)
     print(coef, p)
