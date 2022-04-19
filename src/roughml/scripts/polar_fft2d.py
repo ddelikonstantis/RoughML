@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 import cv2
 import math
@@ -99,8 +100,10 @@ def polar_fft2d(*args):
         # get average fourier values
         fft2d_mean = np.average(flat_fft2d)
         spr.append(np.array([float(alpha), fft2d_mean]))
-
-    coef, p = spearmanr(spr)
+    
+    df = pd.DataFrame(spr, columns = ['Alpha', 'Mean Fourier'])
+    df_filename = '/df.csv'
+    df.to_csv(path + df_filename)
     
     return None
 
@@ -116,11 +119,47 @@ if __name__ == "__main__":
     # # parser.add_argument('image5', help = 'directory of fifth image to compare')
     # args = parser.parse_args()
 
-    arg1=r"Output\Alpha effect\Standard\dataset_1000_128_03_00_03_04_04_0.50\CNNGenerator_CNNDiscriminator\2022_04_17_13_40_13_880276\Plots\grayscale\fake_00.png"
-    arg2=r"Output\Alpha effect\Standard\dataset_1000_128_03_00_03_04_04_0.60\CNNGenerator_CNNDiscriminator\2022_04_17_13_52_19_685991\Plots\grayscale\fake_00.png"
-    arg3=r"Output\Alpha effect\Standard\dataset_1000_128_03_00_03_04_04_0.70\CNNGenerator_CNNDiscriminator\2022_04_17_14_03_17_474457\Plots\grayscale\fake_00.png"
-    arg4=r"Output\Alpha effect\Standard\dataset_1000_128_03_00_03_04_04_0.80\CNNGenerator_CNNDiscriminator\2022_04_17_14_18_35_852794\Plots\grayscale\fake_00.png"
-    arg5=r"Output\Alpha effect\Standard\dataset_1000_128_03_00_03_04_04_0.90\CNNGenerator_CNNDiscriminator\2022_04_17_14_29_03_199460\Plots\grayscale\fake_00.png"
-    arg6=r"Output\Alpha effect\Standard\dataset_1000_128_03_00_03_04_04_1.00\CNNGenerator_CNNDiscriminator\2022_04_17_14_39_45_776175\Plots\grayscale\fake_00.png"
+    arg1=r"Output\Alpha effect\Standard\dataset_1000_128_03_00_03_04_04_1.00\CNNGenerator_CNNDiscriminator\2022_04_17_14_39_45_776175\Plots\grayscale\fake_00.png"
+    arg2=r"Output\Alpha effect\Standard\dataset_1000_128_03_00_03_04_04_1.00\CNNGenerator_CNNDiscriminator\2022_04_17_14_39_45_776175\Plots\grayscale\fake_01.png"
+    arg3=r"Output\Alpha effect\Standard\dataset_1000_128_03_00_03_04_04_1.00\CNNGenerator_CNNDiscriminator\2022_04_17_14_39_45_776175\Plots\grayscale\fake_02.png"
+    arg4=r"Output\Alpha effect\Standard\dataset_1000_128_03_00_03_04_04_1.00\CNNGenerator_CNNDiscriminator\2022_04_17_14_39_45_776175\Plots\grayscale\fake_03.png"
+    arg5=r"Output\Alpha effect\Standard\dataset_1000_128_03_00_03_04_04_1.00\CNNGenerator_CNNDiscriminator\2022_04_17_14_39_45_776175\Plots\grayscale\fake_04.png"
+    arg6=r"Output\Alpha effect\Standard\dataset_1000_128_03_00_03_04_04_1.00\CNNGenerator_CNNDiscriminator\2022_04_17_14_39_45_776175\Plots\grayscale\fake_05.png"
 
     polar_fft2d(arg1, arg2, arg3, arg4, arg5, arg6)
+
+    df1 = pd.read_csv(r'src\roughml\scripts\output\0.5\df.csv')
+    df1 = np.array(df1)
+    df1_mean = [np.average(df1[:,1]), np.average(df1[:,2])]
+    df2 = pd.read_csv(r'src\roughml\scripts\output\0.6\df.csv')
+    df2 = np.array(df2)
+    df2_mean = [np.average(df2[:,1]), np.average(df2[:,2])]
+    df3 = pd.read_csv(r'src\roughml\scripts\output\0.7\df.csv')
+    df3 = np.array(df3)
+    df3_mean = [np.average(df3[:,1]), np.average(df3[:,2])]
+    df4 = pd.read_csv(r'src\roughml\scripts\output\0.8\df.csv')
+    df4 = np.array(df4)
+    df4_mean = [np.average(df4[:,1]), np.average(df4[:,2])]
+    df5 = pd.read_csv(r'src\roughml\scripts\output\0.9\df.csv')
+    df5 = np.array(df5)
+    df5_mean = [np.average(df5[:,1]), np.average(df5[:,2])]
+    df6 = pd.read_csv(r'src\roughml\scripts\output\1.0\df.csv')
+    df6 = np.array(df6)
+    df6_mean = [np.average(df6[:,1]), np.average(df6[:,2])]
+
+    df_mean_total = []
+    df_mean_total.append(df1_mean)
+    df_mean_total.append(df2_mean)
+    df_mean_total.append(df3_mean)
+    df_mean_total.append(df4_mean)
+    df_mean_total.append(df5_mean)
+    df_mean_total.append(df6_mean)
+    print(df_mean_total)
+
+    coef, p = spearmanr(df_mean_total)
+    print(coef, p)
+
+    
+    
+    
+    
