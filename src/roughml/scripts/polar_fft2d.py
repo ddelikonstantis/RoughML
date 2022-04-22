@@ -154,7 +154,7 @@ if __name__ == "__main__":
     df_mean_total.append(df4_mean)
     df_mean_total.append(df5_mean)
     df_mean_total.append(df6_mean)
-    
+
     path = os.path.join(os.path.dirname( __file__ ), 'output/').replace('\\', '/')
     try:
         os.mkdir(path)
@@ -167,7 +167,7 @@ if __name__ == "__main__":
     df_total.to_csv(path + df_filename)
 
     coef, p = spearmanr(df_mean_total)
-    print(coef, p)
+    print('Spearmans coefficient: ', coef, '\n', 'p-value: ', p)
 
     
     
