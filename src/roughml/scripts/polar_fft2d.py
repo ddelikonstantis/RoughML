@@ -12,7 +12,7 @@ from scipy.stats import spearmanr
 def polar_fft2d(*args):
     spr = []
     for iter, arg in enumerate(args):
-        # get image alpha value
+        # establish image alpha value
         alpha, alpha_val = None, ["0.5","0.6","0.7","0.8","0.9","1.0"]
         for a in alpha_val:
             if arg.find(str(a)) != -1:
@@ -82,12 +82,15 @@ def polar_fft2d(*args):
             # directory already exists
             pass
 
+        # create filename
         filename = "image_" + str(iter)
+
+        # plot FFT
         plt.figure()
         plt.xlabel('Spatial frequency (nm^{-1})')
         plt.ylabel('Fourier amplitude (nm^{-1})')
         plt.xscale('log'), plt.yscale('log')
-        plt.title('Polar FFT2D')
+        plt.title('FFT2D vectors')
         # plot polar fft2d
         plt.plot(polar_fft[:,0], polar_fft[:,1], label = "Polar FFT2D")
         # plot mean rows fft2d
@@ -101,6 +104,7 @@ def polar_fft2d(*args):
         fft2d_mean = np.average(flat_fft2d)
         spr.append(np.array([float(alpha), fft2d_mean]))
     
+    # create csv file with mean vector values
     df = pd.DataFrame(spr, columns = ['Alpha', 'Mean Fourier'])
     df_filename = '/df.csv'
     df.to_csv(path + df_filename)

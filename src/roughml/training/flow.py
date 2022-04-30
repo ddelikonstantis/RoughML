@@ -55,13 +55,20 @@ class TrainingFlow(Configuration):
 
         if not hasattr(self, "NGramGraphLoss"):
             self.NGramGraphLoss = Configuration(type=None, cache=None)
+        
+        if not hasattr(self.training.manager, "load_checkpoint"):
+            self.training.manager.load_checkpoint = False
 
     def __call__(self, get_generator, get_discriminator):
         for path, dataset in self.data.loader():
             logger.info("Instantiating generator and discriminator")
 
-            generator = get_generator()
-            discriminator = get_discriminator(generator)
+            if self.training.manager.load_checkpoint:
+                generator = get_generator()
+                discriminator = get_discriminator()
+            else:
+                generator = get_generator()
+                discriminator = get_discriminator(generator)
 
             start_time = time()
 
