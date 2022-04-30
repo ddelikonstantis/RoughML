@@ -109,6 +109,7 @@ class TrainingManager(Configuration):
                 # )
 
                 torch.save({
+                            'epoch': epoch,
                             'generator_state_dict': generator.state_dict(),
                             'optimizer_generator_state_dict': optimizer_generator.state_dict(),
                             'generator_loss': generator_loss,
@@ -122,6 +123,7 @@ class TrainingManager(Configuration):
                 # )
 
                 torch.save({
+                            'epoch': epoch,
                             'discriminator_state_dict': discriminator.state_dict(),
                             'optimizer_discriminator_state_dict': optimizer_discriminator.state_dict(),
                             'discriminator_loss': discriminator_loss,
