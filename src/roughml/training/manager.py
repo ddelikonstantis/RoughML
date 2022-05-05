@@ -109,22 +109,14 @@ class TrainingManager(Configuration):
                     generator_mt += f"_{epoch:03d}"
                     discriminator_mt += f"_{epoch:03d}"
 
-                torch.save({
-                            'epoch': epoch,
-                            'generator_state_dict': generator.state_dict(),
-                            'optimizer_generator_state_dict': optimizer_generator.state_dict(),
-                            'generator_loss': generator_loss,
-                            },
-                            self.checkpoint.directory / f"{generator_mt}.pt",
+                torch.save(
+                    generator.state_dict(),
+                    self.checkpoint.directory / f"{generator_mt}.pt",
                 )
 
-                torch.save({
-                            'epoch': epoch,
-                            'discriminator_state_dict': discriminator.state_dict(),
-                            'optimizer_discriminator_state_dict': optimizer_discriminator.state_dict(),
-                            'discriminator_loss': discriminator_loss,
-                            },
-                            self.checkpoint.directory / f"{discriminator_mt}.pt",
+                torch.save(
+                    discriminator.state_dict(),
+                    self.checkpoint.directory / f"{discriminator_mt}.pt",
                 )
 
             with torch.no_grad():
