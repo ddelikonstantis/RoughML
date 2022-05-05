@@ -63,8 +63,14 @@ OUTPUT_DIR = THESIS_DIR / "Output"
 
 if THESIS_DIR.is_dir():
     DATASET_DIR = THESIS_DIR / "Datasets"
+    CHECKPOINT_DIR = THESIS_DIR / "Checkpoints"
+    GEN_CHECKPOINT_DIR = THESIS_DIR / "Checkpoints" / "CNNGenerator.pt"
+    DIS_CHECKPOINT_DIR = THESIS_DIR / "Checkpoints" / "CNNDiscriminator.pt"
 else:
     DATASET_DIR = BASE_DIR / "Datasets"
+    CHECKPOINT_DIR = BASE_DIR / "Checkpoints"
+    GEN_CHECKPOINT_DIR = BASE_DIR / "Checkpoints" / "CNNGenerator.pt"
+    DIS_CHECKPOINT_DIR = BASE_DIR / "Checkpoints" / "CNNDiscriminator.pt"
 # -
 
 # ## Configuring our Loggers
@@ -310,17 +316,27 @@ training_flow = TrainingFlow(
 # + cellView="code" id="e301a7a0"
 from roughml.models import CNNGenerator
 
-
-def get_generator():
-    return CNNGenerator.from_device(device)
-
-
 # + cellView="code" id="5a8a9aad"
 from roughml.models import CNNDiscriminator
 
 
+def get_generator():
+    return CNNGenerator.from_device(device)
+
 def get_discriminator(generator):
     return CNNDiscriminator.from_generator(generator)
+
+
+# check if there are model checkpoints
+load_checkpoint = False
+if CHECKPOINT_DIR.is_dir():
+    for file in CHECKPOINT_DIR.iterdir():
+        if not file.is_dir() and file.suffix == ".pt":
+            def get_generator():
+                return CNNGenerator.from_pt(GEN_CHECKPOINT_DIR)
+            def get_discriminator():
+                return CNNDiscriminator.from_pt(DIS_CHECKPOINT_DIR)
+            load_checkpoint = True
 
 
 # + [markdown] id="7bbbcc22"
@@ -348,6 +364,7 @@ training_flow = TrainingFlow(
             "benchmark": True,
             # Uncomment if you want to enable checkpointing
             # "checkpoint": {"multiple": False},
+            "load_checkpoint": load_checkpoint,
             "train_epoch": per_epoch,
             "log_every_n": 10,
             "criterion": {"instance": criterion},
