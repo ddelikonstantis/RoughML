@@ -1,6 +1,7 @@
 import logging
 
 import torch
+from pytorchtools import EarlyStopping
 from tqdm import tqdm
 
 from roughml.shared.configuration import Configuration
@@ -59,6 +60,13 @@ class TrainingManager(Configuration):
 
         train_epoch_f = self.train_epoch
 
+        # number of epochs for early stopping
+        patience = 5
+        # minimum change in the monitored quantity to qualify as an improvement
+        min_delta = 0.00
+        # initialize the early_stopping object
+        early_stopping = EarlyStopping(min_delta=min_delta, patience=patience)
+
         if self.benchmark is True and logger.level <= logging.INFO:
             train_epoch_f = benchmark(train_epoch_f)
 
@@ -103,11 +111,6 @@ class TrainingManager(Configuration):
                     generator_mt += f"_{epoch:03d}"
                     discriminator_mt += f"_{epoch:03d}"
 
-                # torch.save(
-                #     generator.state_dict(),
-                #     self.checkpoint.directory / f"{generator_mt}.pt",
-                # )
-
                 torch.save({
                             'epoch': epoch,
                             'generator_state_dict': generator.state_dict(),
@@ -116,11 +119,6 @@ class TrainingManager(Configuration):
                             },
                             self.checkpoint.directory / f"{generator_mt}.pt",
                 )
-
-                # torch.save(
-                #     discriminator.state_dict(),
-                #     self.checkpoint.directory / f"{discriminator_mt}.pt",
-                # )
 
                 torch.save({
                             'epoch': epoch,
@@ -175,6 +173,17 @@ class TrainingManager(Configuration):
                 discriminator_output_real,
                 discriminator_output_fake,
             )
+
+            # early_stopping checks if the loss has decreased over a number of epochs
+            early_stopping(generator_loss, generator)
+        
+            if early_stopping.early_stop:
+                logger.info(
+                "Early stopping since loss did not improve after %02d epochs",
+                patience
+                )
+                
+                break
 
             yield (
                 generator_loss,
