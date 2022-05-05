@@ -363,7 +363,7 @@ training_flow = TrainingFlow(
         "manager": {
             "benchmark": True,
             # Uncomment if you want to enable checkpointing
-            # "checkpoint": {"multiple": False},
+            "checkpoint": {"multiple": False},
             "load_checkpoint": load_checkpoint,
             "train_epoch": per_epoch,
             "log_every_n": 10,
@@ -387,7 +387,7 @@ training_flow = TrainingFlow(
     NGramGraphLoss={
         "type": ArrayGraph2DContentLoss,
         # Uncomment if you want to enable checkpointing
-        # "cache": "n_gram_graph_content_loss.pkl",
+        "cache": "n_gram_graph_content_loss.pkl",
     },
     data={
         "loader": functools.partial(
