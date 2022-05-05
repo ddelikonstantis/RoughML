@@ -62,10 +62,8 @@ class TrainingManager(Configuration):
 
         # number of epochs for early stopping
         patience = 5
-        # minimum change in the monitored quantity to qualify as an improvement
-        min_delta = 0.00
         # initialize the early_stopping object
-        early_stopping = EarlyStopping(min_delta=min_delta, patience=patience)
+        early_stopping = EarlyStopping(patience=patience)
 
         if self.benchmark is True and logger.level <= logging.INFO:
             train_epoch_f = benchmark(train_epoch_f)
