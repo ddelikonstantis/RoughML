@@ -334,8 +334,8 @@ if CHECKPOINT_DIR.is_dir():
         if not file.is_dir() and file.suffix == ".pt":
             def get_generator():
                 return CNNGenerator.from_pt(GEN_CHECKPOINT_DIR)
-            def get_discriminator():
-                return CNNDiscriminator.from_pt(DIS_CHECKPOINT_DIR)
+            # def get_discriminator():
+            #     return CNNDiscriminator.from_pt(DIS_CHECKPOINT_DIR)
             load_checkpoint = True
 
 

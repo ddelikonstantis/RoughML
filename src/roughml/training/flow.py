@@ -63,12 +63,8 @@ class TrainingFlow(Configuration):
         for path, dataset in self.data.loader():
             logger.info("Instantiating generator and discriminator")
 
-            if self.training.manager.load_checkpoint:
-                generator = get_generator()
-                discriminator = get_discriminator()
-            else:
-                generator = get_generator()
-                discriminator = get_discriminator(generator)
+            generator = get_generator()
+            discriminator = get_discriminator(generator)
 
             start_time = time()
 

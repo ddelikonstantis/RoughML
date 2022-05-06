@@ -41,6 +41,8 @@ class Base(nn.Module):
 
         instance.load_state_dict(torch.load(path, map_location=device))
 
+        instance.eval()
+
         return instance
 
     @property
