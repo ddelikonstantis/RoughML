@@ -1,12 +1,12 @@
 import logging
 
 import torch
-from pytorchtools import EarlyStopping
 from tqdm import tqdm
 
 from roughml.shared.configuration import Configuration
 from roughml.shared.decorators import benchmark
 from roughml.training.split import train_test_dataloaders
+from roughml.scripts.pytorchtools import EarlyStopping
 
 logger = logging.getLogger(__name__)
 
@@ -60,8 +60,8 @@ class TrainingManager(Configuration):
 
         train_epoch_f = self.train_epoch
 
-        # number of epochs for early stopping
-        patience = 5
+        # number of epochs to wait after last time loss improved
+        patience = 10
         # initialize the early_stopping object
         early_stopping = EarlyStopping(patience=patience)
 
@@ -131,6 +131,9 @@ class TrainingManager(Configuration):
                 discriminator_loss,
             )
 
+            # early_stopping checks if the generator loss has decreased over a number of epochs
+            early_stopping(generator_loss, generator)
+
             # normalize all losses from 0 to 1
             if generator_loss > max_generator_loss:
                 max_generator_loss = generator_loss
@@ -163,9 +166,6 @@ class TrainingManager(Configuration):
                 discriminator_output_real,
                 discriminator_output_fake,
             )
-
-            # early_stopping checks if the loss has decreased over a number of epochs
-            early_stopping(generator_loss, generator)
         
             if early_stopping.early_stop:
                 logger.info(

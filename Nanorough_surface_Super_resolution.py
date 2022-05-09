@@ -334,8 +334,9 @@ if CHECKPOINT_DIR.is_dir():
         if not file.is_dir() and file.suffix == ".pt":
             def get_generator():
                 return CNNGenerator.from_pt(GEN_CHECKPOINT_DIR)
-            # def get_discriminator():
-            #     return CNNDiscriminator.from_pt(DIS_CHECKPOINT_DIR)
+            def get_discriminator(generator):
+                CNNDiscriminator.from_pt(DIS_CHECKPOINT_DIR)
+                CNNDiscriminator.device = generator.device # Check if this is correct
             load_checkpoint = True
 
 
@@ -368,7 +369,7 @@ training_flow = TrainingFlow(
             "train_epoch": per_epoch,
             "log_every_n": 10,
             "criterion": {"instance": criterion},
-            "n_epochs": 10,
+            "n_epochs": 50,
             "train_ratio": 0.8,
             "optimizer": {
                 "type": Adam,

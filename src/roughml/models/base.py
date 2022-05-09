@@ -39,9 +39,14 @@ class Base(nn.Module):
 
         instance = cls()
 
-        instance.load_state_dict(torch.load(path, map_location=device))
+        load_checkpoint = torch.load(path, map_location="cpu")  # Load to normal memory to avoid GPU memory use here      
+        instance.load_state_dict(load_checkpoint)
 
         instance.eval()
+
+        # Convert model to CUDA version, based on appropriate device
+        if device != "cpu":
+            instance.cuda()
 
         return instance
 
