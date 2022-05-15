@@ -10,6 +10,11 @@ from roughml.models.base import Base
 
 class CNNBase(Base):
     @classmethod
+    # custom weights initialization called on netG and netD
+    # all model weights shall be randomly initialized from a Normal distribution with mean=0, stdev=0.02. 
+    # The initialize_weights function takes an initialized model as input and reinitializes all convolutional, 
+    # convolutional-transpose, and batch normalization layers to meet this criteria. 
+    # This function is applied to the models immediately after initialization.
     def initialize_weights(cls, model):
         classname = model.__class__.__name__
         if classname.find("Conv") != -1:
@@ -26,6 +31,8 @@ class CNNBase(Base):
             device, *args, dtype=dtype, gradient_clipping=gradient_clipping, **kwargs
         )
 
+        # Apply the initialize_weights function to randomly initialize all weights
+        # to mean=0, stdev=0.02.
         model.apply(cls.initialize_weights)
 
         return model
@@ -34,9 +41,9 @@ class CNNBase(Base):
 class CNNGenerator(Base):
     def __init__(
         self,
-        in_channels=100,
-        out_channels=128,
-        training_channels=1,
+        in_channels=100,        # Size of z latent vector (i.e. size of generator input)
+        out_channels=128,       # Size of feature maps in generator
+        training_channels=1,    # Number of channels in the training images. For color images this is 3. For grayscale this is 1
     ):
         super().__init__()
 
@@ -49,6 +56,7 @@ class CNNGenerator(Base):
         self.module_list = nn.ModuleList(
             [
                 nn.Sequential(
+                    # input is Z, going into a convolution
                     nn.ConvTranspose2d(
                         in_channels, out_channels * 16, 4, 1, 0, bias=False
                     ),
@@ -87,7 +95,7 @@ class CNNGenerator(Base):
                     nn.ConvTranspose2d(
                         out_channels, training_channels, 4, 2, 1, bias=False
                     ),
-                    # nn.ReLU(),
+                    nn.Tanh(),
                 ),
             ]
         )
@@ -113,8 +121,8 @@ class CNNDiscriminator(Base):
     def __init__(self, out_channels=1, in_channels=128):
         super().__init__()
 
-        self.out_channels = out_channels
-        self.in_channels = in_channels
+        self.out_channels = out_channels    # Number of channels in the training images. For color images this is 3. For grayscale this is 1
+        self.in_channels = in_channels      # Size of feature maps in discriminator
 
         self.module_list = nn.ModuleList(
             [
@@ -138,7 +146,8 @@ class CNNDiscriminator(Base):
                     nn.LeakyReLU(0.2, inplace=True),
                 ),
                 nn.Sequential(
-                    nn.Conv2d(in_channels * 8, 1, 8, 1, 0, bias=False), nn.Sigmoid()
+                    nn.Conv2d(in_channels * 8, 1, 8, 1, 0, bias=False),
+                    nn.Sigmoid()
                 ),
             ]
         )

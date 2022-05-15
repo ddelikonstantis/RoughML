@@ -13,8 +13,9 @@ class Base(nn.Module):
     ):
         model = cls(*args, **kwargs)
 
+        # Handle multi-gpu if desired
         if device.type == "cuda" and torch.cuda.device_count() > 1:
-            model = nn.DataParallel(model)
+            model = nn.DataParallel(model, list(range(torch.cuda.device_count())))
 
         model = model.to(device)
 

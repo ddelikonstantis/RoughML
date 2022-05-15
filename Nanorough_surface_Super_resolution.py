@@ -146,15 +146,17 @@ if "roughml" not in pip_freeze_output:
 # + cellView="code" id="4d6c30c9"
 import torch
 
-SEED = 1234
+# Set random seed for reproducibility
+manualSeed = 999
+#manualSeed = random.randint(1, 10000) # use if you want new results
 
-if SEED is not None:
-    np.random.seed(SEED)
-    random.seed(SEED)
-    torch.manual_seed(SEED)
-    torch.cuda.manual_seed(SEED)
+if manualSeed is not None:
+    np.random.seed(manualSeed)
+    random.seed(manualSeed)
+    torch.manual_seed(manualSeed)
+    torch.cuda.manual_seed(manualSeed)
     torch.backends.cudnn.deterministic = True
-    os.environ["PYTHONHASHSEED"] = str(SEED)
+    os.environ["PYTHONHASHSEED"] = str(manualSeed)
 
 # + [markdown] id="6fce8a2a"
 # ## Determining available backend
@@ -264,10 +266,10 @@ training_flow = TrainingFlow(
             "train_ratio": 0.8,
             "optimizer": {
                 "type": Adam,
-                "params": {"lr": 0.1, "weight_decay": 0},
+                "params": {"lr": 0.0002, "betas": (0.5, 0.999)},
             },
             "dataloader": {
-                "batch_size": 256,
+                "batch_size": 128,
                 "shuffle": True,
                 "num_workers": 0,
             },
@@ -362,7 +364,7 @@ training_flow = TrainingFlow(
                 "params": {"lr": 0.0002, "betas": (0.5, 0.999)},
             },
             "dataloader": {
-                "batch_size": 32,
+                "batch_size": 128,
                 "shuffle": True,
                 "num_workers": 0,
             },
