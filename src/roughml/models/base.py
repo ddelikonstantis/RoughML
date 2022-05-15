@@ -13,8 +13,9 @@ class Base(nn.Module):
     ):
         model = cls(*args, **kwargs)
 
+        # Handle multi-gpu if desired
         if device.type == "cuda" and torch.cuda.device_count() > 1:
-            model = nn.DataParallel(model)
+            model = nn.DataParallel(model, list(range(torch.cuda.device_count())))
 
         model = model.to(device)
 
@@ -39,7 +40,14 @@ class Base(nn.Module):
 
         instance = cls()
 
-        instance.load_state_dict(torch.load(path, map_location=device))
+        load_checkpoint = torch.load(path, map_location="cpu")  # Load to normal memory to avoid GPU memory use here      
+        instance.load_state_dict(load_checkpoint)
+
+        instance.eval()
+
+        # Convert model to CUDA version, based on appropriate device
+        if device.type != "cpu":
+            instance.cuda()
 
         return instance
 

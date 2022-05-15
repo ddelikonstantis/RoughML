@@ -56,6 +56,7 @@ class TrainingFlow(Configuration):
         if not hasattr(self, "NGramGraphLoss"):
             self.NGramGraphLoss = Configuration(type=None, cache=None)
 
+            
     def __call__(self, get_generator, get_discriminator):
         for path, dataset in self.data.loader():
             logger.info("Instantiating generator and discriminator")

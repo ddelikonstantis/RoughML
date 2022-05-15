@@ -35,7 +35,7 @@ class TrainingManager(Configuration):
         self.content_loss_weight = 1 - self.criterion.weight
 
         if not hasattr(self, "fixed_noise_dim"):
-            self.fixed_noise_dim = 64
+            self.fixed_noise_dim = 128
 
     def __call__(self, generator, discriminator, dataset):
         fixed_noise = torch.randn(
@@ -67,6 +67,10 @@ class TrainingManager(Configuration):
         max_discriminator_loss = float(0.0)
         max_HeightHistogramAndFourierLoss = float(0.0)
         max_NGramGraphLoss = float(0.0)
+        patience = 10       # number of epochs where generator loss shows no significant change
+        loss_change = []
+        early_stop = False
+        delta = 0.001       # generator loss threshold that shows no significant change
         for epoch in tqdm(range(self.n_epochs), desc="Epochs"):
             (
                 generator_loss,
@@ -86,6 +90,7 @@ class TrainingManager(Configuration):
                 vector_content_loss_fn=self.HeightHistogramAndFourierLoss,
                 loss_weights=(self.content_loss_weight, self.criterion.weight),
                 log_every_n=self.log_every_n,
+                load_checkpoint = self.load_checkpoint,
             )
 
             if (
@@ -157,6 +162,28 @@ class TrainingManager(Configuration):
                 discriminator_output_real,
                 discriminator_output_fake,
             )
+
+            # stop the training when generator loss shows no significant change
+            loss_change.append(generator_loss)
+            cntr = 0
+            for i in range(1, len(loss_change)):
+                if (loss_change[i] > (loss_change[i-1] + delta)) or (loss_change[i] < (loss_change[i-1] - delta)):
+                    cntr = 0
+                else:
+                    cntr += 1
+
+            if cntr >= patience:
+                early_stop = True
+
+            if early_stop:
+                logger.info(
+                "Early stopping in epoch %02d since loss did not improve after %02d epochs",
+                i,
+                patience
+                )
+                
+                break
+
 
             yield (
                 generator_loss,

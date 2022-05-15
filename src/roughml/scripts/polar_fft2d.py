@@ -9,13 +9,15 @@ import sys
 from scipy.stats import spearmanr
 
 
-def polar_fft2d(*args):
-    spr = []
+def polar_FFT2d(*args):
+    polar_fft_total = []
     for iter, arg in enumerate(args):
-        # get image alpha value
+        # establish image alpha value
+        # if alpha values change, expand list
         alpha, alpha_val = None, ["0.5","0.6","0.7","0.8","0.9","1.0"]
         for a in alpha_val:
             if arg.find(str(a)) != -1:
+                # get image alpha value
                 alpha = a
                 break
         if alpha == None:
@@ -25,19 +27,19 @@ def polar_fft2d(*args):
         img = cv2.imread(arg, 0)
         # get image dimension
         rows, clmns = img.shape[0], img.shape[1]
-        # get image FFT2D and shift sums to the center
+        # get image FFT2d and shift sums to the center
         fft2d = np.fft.fftshift(np.fft.fft2(img))
         # get absolute fourier values and flatten array
         flat_fft2d = abs(fft2d.ravel(order='F'))
         # get image center points
         mid_idxrow, mid_idxcol = math.floor(rows / 2), math.floor(clmns / 2)
-        # get FFT2D mean absolute column values
+        # get FFT2d mean absolute column values
         fft2d_mean_col = np.mean(abs(fft2d), axis=0)
-        # keep only second half of the mean FFT matrices
+        # keep only second half of the mean FFT2d matrices
         fft2d_mean_col_half = fft2d_mean_col[mid_idxcol:clmns]
-        # get FFT2D mean absolute row values
+        # get FFT2d mean absolute row values
         fft2d_mean_row = np.mean(abs(fft2d), axis=1)
-        # keep only second half of the mean FFT matrices
+        # keep only second half of the mean FFT2d matrices
         fft2d_mean_row_half = fft2d_mean_row[mid_idxrow:rows]
         dist = np.zeros(shape=(rows, clmns), dtype='float')
         # get indexes of the middle element of a matrix
@@ -50,7 +52,7 @@ def polar_fft2d(*args):
         dist_fft = np.vstack((flat_dist, flat_fft2d)).T
         # Sort 2d array based on 1st column
         dist_fft_sorted = dist_fft[dist_fft[:,0].argsort()]
-        # get polar fft for surface
+        # get polar FFT2d for surface
         minVal, maxVal = float(0.0), float(1.0)
         # get loop cycle depending on lowest dimension
         if rows < clmns:
@@ -63,7 +65,7 @@ def polar_fft2d(*args):
             sum_dis = float(0.0)
             sum_fft = float(0.0)
             count = int(0)
-            # get radial sums of distance and fft2d
+            # get radial sums of distance and FFT2d
             for i in range(dist_fft.shape[0]):
                 if (dist_fft_sorted[i][0] > minVal) and (dist_fft_sorted[i][0] <= maxVal):
                     sum_dis= sum_dis + dist_fft_sorted[i][0]
@@ -82,28 +84,34 @@ def polar_fft2d(*args):
             # directory already exists
             pass
 
+        # create filename
         filename = "image_" + str(iter)
+        # plot FFT2d
         plt.figure()
         plt.xlabel('Spatial frequency (nm^{-1})')
         plt.ylabel('Fourier amplitude (nm^{-1})')
         plt.xscale('log'), plt.yscale('log')
-        plt.title('Polar FFT2D')
-        # plot polar fft2d
+        plt.title('FFT2D vectors')
+        # plot polar FFT2d
         plt.plot(polar_fft[:,0], polar_fft[:,1], label = "Polar FFT2D")
-        # plot mean rows fft2d
+        # plot mean rows FFT2d
         plt.plot(polar_fft[:,0], fft2d_mean_row_half, label = 'Mean rows FFT2D')
-        # plot mean columns fft2d
+        # plot mean columns FFT2d
         plt.plot(polar_fft[:,0], fft2d_mean_col_half, label = 'Mean columns FFT2D')
         plt.legend()
         plt.savefig(path + filename)
 
-        # get average fourier values
-        fft2d_mean = np.average(flat_fft2d)
-        spr.append(np.array([float(alpha), fft2d_mean]))
+        # append polar FFT2d values for current image
+        polar_fft_total.append(np.array(polar_fft[:,1]))
     
-    df = pd.DataFrame(spr, columns = ['Alpha', 'Mean Fourier'])
-    df_filename = '/df.csv'
-    df.to_csv(path + df_filename)
+    # get average polar FFT2d values for all images
+    polar_fft_total_mean = np.mean(polar_fft_total, axis=0)
+    # polar_fft_total_mean = np.column_stack((np.full(shape=polar_fft_total_mean.shape, fill_value=float(alpha), order='F'), polar_fft_total_mean))
+    polar_fft_total_mean = np.column_stack((polar_fft[:,0], polar_fft_total_mean))
+    # create csv file with mean vector values
+    df = pd.DataFrame(polar_fft_total_mean, columns = ['Alpha', 'Polar FFT2d values'])
+    df_filename = '/polar_fft2d_' + alpha + '.csv'
+    df.to_csv(path + df_filename, index=None)
     
     return None
 
@@ -119,57 +127,49 @@ if __name__ == "__main__":
     # # parser.add_argument('image5', help = 'directory of fifth image to compare')
     # args = parser.parse_args()
 
-    arg1=r"Output\Alpha effect\Standard\dataset_1000_128_03_00_03_04_04_1.00\CNNGenerator_CNNDiscriminator\2022_04_17_14_39_45_776175\Plots\grayscale\fake_00.png"
-    arg2=r"Output\Alpha effect\Standard\dataset_1000_128_03_00_03_04_04_1.00\CNNGenerator_CNNDiscriminator\2022_04_17_14_39_45_776175\Plots\grayscale\fake_01.png"
-    arg3=r"Output\Alpha effect\Standard\dataset_1000_128_03_00_03_04_04_1.00\CNNGenerator_CNNDiscriminator\2022_04_17_14_39_45_776175\Plots\grayscale\fake_02.png"
-    arg4=r"Output\Alpha effect\Standard\dataset_1000_128_03_00_03_04_04_1.00\CNNGenerator_CNNDiscriminator\2022_04_17_14_39_45_776175\Plots\grayscale\fake_03.png"
-    arg5=r"Output\Alpha effect\Standard\dataset_1000_128_03_00_03_04_04_1.00\CNNGenerator_CNNDiscriminator\2022_04_17_14_39_45_776175\Plots\grayscale\fake_04.png"
-    arg6=r"Output\Alpha effect\Standard\dataset_1000_128_03_00_03_04_04_1.00\CNNGenerator_CNNDiscriminator\2022_04_17_14_39_45_776175\Plots\grayscale\fake_05.png"
+    arg1=r"Output\Alpha effect\Standard\dataset_1000_128_03_00_03_04_04_0.90\CNNGenerator_CNNDiscriminator\2022_04_17_14_29_03_199460\Plots\grayscale\fake_00.png"
+    arg2=r"Output\Alpha effect\Standard\dataset_1000_128_03_00_03_04_04_0.90\CNNGenerator_CNNDiscriminator\2022_04_17_14_29_03_199460\Plots\grayscale\fake_01.png"
+    arg3=r"Output\Alpha effect\Standard\dataset_1000_128_03_00_03_04_04_0.90\CNNGenerator_CNNDiscriminator\2022_04_17_14_29_03_199460\Plots\grayscale\fake_02.png"
+    arg4=r"Output\Alpha effect\Standard\dataset_1000_128_03_00_03_04_04_0.90\CNNGenerator_CNNDiscriminator\2022_04_17_14_29_03_199460\Plots\grayscale\fake_03.png"
+    arg5=r"Output\Alpha effect\Standard\dataset_1000_128_03_00_03_04_04_0.90\CNNGenerator_CNNDiscriminator\2022_04_17_14_29_03_199460\Plots\grayscale\fake_04.png"
+    arg6=r"Output\Alpha effect\Standard\dataset_1000_128_03_00_03_04_04_0.90\CNNGenerator_CNNDiscriminator\2022_04_17_14_29_03_199460\Plots\grayscale\fake_05.png"
 
-    # polar_fft2d(arg1, arg2, arg3, arg4, arg5, arg6)
+    polar_FFT2d(arg1, arg2, arg3, arg4, arg5, arg6)
 
-    df1 = pd.read_csv(r'src\roughml\scripts\output\0.5\df.csv')
-    df1 = np.array(df1)
-    df1_mean = [np.average(df1[:,1]), np.average(df1[:,2])]
-    df2 = pd.read_csv(r'src\roughml\scripts\output\0.6\df.csv')
-    df2 = np.array(df2)
-    df2_mean = [np.average(df2[:,1]), np.average(df2[:,2])]
-    df3 = pd.read_csv(r'src\roughml\scripts\output\0.7\df.csv')
-    df3 = np.array(df3)
-    df3_mean = [np.average(df3[:,1]), np.average(df3[:,2])]
-    df4 = pd.read_csv(r'src\roughml\scripts\output\0.8\df.csv')
-    df4 = np.array(df4)
-    df4_mean = [np.average(df4[:,1]), np.average(df4[:,2])]
-    df5 = pd.read_csv(r'src\roughml\scripts\output\0.9\df.csv')
-    df5 = np.array(df5)
-    df5_mean = [np.average(df5[:,1]), np.average(df5[:,2])]
-    df6 = pd.read_csv(r'src\roughml\scripts\output\1.0\df.csv')
-    df6 = np.array(df6)
-    df6_mean = [np.average(df6[:,1]), np.average(df6[:,2])]
-
-    df_mean_total = []
-    df_mean_total.append(df1_mean)
-    df_mean_total.append(df2_mean)
-    df_mean_total.append(df3_mean)
-    df_mean_total.append(df4_mean)
-    df_mean_total.append(df5_mean)
-    df_mean_total.append(df6_mean)
-
-    path = os.path.join(os.path.dirname( __file__ ), 'output/').replace('\\', '/')
-    try:
-        os.mkdir(path)
-    except FileExistsError:
-        # directory already exists
-        pass
+    # df1 = pd.read_csv(r'src\roughml\scripts\output\Alpha effect new\0.5\polar_fft2d_0.5.csv', header=0)
+    # df1 = np.array(df1)
+    # df2 = pd.read_csv(r'src\roughml\scripts\output\Alpha effect new\0.6\polar_fft2d_0.6.csv', header=0)
+    # df2 = np.array(df2)
+    # df3 = pd.read_csv(r'src\roughml\scripts\output\Alpha effect new\0.7\polar_fft2d_0.7.csv', header=0)
+    # df3 = np.array(df3)
+    # df4 = pd.read_csv(r'src\roughml\scripts\output\Alpha effect new\0.8\polar_fft2d_0.8.csv', header=0)
+    # df4 = np.array(df4)
+    # df5 = pd.read_csv(r'src\roughml\scripts\output\Alpha effect new\0.9\polar_fft2d_0.9.csv', header=0)
+    # df5 = np.array(df5)
+    # df6 = pd.read_csv(r'src\roughml\scripts\output\Alpha effect new\1.0\polar_fft2d_1.0.csv', header=0)
+    # df6 = np.array(df6)
     
-    df_total = pd.DataFrame(df_mean_total, columns = ['Alpha', 'Total Mean Fourier'])
-    df_filename = '/df_mean_total.csv'
-    df_total.to_csv(path + df_filename)
 
-    coef, p = spearmanr(df_mean_total)
-    print('Spearmans coefficient: ', coef, '\n', 'p-value: ', p)
+    # # df_mean_total = []
+    # # df_mean_total = np.concatenate((df1, df2, df3, df4, df5, df6))
 
+    # df_mean_total = df6
+
+    # path = os.path.join(os.path.dirname( __file__ ), 'output/').replace('\\', '/')
+    # try:
+    #     os.mkdir(path)
+    # except FileExistsError:
+    #     # directory already exists
+    #     pass
     
-    
-    
-    
+    # df_total = pd.DataFrame(df_mean_total)
+    # df_filename = '/polar_fft2d_total.csv'
+    # df_total.to_csv(path + df_filename, index=None, header=None)
+
+    # coef, p = spearmanr(df_mean_total)
+    # # print('Spearmans coefficient: ', coef, '\n', 'p-value: ', p)
+    # spr = np.array([[coef, p]])
+    # df_spr = pd.DataFrame(spr, columns = ['Spearmans coefficient', 'p-value'])
+    # df_spr_filename = '/Spearmans rank correlation coefficient.csv'
+    # df_spr.to_csv(path + df_spr_filename, index=None)
+

@@ -34,6 +34,7 @@
 # ## Determining the Current Working Directory
 
 # + cellView="code" id="945a9ccd"
+from genericpath import exists
 from pathlib import Path
 
 BASE_DIR = Path.cwd()
@@ -63,8 +64,12 @@ OUTPUT_DIR = THESIS_DIR / "Output"
 
 if THESIS_DIR.is_dir():
     DATASET_DIR = THESIS_DIR / "Datasets"
+    GEN_CHECKPOINT_DIR = THESIS_DIR / "Checkpoints" / "CNNGenerator.pt"
+    DIS_CHECKPOINT_DIR = THESIS_DIR / "Checkpoints" / "CNNDiscriminator.pt"
 else:
     DATASET_DIR = BASE_DIR / "Datasets"
+    GEN_CHECKPOINT_DIR = BASE_DIR / "Checkpoints" / "CNNGenerator.pt"
+    DIS_CHECKPOINT_DIR = BASE_DIR / "Checkpoints" / "CNNDiscriminator.pt"
 # -
 
 # ## Configuring our Loggers
@@ -141,15 +146,17 @@ if "roughml" not in pip_freeze_output:
 # + cellView="code" id="4d6c30c9"
 import torch
 
-SEED = 1234
+# Set random seed for reproducibility
+manualSeed = 999
+#manualSeed = random.randint(1, 10000) # use if you want new results
 
-if SEED is not None:
-    np.random.seed(SEED)
-    random.seed(SEED)
-    torch.manual_seed(SEED)
-    torch.cuda.manual_seed(SEED)
+if manualSeed is not None:
+    np.random.seed(manualSeed)
+    random.seed(manualSeed)
+    torch.manual_seed(manualSeed)
+    torch.cuda.manual_seed(manualSeed)
     torch.backends.cudnn.deterministic = True
-    os.environ["PYTHONHASHSEED"] = str(SEED)
+    os.environ["PYTHONHASHSEED"] = str(manualSeed)
 
 # + [markdown] id="6fce8a2a"
 # ## Determining available backend
@@ -158,7 +165,7 @@ if SEED is not None:
 # By default, we are going to be utilizing the available CPU backend, if no GPU is available.
 
 # + cellView="code" id="520ba5c1"
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 # -
 
 
@@ -259,10 +266,10 @@ training_flow = TrainingFlow(
             "train_ratio": 0.8,
             "optimizer": {
                 "type": Adam,
-                "params": {"lr": 0.1, "weight_decay": 0},
+                "params": {"lr": 0.0002, "betas": (0.5, 0.999)},
             },
             "dataloader": {
-                "batch_size": 256,
+                "batch_size": 128,
                 "shuffle": True,
                 "num_workers": 0,
             },
@@ -310,17 +317,15 @@ training_flow = TrainingFlow(
 # + cellView="code" id="e301a7a0"
 from roughml.models import CNNGenerator
 
-
-def get_generator():
-    return CNNGenerator.from_device(device)
-
-
 # + cellView="code" id="5a8a9aad"
 from roughml.models import CNNDiscriminator
 
 
+def get_generator():
+    return CNNGenerator.from_pt(GEN_CHECKPOINT_DIR) if GEN_CHECKPOINT_DIR.exists() else CNNGenerator.from_device(device)
+
 def get_discriminator(generator):
-    return CNNDiscriminator.from_generator(generator)
+    return CNNDiscriminator.from_pt(DIS_CHECKPOINT_DIR) if DIS_CHECKPOINT_DIR.exists() else CNNDiscriminator.from_generator(generator)
 
 
 # + [markdown] id="7bbbcc22"
@@ -347,7 +352,8 @@ training_flow = TrainingFlow(
         "manager": {
             "benchmark": True,
             # Uncomment if you want to enable checkpointing
-            # "checkpoint": {"multiple": False},
+            "checkpoint": {"multiple": False},
+            "load_checkpoint": GEN_CHECKPOINT_DIR.exists() and DIS_CHECKPOINT_DIR.exists(),
             "train_epoch": per_epoch,
             "log_every_n": 10,
             "criterion": {"instance": criterion},
@@ -358,7 +364,7 @@ training_flow = TrainingFlow(
                 "params": {"lr": 0.0002, "betas": (0.5, 0.999)},
             },
             "dataloader": {
-                "batch_size": 32,
+                "batch_size": 128,
                 "shuffle": True,
                 "num_workers": 0,
             },
@@ -370,7 +376,7 @@ training_flow = TrainingFlow(
     NGramGraphLoss={
         "type": ArrayGraph2DContentLoss,
         # Uncomment if you want to enable checkpointing
-        # "cache": "n_gram_graph_content_loss.pkl",
+        "cache": "n_gram_graph_content_loss.pkl",
     },
     data={
         "loader": functools.partial(
