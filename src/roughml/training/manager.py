@@ -92,6 +92,7 @@ class TrainingManager(Configuration):
                 vector_content_loss_fn=self.HeightHistogramAndFourierLoss,
                 loss_weights=(self.content_loss_weight, self.criterion.weight),
                 log_every_n=self.log_every_n,
+                load_checkpoint = self.load_checkpoint,
             )
 
             if (

@@ -55,10 +55,8 @@ class TrainingFlow(Configuration):
 
         if not hasattr(self, "NGramGraphLoss"):
             self.NGramGraphLoss = Configuration(type=None, cache=None)
-        
-        # if not hasattr(self.training.manager, "load_checkpoint"):
-        #     self.training.manager.load_checkpoint = False
 
+            
     def __call__(self, get_generator, get_discriminator):
         for path, dataset in self.data.loader():
             logger.info("Instantiating generator and discriminator")
@@ -117,13 +115,8 @@ class TrainingFlow(Configuration):
         self.plot.save_directory = plotting_dir
 
         self.cuda_available = torch.cuda.is_available()
-        if self.cuda_available:
-            self.cuda_id = torch.cuda.current_device()
-            self.cuda_name = torch.cuda.get_device_name(self.cuda_id)
-        else:
-            self.cuda_id = None
-            self.cuda_name = 'cpu'
-
+        self.cuda_id = torch.cuda.current_device()
+        self.cuda_name = torch.cuda.get_device_name(self.cuda_id)
 
         logger.info(
             "Is CUDA supported? %s. Running the framework on device ID:%s with name: %s",

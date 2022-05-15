@@ -64,12 +64,10 @@ OUTPUT_DIR = THESIS_DIR / "Output"
 
 if THESIS_DIR.is_dir():
     DATASET_DIR = THESIS_DIR / "Datasets"
-    CHECKPOINT_DIR = THESIS_DIR / "Checkpoints"
     GEN_CHECKPOINT_DIR = THESIS_DIR / "Checkpoints" / "CNNGenerator.pt"
     DIS_CHECKPOINT_DIR = THESIS_DIR / "Checkpoints" / "CNNDiscriminator.pt"
 else:
     DATASET_DIR = BASE_DIR / "Datasets"
-    CHECKPOINT_DIR = BASE_DIR / "Checkpoints"
     GEN_CHECKPOINT_DIR = BASE_DIR / "Checkpoints" / "CNNGenerator.pt"
     DIS_CHECKPOINT_DIR = BASE_DIR / "Checkpoints" / "CNNDiscriminator.pt"
 # -
@@ -165,7 +163,7 @@ if SEED is not None:
 # By default, we are going to be utilizing the available CPU backend, if no GPU is available.
 
 # + cellView="code" id="520ba5c1"
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 # -
 
 
@@ -220,16 +218,16 @@ def logging_callback(config, logging_dir):
 from roughml.models import PerceptronGenerator
 
 
-# def get_generator():
-#     return PerceptronGenerator.from_device(device)
+def get_generator():
+    return PerceptronGenerator.from_device(device)
 
 
 # + cellView="code" id="cac059ee"
 from roughml.models import PerceptronDiscriminator
 
 
-# def get_discriminator(generator):
-#     return PerceptronDiscriminator.from_generator(generator)
+def get_discriminator(generator):
+    return PerceptronDiscriminator.from_generator(generator)
 
 
 # + [markdown] id="eb813599"
@@ -328,19 +326,6 @@ def get_discriminator(generator):
     return CNNDiscriminator.from_pt(DIS_CHECKPOINT_DIR) if DIS_CHECKPOINT_DIR.exists() else CNNDiscriminator.from_generator(generator)
 
 
-# check if there are model checkpoints
-# load_checkpoint = False
-# if CHECKPOINT_DIR.is_dir():
-#     for file in CHECKPOINT_DIR.iterdir():
-#         if not file.is_dir() and file.suffix == ".pt":
-#             def get_generator():
-#                 return CNNGenerator.from_pt(GEN_CHECKPOINT_DIR.is_dir)
-#             def get_discriminator(generator):
-#                 return CNNDiscriminator.from_pt(DIS_CHECKPOINT_DIR)
-#                 # CNNDiscriminator.device = generator.device # Check if this is correct
-#             load_checkpoint = True
-
-
 # + [markdown] id="7bbbcc22"
 # ## Training
 
@@ -366,7 +351,7 @@ training_flow = TrainingFlow(
             "benchmark": True,
             # Uncomment if you want to enable checkpointing
             "checkpoint": {"multiple": False},
-            # "load_checkpoint": load_checkpoint,
+            "load_checkpoint": GEN_CHECKPOINT_DIR.exists() and DIS_CHECKPOINT_DIR.exists(),
             "train_epoch": per_epoch,
             "log_every_n": 10,
             "criterion": {"instance": criterion},
