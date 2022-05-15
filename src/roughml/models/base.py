@@ -45,7 +45,7 @@ class Base(nn.Module):
         instance.eval()
 
         # Convert model to CUDA version, based on appropriate device
-        if device != "cpu":
+        if device.type != "cpu":
             instance.cuda()
 
         return instance

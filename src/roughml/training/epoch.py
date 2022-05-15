@@ -31,6 +31,7 @@ def per_epoch(
 
     start_time = time.time()
     for train_iteration, X_batch in enumerate(dataloader):
+        X_batch = X_batch.float()
         # (1) Update D network: maximize log(D(x)) + log(1 - D(G(z)))
         ## Train with all-real batch
         discriminator.zero_grad()
