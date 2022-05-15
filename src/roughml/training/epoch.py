@@ -32,7 +32,7 @@ def per_epoch(
 
     start_time = time.time()
     for train_iteration, X_batch in enumerate(dataloader):
-        # change batch type to match model's checkpoint type when loaded
+        # change batch type to match model's checkpoint weights when model is loaded
         if load_checkpoint:
             X_batch = X_batch.float()
         # (1) Update D network: maximize log(D(x)) + log(1 - D(G(z)))
