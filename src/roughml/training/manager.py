@@ -6,7 +6,6 @@ from tqdm import tqdm
 from roughml.shared.configuration import Configuration
 from roughml.shared.decorators import benchmark
 from roughml.training.split import train_test_dataloaders
-from roughml.scripts.pytorchtools import EarlyStopping
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +35,7 @@ class TrainingManager(Configuration):
         self.content_loss_weight = 1 - self.criterion.weight
 
         if not hasattr(self, "fixed_noise_dim"):
-            self.fixed_noise_dim = 64
+            self.fixed_noise_dim = 128
 
     def __call__(self, generator, discriminator, dataset):
         fixed_noise = torch.randn(
@@ -60,11 +59,6 @@ class TrainingManager(Configuration):
 
         train_epoch_f = self.train_epoch
 
-        # number of epochs to wait after last time loss improved
-        patience = 10
-        # initialize the early_stopping object
-        early_stopping = EarlyStopping(patience=patience)
-
         if self.benchmark is True and logger.level <= logging.INFO:
             train_epoch_f = benchmark(train_epoch_f)
 
@@ -73,6 +67,10 @@ class TrainingManager(Configuration):
         max_discriminator_loss = float(0.0)
         max_HeightHistogramAndFourierLoss = float(0.0)
         max_NGramGraphLoss = float(0.0)
+        patience = 10       # number of epochs where generator loss shows no significant change
+        loss_change = []
+        early_stop = False
+        delta = 0.001       # generator loss threshold that shows no significant change
         for epoch in tqdm(range(self.n_epochs), desc="Epochs"):
             (
                 generator_loss,
@@ -132,9 +130,6 @@ class TrainingManager(Configuration):
                 discriminator_loss,
             )
 
-            # early_stopping checks if the generator loss has decreased over a number of epochs
-            early_stopping(generator_loss, generator)
-
             # normalize all losses from 0 to 1
             if generator_loss > max_generator_loss:
                 max_generator_loss = generator_loss
@@ -167,14 +162,28 @@ class TrainingManager(Configuration):
                 discriminator_output_real,
                 discriminator_output_fake,
             )
-        
-            if early_stopping.early_stop:
+
+            # stop the training when generator loss shows no significant change
+            loss_change.append(generator_loss)
+            cntr = 0
+            for i in range(1, len(loss_change)):
+                if (loss_change[i] > (loss_change[i-1] + delta)) or (loss_change[i] < (loss_change[i-1] - delta)):
+                    cntr = 0
+                else:
+                    cntr += 1
+
+            if cntr >= patience:
+                early_stop = True
+
+            if early_stop:
                 logger.info(
-                "Early stopping since loss did not improve after %02d epochs",
+                "Early stopping in epoch %02d since loss did not improve after %02d epochs",
+                i,
                 patience
                 )
                 
                 break
+
 
             yield (
                 generator_loss,
