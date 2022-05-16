@@ -55,17 +55,17 @@ class CNNGenerator(Base):
 
         self.module_list = nn.ModuleList(
             [
+                # nn.Sequential(
+                #     # input is in_channels (latent vector Z), going into a convolution
+                #     nn.ConvTranspose2d(
+                #         in_channels, out_channels * 16, 4, 1, 0, bias=False
+                #     ),
+                #     nn.BatchNorm2d(out_channels * 16),
+                #     nn.ReLU(True),
+                # ),
                 nn.Sequential(
-                    # input is Z, going into a convolution
                     nn.ConvTranspose2d(
-                        in_channels, out_channels * 16, 4, 1, 0, bias=False
-                    ),
-                    nn.BatchNorm2d(out_channels * 16),
-                    nn.ReLU(True),
-                ),
-                nn.Sequential(
-                    nn.ConvTranspose2d(
-                        out_channels * 16, out_channels * 8, 4, 2, 1, bias=False
+                        in_channels, out_channels * 8, 4, 1, 0, bias=False
                     ),
                     nn.BatchNorm2d(out_channels * 8),
                     nn.ReLU(True),
