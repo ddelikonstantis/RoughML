@@ -146,7 +146,7 @@ class CNNDiscriminator(Base):
                     nn.LeakyReLU(0.2, inplace=True),
                 ),
                 nn.Sequential(
-                    nn.Conv2d(in_channels * 8, 1, 8, 1, 0, bias=False),
+                    nn.Conv2d(in_channels * 8, 1, 4, 1, 0, bias=False),
                     nn.Sigmoid()
                 ),
             ]
