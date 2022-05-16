@@ -35,7 +35,7 @@ class TrainingManager(Configuration):
         self.content_loss_weight = 1 - self.criterion.weight
 
         if not hasattr(self, "fixed_noise_dim"):
-            self.fixed_noise_dim = 64
+            self.fixed_noise_dim = 128
 
     def __call__(self, generator, discriminator, dataset):
         fixed_noise = torch.randn(
