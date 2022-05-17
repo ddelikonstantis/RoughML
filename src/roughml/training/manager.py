@@ -67,10 +67,10 @@ class TrainingManager(Configuration):
         max_discriminator_loss = float(0.0)
         max_HeightHistogramAndFourierLoss = float(0.0)
         max_NGramGraphLoss = float(0.0)
-        patience = 10       # number of epochs where generator loss shows no significant change
+        patience = 20       # number of epochs where generator loss shows no significant change
         loss_change = []
         early_stop = False
-        delta = 0.001       # generator loss threshold that shows no significant change
+        delta = 0.0001      # generator loss threshold that shows no significant change
         for epoch in tqdm(range(self.n_epochs), desc="Epochs"):
             (
                 generator_loss,
