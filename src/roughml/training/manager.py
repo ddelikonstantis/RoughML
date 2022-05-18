@@ -163,7 +163,7 @@ class TrainingManager(Configuration):
                 discriminator_output_fake,
             )
 
-            # stop the training when generator loss shows no significant change
+            # stop the training when generator loss shows no significant change after a consecutive number of epochs
             loss_change.append(generator_loss)
             cntr = 0
             for i in range(1, len(loss_change)):

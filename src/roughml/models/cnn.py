@@ -95,7 +95,7 @@ class CNNGenerator(Base):
                     nn.ConvTranspose2d(
                         out_channels, training_channels, 4, 2, 1, bias=False
                     ), # state size. (training_channels) x 128 x 128
-                    # nn.Tanh(),    # removed to avoid normalization [-1, 1] of heights
+                    # nn.Tanh(),    # removed to avoid normalization [-1, 1] of the height of surfaces
                 ),
             ]
         )
