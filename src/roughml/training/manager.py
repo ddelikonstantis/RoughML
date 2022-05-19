@@ -26,13 +26,32 @@ class TrainingManager(Configuration):
         if not hasattr(self, "NGramGraphLoss"):
             self.NGramGraphLoss = None
 
+        if not hasattr(self, "HeightHistogramAndFourierLoss"):
+            self.HeightHistogramAndFourierLoss = None
+
         if self.NGramGraphLoss is None:
-            self.criterion.weight = 1
+            self.content_loss_weight = 0
+        else:
+            if not hasattr(self.criterion, "weight"):
+                self.content_loss_weight = 1
+            else:
+                self.content_loss_weight = self.criterion.weight
+
+        if self.HeightHistogramAndFourierLoss is None:
+            self.HeightHistogramAndFourier_loss_weight = 0
+        else:
+            if not hasattr(self.criterion, "weight"):
+                self.HeightHistogramAndFourier_loss_weight = 1
+            else:
+                self.HeightHistogramAndFourier_loss_weight = self.criterion.weight
 
         if not hasattr(self.criterion, "weight"):
-            self.criterion.weight = 0.5
+            self.criterion.weight = 1
 
-        self.content_loss_weight = 1 - self.criterion.weight
+        if self.content_loss_weight != 0 or self.HeightHistogramAndFourier_loss_weight != 0:
+            self.criterion.weight = self.criterion.weight / (self.criterion.weight + self.content_loss_weight + self.HeightHistogramAndFourier_loss_weight)
+            self.content_loss_weight = self.content_loss_weight / (self.content_loss_weight + self.HeightHistogramAndFourier_loss_weight + self.criterion.weight)
+            self.HeightHistogramAndFourier_loss_weight = self.HeightHistogramAndFourier_loss_weight / (self.HeightHistogramAndFourier_loss_weight + self.criterion.weight + self.content_loss_weight)
 
         if not hasattr(self, "fixed_noise_dim"):
             self.fixed_noise_dim = 128
