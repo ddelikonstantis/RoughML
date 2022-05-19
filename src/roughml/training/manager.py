@@ -70,7 +70,7 @@ class TrainingManager(Configuration):
         patience = 20       # number of epochs where generator loss shows no significant change
         loss_change = []
         early_stop = False
-        delta = 0.0001      # generator loss threshold that shows no significant change
+        delta = 0.01        # generator loss threshold that shows no significant change
         for epoch in tqdm(range(self.n_epochs), desc="Epochs"):
             (
                 generator_loss,
@@ -163,7 +163,7 @@ class TrainingManager(Configuration):
                 discriminator_output_fake,
             )
 
-            # stop the training when generator loss shows no significant change
+            # stop the training when generator loss shows no significant change after a consecutive number of epochs
             loss_change.append(generator_loss)
             cntr = 0
             for i in range(1, len(loss_change)):

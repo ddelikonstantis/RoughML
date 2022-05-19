@@ -214,7 +214,7 @@ class TrainingFlow(Configuration):
         plot_against(
             generator_losses,
             discriminator_losses,
-            title="Mean Generator vs Discriminator loss per epoch",
+            title="Mean Generator vs Discriminator loss per epoch \n" + str(path).split("Datasets")[1][1:len(str(path).split("Datasets")[1])],
             xlabel="Epoch",
             ylabel="Loss",
             labels=("Generator", "Discriminator"),
@@ -224,7 +224,7 @@ class TrainingFlow(Configuration):
         plot_against(
             discriminator_output_reals,
             discriminator_output_fakes,
-            title="Mean Discriminator Output per epoch",
+            title="Mean Discriminator Output per epoch \n" + str(path).split("Datasets")[1][1:len(str(path).split("Datasets")[1])],
             xlabel="Epoch",
             ylabel="Discriminator Output",
             labels=("Real Data", "Generator Data"),
@@ -234,7 +234,7 @@ class TrainingFlow(Configuration):
         plot_against(
             generator_losses,
             NGramGraphLosses,
-            title="Mean Generator Total loss vs N-gram graph loss per epoch",
+            title="Mean Generator Total loss vs N-gram graph loss per epoch \n" + str(path).split("Datasets")[1][1:len(str(path).split("Datasets")[1])],
             xlabel="Epoch",
             ylabel="Loss",
             labels=("BCE + N-gram graph loss", "N-gram graph loss"),
@@ -244,7 +244,7 @@ class TrainingFlow(Configuration):
         plot_against(
             HeightHistogramAndFourierLosses,
             NGramGraphLosses,
-            title="Height Histogram and Fourier Loss vs N-gram graph loss per epoch",
+            title="Height Histogram and Fourier Loss vs N-gram graph loss per epoch \n" + str(path).split("Datasets")[1][1:len(str(path).split("Datasets")[1])],
             xlabel="Epoch",
             ylabel="Loss",
             labels=("Height Histogram and Fourier Loss", "N-gram graph Loss"),
