@@ -149,7 +149,7 @@ class TrainingManager(Configuration):
                 fixed_fake = generator(fixed_noise).detach().cpu()
 
             logger.info(
-                "Epoch: %02d, Generator Loss: %7.3f (N-Gram Graph Loss: %7.3f, Height Histogram and Fourier Loss: %7.3f), Discriminator Loss: %7.3f",
+                "Epoch:%02d, Generator Loss:%7.3f, N-Gram Graph Loss:%7.3f, Height Histogram and Fourier Loss:%7.3f, Discriminator Loss:%7.3f",
                 epoch,
                 generator_loss,
                 NGramGraphLoss,
@@ -175,7 +175,7 @@ class TrainingManager(Configuration):
             NGramGraphLoss /= max_NGramGraphLoss
 
             logger.info(
-                "Epoch: %02d, Normalized Generator Loss: %7.3f (Normalized N-Gram Graph Loss: %7.3f, Normalized Height Histogram and Fourier Loss: %7.3f), Normalized Discriminator Loss: %7.3f",
+                "Epoch:%02d, Normalized Generator Loss:%7.5f Normalized N-Gram Graph Loss:%7.5f, Normalized Height Histogram and Fourier Loss:%7.5f, Normalized Discriminator Loss:%7.5f",
                 epoch,
                 generator_loss,
                 NGramGraphLoss,
@@ -184,7 +184,7 @@ class TrainingManager(Configuration):
             )
 
             logger.info(
-                "Epoch: %02d, Discriminator Output: [Real: %7.3f, Fake: %7.3f]",
+                "Epoch:%02d, Discriminator Output: [Real images:%7.5f, Generated/Fake images:%7.5f]",
                 epoch,
                 discriminator_output_real,
                 discriminator_output_fake,

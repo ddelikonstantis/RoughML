@@ -214,20 +214,20 @@ class TrainingFlow(Configuration):
         plot_against(
             generator_losses,
             discriminator_losses,
-            title="Mean Generator vs Discriminator loss per epoch \n" + str(path).split("Datasets")[1][1:len(str(path).split("Datasets")[1])],
-            xlabel="Epoch",
+            title="Generator and Discriminator loss during training \n" + str(path).split("Datasets")[1][1:len(str(path).split("Datasets")[1])],
+            xlabel="Epochs",
             ylabel="Loss",
-            labels=("Generator", "Discriminator"),
+            labels=("G", "D"),
             save_path=self.plot.save_directory / save_path_gen_vs_dis_loss,
         )
 
         plot_against(
             discriminator_output_reals,
             discriminator_output_fakes,
-            title="Mean Discriminator Output per epoch \n" + str(path).split("Datasets")[1][1:len(str(path).split("Datasets")[1])],
-            xlabel="Epoch",
+            title="Discriminator Output \n" + str(path).split("Datasets")[1][1:len(str(path).split("Datasets")[1])],
+            xlabel="Epochs",
             ylabel="Discriminator Output",
-            labels=("Real Data", "Generator Data"),
+            labels=("Real images", "Generated images"),
             save_path=self.plot.save_directory / save_path_dis_output,
         )
 
