@@ -21,14 +21,9 @@ def per_epoch(
 ):
     generator.train()
 
-    if content_loss_fn is None:
-        content_loss_weight, criterion_weight = 0, 1
-    else:
-        content_loss_weight, criterion_weight = loss_weights
-
-    NGramGraphLoss, HeightHistogramAndFourierLoss = float(0.0), float(0.0)
-    generator_loss, discriminator_loss = float(0.0), float(0.0)
-    discriminator_output_real, discriminator_output_fake = float(0.0), float(0.0)
+    generator_loss, discriminator_loss = 0, 0
+    discriminator_output_real, discriminator_output_fake = 0, 0
+    NGramGraphLoss, HeightHistogramAndFourierLoss = 0, 0
 
     start_time = time.time()
     for train_iteration, X_batch in enumerate(dataloader):
@@ -83,19 +78,42 @@ def per_epoch(
         label.fill_(1)  # fake labels are real for generator cost
         # Since we just updated D, perform another forward pass of all-fake batch through D
         output = discriminator(fake).view(-1)
-        # Calculate G's loss based on this output
-        if content_loss_weight <= 0:
-            # calculate loss only with Binary Cross-Entropy 
-            discriminator_error_fake = criterion(output, label)
-        else:
-            # calculate loss based on a combination of Binary Cross-Entropy, NGramGraph and HeightHistogramAndFourier
+
+        # Calculate G's loss based on this condition
+        # loss_weights[0] is Binary Cross-Entropy weight
+        # loss_weights[1] is NGramGraphLoss weight
+        # loss_weights[2] is HeightHistogramAndFourierLoss weight
+        if loss_weights[1] != 0 and loss_weights[2] != 0:
+            # calculate loss based on a combination of Binary Cross-Entropy, NGramGraphLoss and HeightHistogramAndFourierLoss
+            # each loss contributes with its own weight
             generator_content_loss = content_loss_fn(fake.cpu().detach().numpy().squeeze())
             generator_content_loss = torch.mean(generator_content_loss).to(fake.device)
             NGramGraphLoss += generator_content_loss.item() / len(dataloader)
+            NGramGraphLoss_weighted =  NGramGraphLoss * loss_weights[1]   # weight for NGramGraphLoss
             generator_vector_content_loss = vector_content_loss_fn(fake.cpu().detach().numpy().squeeze())
             generator_vector_content_loss = torch.mean(generator_vector_content_loss).to(fake.device)
             HeightHistogramAndFourierLoss += generator_vector_content_loss.item() / len(dataloader)
-            discriminator_error_fake = criterion(output, label) / (0.33 + NGramGraphLoss + HeightHistogramAndFourierLoss)
+            HeightHistogramAndFourierLoss_weighted = HeightHistogramAndFourierLoss * loss_weights[2] # weight for HeightHistogramAndFourierLoss
+            discriminator_error_fake = criterion(output, label) / (loss_weights[0] + NGramGraphLoss_weighted + HeightHistogramAndFourierLoss_weighted)
+        elif loss_weights[1] != 0:
+            # calculate loss based on a combination of Binary Cross-Entropy and NGramGraphLoss
+            # each loss contributes with its own weight
+            generator_content_loss = content_loss_fn(fake.cpu().detach().numpy().squeeze())
+            generator_content_loss = torch.mean(generator_content_loss).to(fake.device)
+            NGramGraphLoss += generator_content_loss.item() / len(dataloader)
+            NGramGraphLoss_weighted =  NGramGraphLoss * loss_weights[1]   # weight for NGramGraphLoss
+            discriminator_error_fake = criterion(output, label) / (loss_weights[0] + NGramGraphLoss_weighted)
+        elif loss_weights[2] != 0:
+            # calculate loss based on a combination of Binary Cross-Entropy and HeightHistogramAndFourierLoss
+            # each loss contributes with its own weight
+            generator_vector_content_loss = vector_content_loss_fn(fake.cpu().detach().numpy().squeeze())
+            generator_vector_content_loss = torch.mean(generator_vector_content_loss).to(fake.device)
+            HeightHistogramAndFourierLoss += generator_vector_content_loss.item() / len(dataloader)
+            HeightHistogramAndFourierLoss_weighted = HeightHistogramAndFourierLoss * loss_weights[2] # weight for HeightHistogramAndFourierLoss
+            discriminator_error_fake = criterion(output, label) / (loss_weights[0] + HeightHistogramAndFourierLoss_weighted)
+        else:
+            # calculate loss based only on Binary Cross-Entropy / Log
+            discriminator_error_fake = criterion(output, label) # / loss_weights[0]
 
         # Calculate gradients for G, which propagate through the discriminator
         discriminator_error_fake.backward()

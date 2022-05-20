@@ -204,10 +204,10 @@ class TrainingFlow(Configuration):
             columns=[
                 "Generator Loss",
                 "Discriminator Loss",
-                "Discriminator Output (Real)",
-                "Discriminator Output (Fake)",
+                "Discriminator Output (Real images)",
+                "Discriminator Output (Generated/Fake images)",
                 f"N-Gram Graph Loss ({self.NGramGraphLoss.type.__name__ if self.NGramGraphLoss.type else 'None'})",
-                "N-Gram Graph Loss (HeightHistogramAndFourierLoss)",
+                "Height Histogram and Fourier Loss",
             ],
         ).to_csv(str(checkpoint_dir / "per_epoch_data.csv"))
 
