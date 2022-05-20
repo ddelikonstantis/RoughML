@@ -45,22 +45,20 @@ class TrainingManager(Configuration):
             else:
                 self.HeightHistogramAndFourier_loss_weight = self.criterion.weight
 
+        # Initialize the weight
         if not hasattr(self.criterion, "weight"):
             self.criterion.weight = 1
+        # Calculate the nromalization factor
+        norm_factor = (self.criterion.weight + self.content_loss_weight + self.HeightHistogramAndFourier_loss_weight)
+        # if the factor is zero, raise an exception
+        if norm_factor == 0:
+            raise RuntimeError("All weights related to the losses are zero. Please revise.")
+        # Otherwise, we normalize as expected
+        self.criterion.weight = self.criterion.weight / norm_factor
+        self.content_loss_weight = self.content_loss_weight / norm_factor
+        self.HeightHistogramAndFourier_loss_weight = self.HeightHistogramAndFourier_loss_weight / norm_factor
 
-        if self.content_loss_weight != 0 and self.HeightHistogramAndFourier_loss_weight != 0:
-            self.criterion.weight = self.criterion.weight / (self.criterion.weight + self.content_loss_weight + self.HeightHistogramAndFourier_loss_weight)
-            self.content_loss_weight = self.criterion.weight
-            self.HeightHistogramAndFourier_loss_weight = self.criterion.weight
-        elif self.content_loss_weight != 0:
-            self.criterion.weight = self.criterion.weight / (self.criterion.weight + self.content_loss_weight + self.HeightHistogramAndFourier_loss_weight)
-            self.content_loss_weight = self.criterion.weight
-        elif self.HeightHistogramAndFourier_loss_weight != 0:
-            self.criterion.weight = self.criterion.weight / (self.criterion.weight + self.content_loss_weight + self.HeightHistogramAndFourier_loss_weight)
-            self.HeightHistogramAndFourier_loss_weight = self.criterion.weight
-        else:
-            self.criterion.weight /= self.criterion.weight
-
+        # Initialize fixed_noise_dim
         if not hasattr(self, "fixed_noise_dim"):
             self.fixed_noise_dim = 128
 
@@ -116,6 +114,7 @@ class TrainingManager(Configuration):
                 content_loss_fn=self.NGramGraphLoss,
                 vector_content_loss_fn=self.HeightHistogramAndFourierLoss,
                 loss_weights=(self.criterion.weight, self.content_loss_weight, self.HeightHistogramAndFourier_loss_weight),
+                loss_maxima=(max_discriminator_loss, max_NGramGraphLoss, max_HeightHistogramAndFourierLoss),
                 log_every_n=self.log_every_n,
                 load_checkpoint = self.load_checkpoint,
             )
