@@ -23,11 +23,11 @@ class TrainingManager(Configuration):
         if not hasattr(self, "checkpoint"):
             self.checkpoint = Configuration(directory=None, multiple=False)
 
-        # if not hasattr(self, "NGramGraphLoss"):
-        self.NGramGraphLoss = None
+        if not hasattr(self, "NGramGraphLoss"):
+            self.NGramGraphLoss = None
 
-        # if not hasattr(self, "HeightHistogramAndFourierLoss"):
-        self.HeightHistogramAndFourierLoss = None
+        if not hasattr(self, "HeightHistogramAndFourierLoss"):
+            self.HeightHistogramAndFourierLoss = None
 
         if self.NGramGraphLoss is None:
             self.content_loss_weight = 0
