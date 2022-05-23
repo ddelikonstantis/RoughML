@@ -204,7 +204,7 @@ class TrainingFlow(Configuration):
                 "Discriminator Loss",
                 "Discriminator Output on Real images (label:1)",
                 "Discriminator Output on Generated images (label:0)",
-                "Binary Cross-Entropy loss",
+                "Binary Cross-Entropy / Log loss",
                 f"N-Gram Graph Loss ({self.NGramGraphLoss.type.__name__ if self.NGramGraphLoss.type else 'None'})",
                 "Height Histogram and Fourier Loss",
             ],

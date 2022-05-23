@@ -54,7 +54,7 @@ class TrainingManager(Configuration):
         # Initialize the weight
         if not hasattr(self.criterion, "weight"):
             self.criterion.weight = 1
-        # Calculate the nromalization factor
+        # Calculate the normalization factor
         norm_factor = (self.criterion.weight + self.content_loss_weight + self.HeightHistogramAndFourier_loss_weight)
         # if the factor is zero, raise an exception
         if norm_factor == 0:
@@ -156,32 +156,6 @@ class TrainingManager(Configuration):
 
             logger.info(
                 "Epoch:%03d, Generator Loss:%7.5f, N-GramGraphLoss:%7.5f, HeightHistogramAndFourierLoss:%7.5f, Discriminator Loss:%7.5f",
-                epoch,
-                generator_loss,
-                NGramGraphLoss,
-                HeightHistogramAndFourierLoss,
-                discriminator_loss,
-            )
-
-            # # normalize all losses from 0 to 1
-            # if generator_loss > max_generator_loss:
-            #     max_generator_loss = generator_loss
-            # generator_loss /= max_generator_loss
-
-            # if discriminator_loss > max_discriminator_loss:
-            #     max_discriminator_loss = discriminator_loss
-            # discriminator_loss /= max_discriminator_loss
-
-            # if HeightHistogramAndFourierLoss > max_HeightHistogramAndFourierLoss:
-            #     max_HeightHistogramAndFourierLoss = HeightHistogramAndFourierLoss
-            # HeightHistogramAndFourierLoss /= max_HeightHistogramAndFourierLoss
-
-            # if NGramGraphLoss > max_NGramGraphLoss:
-            #     max_NGramGraphLoss = NGramGraphLoss
-            # NGramGraphLoss /= max_NGramGraphLoss
-
-            logger.info(
-                "Epoch:%03d, Norm Generator Loss:%7.5f Norm N-GramGraphLoss:%7.5f, Norm HeightHistogramAndFourierLoss:%7.5f, Norm Discriminator Loss:%7.5f",
                 epoch,
                 generator_loss,
                 NGramGraphLoss,

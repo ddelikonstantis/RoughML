@@ -39,7 +39,7 @@ def per_epoch(
     current_batch_loss = 0
     generator_loss, discriminator_loss = 0, 0
     discriminator_output_real, discriminator_output_fake = 0, 0
-    NGramGraphLoss, HeightHistogramAndFourierLoss, BCELoss = 0, 0, 0
+    BCELoss, NGramGraphLoss, HeightHistogramAndFourierLoss = 0, 0, 0
 
     start_time = time.time()
     for train_iteration, X_batch in enumerate(dataloader):
@@ -107,7 +107,7 @@ def per_epoch(
             # loss_weights[0] is Binary Cross-Entropy weight
             # loss_weights[1] is NGramGraphLoss weight
             # loss_weights[2] is HeightHistogramAndFourierLoss weight
-            # Weight it and add it to the overall losss
+            # Weight it and add it to the overall loss
 
         # So: for the BCE loss
         # Calculate the loss
