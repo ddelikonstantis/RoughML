@@ -7,9 +7,16 @@ from roughml.content.loss import NGramGraphContentLoss
 
 logger = logging.getLogger(__name__)
 
-generator_loss_max = -1.0
-NGramGraphContentLoss_max = -1
-NGramGraphContentLoss_max = -1
+
+# Returns a normalized and a normalized weighted value of a measure. Normalization occurs before weighting.
+# The function returns both the above value, but also the new maxValueSoFar.
+def normalizedAndWeightedLoss(value, maxValueSoFar, weight):
+    # Update maximum
+    if maxValueSoFar < value:
+        maxValueSoFar = value
+    # Return normalized value and normalized weighted value, and max value so far
+    return value / maxValueSoFar, weight * value / maxValueSoFar, maxValueSoFar
+
 
 # TODO: Add method description/documentation
 # TODO: debug ONLY this function/script
@@ -29,6 +36,7 @@ def per_epoch(
 ):
     generator.train()
 
+    current_batch_loss = 0
     generator_loss, discriminator_loss = 0, 0
     discriminator_output_real, discriminator_output_fake = 0, 0
     NGramGraphLoss, HeightHistogramAndFourierLoss, BCELoss = 0, 0, 0
@@ -87,7 +95,7 @@ def per_epoch(
         # Since we just updated D, perform another forward pass of all-fake batch through D
         output = discriminator(fake).view(-1)
 
-        # Calculate G's loss based on this condition
+        # Calculate G's loss
         
         # Initialize overall loss to zero
         overall_loss = 0.0
@@ -99,16 +107,7 @@ def per_epoch(
             # loss_weights[0] is Binary Cross-Entropy weight
             # loss_weights[1] is NGramGraphLoss weight
             # loss_weights[2] is HeightHistogramAndFourierLoss weight
-            # Weight it and add it to the overall loss
-
-        # Returns a normalized and a normalized weighted value of a measure. Normalization occurs before weighting.
-        # The function returns both the above value, but also the new maxValueSoFar.
-        def normalizedAndWeightedLoss(value, maxValueSoFar, weight):
-            # Update maximum
-            if maxValueSoFar < value:
-                maxValueSoFar = value
-            # Return normalized value and normalized weighted value, and max value so far
-            return (value / maxValueSoFar, weight * value / maxValueSoFar, maxValueSoFar)
+            # Weight it and add it to the overall losss
 
         # So: for the BCE loss
         # Calculate the loss
@@ -116,7 +115,7 @@ def per_epoch(
         # Calculate the normalized weighted value and also get the new maximum
         bce_norm_loss, bce_norm_weighted_loss, loss_maxima[0] = normalizedAndWeightedLoss(discriminator_error_fake, loss_maxima[0], loss_weights[0])
         current_batch_loss += bce_norm_weighted_loss
-        BCELoss += bce_norm_loss
+        BCELoss += bce_norm_loss.item() / len(dataloader)
 
         # So: for the NGG loss
         # Get the maximum
@@ -191,4 +190,5 @@ def per_epoch(
         discriminator_output_fake,
         NGramGraphLoss,
         HeightHistogramAndFourierLoss,
+        BCELoss
     )

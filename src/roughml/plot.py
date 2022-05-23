@@ -14,12 +14,17 @@ logger = logging.getLogger(__name__)
 
 
 def plot_against(
-    first, second, title="", xlabel="", ylabel="", labels=("", ""), save_path=None
+    first, second, third=None, title="", xlabel="", ylabel="", labels=("", "", ""), save_path=None
 ):
-    x = list(range(max(len(first), len(second))))
+    if third is not None:
+        x = list(range(max(len(first), len(second), len(third))))
+    else:
+        x = list(range(max(len(first), len(second))))
 
     plt.plot(x, first, label=labels[0])
     plt.plot(x, second, label=labels[1])
+    if third is not None: 
+        plt.plot(x, third, label=labels[2])
 
     plt.grid()
     plt.title(title)

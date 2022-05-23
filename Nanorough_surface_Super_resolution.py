@@ -358,7 +358,7 @@ training_flow = TrainingFlow(
             "log_every_n": 10,
             # BCE, NGramGraphLoss and HeightHistogramAndFourierLoss all have equal weights
             "criterion": {"instance": criterion},
-            "n_epochs": 10,
+            "n_epochs": 1,
             "train_ratio": 0.8,
             "optimizer": {
                 "type": Adam,

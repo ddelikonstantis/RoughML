@@ -166,6 +166,7 @@ class TrainingFlow(Configuration):
             discriminator_output_fakes,
             NGramGraphLosses,
             HeightHistogramAndFourierLosses,
+            BCELosses,
             fixed_fakes,
         ) = list(zip(*list(training_manager(generator, discriminator, dataset))))
 
@@ -178,16 +179,13 @@ class TrainingFlow(Configuration):
         
         if self.plot.against.save_path_fmt is not None:
             save_path_gen_vs_dis_loss = self.plot.against.save_path_fmt % (
-                "gen_vs_dis_loss",
-            )
-            save_path_bce_vs_ngraph_loss = self.plot.against.save_path_fmt % (
-                "bce_vs_ngraph_loss",
+                "generator_vs_discriminator_loss",
             )
             save_path_dis_output = self.plot.against.save_path_fmt % (
                 "discriminator_output",
             )
-            save_path_fourier_loss = self.plot.against.save_path_fmt % (
-                "ngraph_vs_fourier_loss",
+            save_path_bce_ngg_hff_loss = self.plot.against.save_path_fmt % (
+                "bce_vs_ngg_vs_hff_loss",
             )
 
         pd.DataFrame(
@@ -205,7 +203,7 @@ class TrainingFlow(Configuration):
                 "Generator Loss",
                 "Discriminator Loss",
                 "Discriminator Output (Real images)",
-                "Discriminator Output (Generated/Fake images)",
+                "Discriminator Output (Generated images)",
                 f"N-Gram Graph Loss ({self.NGramGraphLoss.type.__name__ if self.NGramGraphLoss.type else 'None'})",
                 "Height Histogram and Fourier Loss",
             ],
@@ -214,41 +212,32 @@ class TrainingFlow(Configuration):
         plot_against(
             generator_losses,
             discriminator_losses,
-            title="Generator and Discriminator loss \n" + str(path).split("Datasets")[1][1:len(str(path).split("Datasets")[1])],
+            title="Generator and Discriminator loss during training \n" + str(path).split("Datasets")[1][1:len(str(path).split("Datasets")[1])],
             xlabel="Epochs",
             ylabel="Loss",
-            labels=("G", "D"),
+            labels=("Generator (BCE+NGG+HHF)", "Discriminator"),
             save_path=self.plot.save_directory / save_path_gen_vs_dis_loss,
+        )
+
+        plot_against(
+            BCELosses,
+            NGramGraphLosses,
+            HeightHistogramAndFourierLosses,
+            title="BCE, NGramGraph, HeightHistogramAndFourier losses during training \n" + str(path).split("Datasets")[1][1:len(str(path).split("Datasets")[1])],
+            xlabel="Epochs",
+            ylabel="Loss",
+            labels=("BCE", "NGG", "HFF"),
+            save_path=self.plot.save_directory / save_path_bce_ngg_hff_loss,
         )
 
         plot_against(
             discriminator_output_reals,
             discriminator_output_fakes,
-            title="Discriminator Output \n" + str(path).split("Datasets")[1][1:len(str(path).split("Datasets")[1])],
+            title="Discriminator classification \n" + str(path).split("Datasets")[1][1:len(str(path).split("Datasets")[1])],
             xlabel="Epochs",
-            ylabel="Discriminator Output",
-            labels=("Real images", "Generated images"),
+            ylabel="Discriminator Output for Real and Generated images",
+            labels=("Real images (label:1)", "Generated images (label:0)"),
             save_path=self.plot.save_directory / save_path_dis_output,
-        )
-
-        plot_against(
-            generator_losses,
-            NGramGraphLosses,
-            title="Generator and N-gram graph loss \n" + str(path).split("Datasets")[1][1:len(str(path).split("Datasets")[1])],
-            xlabel="Epochs",
-            ylabel="Loss",
-            labels=("BCE + NGG + HHF", "NGG"),
-            save_path=self.plot.save_directory / save_path_bce_vs_ngraph_loss,
-        )
-
-        plot_against(
-            HeightHistogramAndFourierLosses,
-            NGramGraphLosses,
-            title="Height Histogram and Fourier vs N-gram graph loss \n" + str(path).split("Datasets")[1][1:len(str(path).split("Datasets")[1])],
-            xlabel="Epochs",
-            ylabel="Loss",
-            labels=("HHF", "NGG"),
-            save_path=self.plot.save_directory / save_path_fourier_loss,
         )
 
         if self.plot.save_directory is not None:
