@@ -214,7 +214,7 @@ class TrainingFlow(Configuration):
         plot_against(
             generator_losses,
             discriminator_losses,
-            title="Generator and Discriminator loss during training \n" + str(path).split("Datasets")[1][1:len(str(path).split("Datasets")[1])],
+            title="Generator and Discriminator loss \n" + str(path).split("Datasets")[1][1:len(str(path).split("Datasets")[1])],
             xlabel="Epochs",
             ylabel="Loss",
             labels=("G", "D"),
@@ -234,20 +234,20 @@ class TrainingFlow(Configuration):
         plot_against(
             generator_losses,
             NGramGraphLosses,
-            title="Mean Generator Total loss vs N-gram graph loss per epoch \n" + str(path).split("Datasets")[1][1:len(str(path).split("Datasets")[1])],
-            xlabel="Epoch",
+            title="Generator and N-gram graph loss \n" + str(path).split("Datasets")[1][1:len(str(path).split("Datasets")[1])],
+            xlabel="Epochs",
             ylabel="Loss",
-            labels=("BCE + N-gram graph loss", "N-gram graph loss"),
+            labels=("BCE + NGG + HHF", "NGG"),
             save_path=self.plot.save_directory / save_path_bce_vs_ngraph_loss,
         )
 
         plot_against(
             HeightHistogramAndFourierLosses,
             NGramGraphLosses,
-            title="Height Histogram and Fourier Loss vs N-gram graph loss per epoch \n" + str(path).split("Datasets")[1][1:len(str(path).split("Datasets")[1])],
-            xlabel="Epoch",
+            title="Height Histogram and Fourier vs N-gram graph loss \n" + str(path).split("Datasets")[1][1:len(str(path).split("Datasets")[1])],
+            xlabel="Epochs",
             ylabel="Loss",
-            labels=("Height Histogram and Fourier Loss", "N-gram graph Loss"),
+            labels=("HHF", "NGG"),
             save_path=self.plot.save_directory / save_path_fourier_loss,
         )
 
