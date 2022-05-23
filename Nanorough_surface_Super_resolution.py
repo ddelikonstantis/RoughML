@@ -355,9 +355,9 @@ training_flow = TrainingFlow(
             "checkpoint": {"multiple": False},
             "load_checkpoint": GEN_CHECKPOINT_DIR.exists() and DIS_CHECKPOINT_DIR.exists(),
             "train_epoch": per_epoch,
-            "log_every_n": 20,
+            "log_every_n": 10,
             "criterion": {"instance": criterion},
-            "n_epochs": 100,
+            "n_epochs": 20,
             "train_ratio": 0.8,
             "optimizer": {
                 "type": Adam,
