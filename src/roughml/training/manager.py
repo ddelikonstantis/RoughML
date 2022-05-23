@@ -23,17 +23,48 @@ class TrainingManager(Configuration):
         if not hasattr(self, "checkpoint"):
             self.checkpoint = Configuration(directory=None, multiple=False)
 
+        # check if N-Gram Graph loss is taken into account or not
         if not hasattr(self, "NGramGraphLoss"):
             self.NGramGraphLoss = None
 
+        # check if Height Histogram and Fourier loss is taken into account or not
+        if not hasattr(self, "HeightHistogramAndFourierLoss"):
+            self.HeightHistogramAndFourierLoss = None
+
+        # Initialize the N-Gram Graph loss weight
         if self.NGramGraphLoss is None:
-            self.criterion.weight = 1
+            self.content_loss_weight = 0
+        else:
+            if not hasattr(self.criterion, "weight"):
+                self.content_loss_weight = 1
+            else:
+                # make equal to bce weight
+                self.content_loss_weight = self.criterion.weight
 
+        # Initialize the Height Histogram and Fourier loss weight
+        if self.HeightHistogramAndFourierLoss is None:
+            self.HeightHistogramAndFourier_loss_weight = 0
+        else:
+            if not hasattr(self.criterion, "weight"):
+                self.HeightHistogramAndFourier_loss_weight = 1
+            else:
+                # make equal to bce weight
+                self.HeightHistogramAndFourier_loss_weight = self.criterion.weight
+
+        # Initialize the weight
         if not hasattr(self.criterion, "weight"):
-            self.criterion.weight = 0.5
+            self.criterion.weight = 1
+        # Calculate the normalization factor
+        norm_factor = (self.criterion.weight + self.content_loss_weight + self.HeightHistogramAndFourier_loss_weight)
+        # if the factor is zero, raise an exception
+        if norm_factor == 0:
+            raise RuntimeError("All weights related to the losses are zero. Please revise.")
+        # Otherwise, we normalize as expected
+        self.criterion.weight = self.criterion.weight / norm_factor
+        self.content_loss_weight = self.content_loss_weight / norm_factor
+        self.HeightHistogramAndFourier_loss_weight = self.HeightHistogramAndFourier_loss_weight / norm_factor
 
-        self.content_loss_weight = 1 - self.criterion.weight
-
+        # Initialize fixed_noise_dim
         if not hasattr(self, "fixed_noise_dim"):
             self.fixed_noise_dim = 128
 
@@ -79,6 +110,7 @@ class TrainingManager(Configuration):
                 discriminator_output_fake,
                 NGramGraphLoss,
                 HeightHistogramAndFourierLoss,
+                BCELoss
             ) = train_epoch_f(
                 generator,
                 discriminator,
@@ -88,7 +120,8 @@ class TrainingManager(Configuration):
                 self.criterion.instance,
                 content_loss_fn=self.NGramGraphLoss,
                 vector_content_loss_fn=self.HeightHistogramAndFourierLoss,
-                loss_weights=(self.content_loss_weight, self.criterion.weight),
+                loss_weights=[self.criterion.weight, self.content_loss_weight, self.HeightHistogramAndFourier_loss_weight],
+                loss_maxima=[max_discriminator_loss, max_NGramGraphLoss, max_HeightHistogramAndFourierLoss],
                 log_every_n=self.log_every_n,
                 load_checkpoint = self.load_checkpoint,
             )
@@ -122,33 +155,7 @@ class TrainingManager(Configuration):
                 fixed_fake = generator(fixed_noise).detach().cpu()
 
             logger.info(
-                "Epoch: %02d, Generator Loss: %7.3f (N-Gram Graph Loss: %7.3f, Height Histogram and Fourier Loss: %7.3f), Discriminator Loss: %7.3f",
-                epoch,
-                generator_loss,
-                NGramGraphLoss,
-                HeightHistogramAndFourierLoss,
-                discriminator_loss,
-            )
-
-            # normalize all losses from 0 to 1
-            if generator_loss > max_generator_loss:
-                max_generator_loss = generator_loss
-            generator_loss /= max_generator_loss
-
-            if discriminator_loss > max_discriminator_loss:
-                max_discriminator_loss = discriminator_loss
-            discriminator_loss /= max_discriminator_loss
-
-            if HeightHistogramAndFourierLoss > max_HeightHistogramAndFourierLoss:
-                max_HeightHistogramAndFourierLoss = HeightHistogramAndFourierLoss
-            HeightHistogramAndFourierLoss /= max_HeightHistogramAndFourierLoss
-
-            if NGramGraphLoss > max_NGramGraphLoss:
-                max_NGramGraphLoss = NGramGraphLoss
-            NGramGraphLoss /= max_NGramGraphLoss
-
-            logger.info(
-                "Epoch: %02d, Normalized Generator Loss: %7.3f (Normalized N-Gram Graph Loss: %7.3f, Normalized Height Histogram and Fourier Loss: %7.3f), Normalized Discriminator Loss: %7.3f",
+                "Epoch:%03d, Generator Loss:%7.5f, N-GramGraphLoss:%7.5f, HeightHistogramAndFourierLoss:%7.5f, Discriminator Loss:%7.5f",
                 epoch,
                 generator_loss,
                 NGramGraphLoss,
@@ -157,7 +164,7 @@ class TrainingManager(Configuration):
             )
 
             logger.info(
-                "Epoch: %02d, Discriminator Output: [Real: %7.3f, Fake: %7.3f]",
+                "Epoch:%03d, Discriminator Output: [Real images:%7.5f, Generated images:%7.5f]",
                 epoch,
                 discriminator_output_real,
                 discriminator_output_fake,
@@ -177,7 +184,7 @@ class TrainingManager(Configuration):
 
             if early_stop:
                 logger.info(
-                "Early stopping in epoch %02d since loss did not improve after %02d epochs",
+                "Early stopping in epoch %03d since loss did not improve after %02d epochs",
                 i,
                 patience
                 )
@@ -192,5 +199,6 @@ class TrainingManager(Configuration):
                 discriminator_output_fake,
                 NGramGraphLoss,
                 HeightHistogramAndFourierLoss,
+                BCELoss,
                 fixed_fake,
             )

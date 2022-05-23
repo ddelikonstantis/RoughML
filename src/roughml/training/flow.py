@@ -166,28 +166,25 @@ class TrainingFlow(Configuration):
             discriminator_output_fakes,
             NGramGraphLosses,
             HeightHistogramAndFourierLosses,
+            BCELosses,
             fixed_fakes,
         ) = list(zip(*list(training_manager(generator, discriminator, dataset))))
 
         (
             save_path_gen_vs_dis_loss,
             save_path_dis_output,
-            save_path_bce_vs_ngraph_loss,
-            save_path_fourier_loss,
-        ) = (None, None, None, None)
+            save_path_bce_ngg_hff_loss,
+        ) = (None, None, None)
         
         if self.plot.against.save_path_fmt is not None:
             save_path_gen_vs_dis_loss = self.plot.against.save_path_fmt % (
-                "gen_vs_dis_loss",
-            )
-            save_path_bce_vs_ngraph_loss = self.plot.against.save_path_fmt % (
-                "bce_vs_ngraph_loss",
+                "generator_vs_discriminator_loss",
             )
             save_path_dis_output = self.plot.against.save_path_fmt % (
                 "discriminator_output",
             )
-            save_path_fourier_loss = self.plot.against.save_path_fmt % (
-                "ngraph_vs_fourier_loss",
+            save_path_bce_ngg_hff_loss = self.plot.against.save_path_fmt % (
+                "bce_vs_ngg_vs_hff_loss",
             )
 
         pd.DataFrame(
@@ -197,6 +194,7 @@ class TrainingFlow(Configuration):
                     discriminator_losses,
                     discriminator_output_reals,
                     discriminator_output_fakes,
+                    BCELosses,
                     NGramGraphLosses,
                     HeightHistogramAndFourierLosses,
                 ]
@@ -204,51 +202,43 @@ class TrainingFlow(Configuration):
             columns=[
                 "Generator Loss",
                 "Discriminator Loss",
-                "Discriminator Output (Real)",
-                "Discriminator Output (Fake)",
+                "Discriminator Output on Real images (label:1)",
+                "Discriminator Output on Generated images (label:0)",
+                "Binary Cross-Entropy / Log loss",
                 f"N-Gram Graph Loss ({self.NGramGraphLoss.type.__name__ if self.NGramGraphLoss.type else 'None'})",
-                "N-Gram Graph Loss (HeightHistogramAndFourierLoss)",
+                "Height Histogram and Fourier Loss",
             ],
         ).to_csv(str(checkpoint_dir / "per_epoch_data.csv"))
 
         plot_against(
             generator_losses,
             discriminator_losses,
-            title="Mean Generator vs Discriminator loss per epoch \n" + str(path).split("Datasets")[1][1:len(str(path).split("Datasets")[1])],
-            xlabel="Epoch",
+            title="Generator and Discriminator loss during training \n" + str(path).split("Datasets")[1][1:len(str(path).split("Datasets")[1])],
+            xlabel="Epochs",
             ylabel="Loss",
-            labels=("Generator", "Discriminator"),
+            labels=("G (BCE+NGG+HHF)", "D"),
             save_path=self.plot.save_directory / save_path_gen_vs_dis_loss,
+        )
+
+        plot_against(
+            BCELosses,
+            NGramGraphLosses,
+            HeightHistogramAndFourierLosses,
+            title="BCE, N-Gram Graph, Height Histogram and Fourier losses during training \n" + str(path).split("Datasets")[1][1:len(str(path).split("Datasets")[1])],
+            xlabel="Epochs",
+            ylabel="Loss",
+            labels=("BCE", "NGG", "HFF"),
+            save_path=self.plot.save_directory / save_path_bce_ngg_hff_loss,
         )
 
         plot_against(
             discriminator_output_reals,
             discriminator_output_fakes,
-            title="Mean Discriminator Output per epoch \n" + str(path).split("Datasets")[1][1:len(str(path).split("Datasets")[1])],
-            xlabel="Epoch",
-            ylabel="Discriminator Output",
-            labels=("Real Data", "Generator Data"),
+            title="Discriminator output \n" + str(path).split("Datasets")[1][1:len(str(path).split("Datasets")[1])],
+            xlabel="Epochs",
+            ylabel="Discriminator classification",
+            labels=("Real images (label:1)", "Generated images (label:0)"),
             save_path=self.plot.save_directory / save_path_dis_output,
-        )
-
-        plot_against(
-            generator_losses,
-            NGramGraphLosses,
-            title="Mean Generator Total loss vs N-gram graph loss per epoch \n" + str(path).split("Datasets")[1][1:len(str(path).split("Datasets")[1])],
-            xlabel="Epoch",
-            ylabel="Loss",
-            labels=("BCE + N-gram graph loss", "N-gram graph loss"),
-            save_path=self.plot.save_directory / save_path_bce_vs_ngraph_loss,
-        )
-
-        plot_against(
-            HeightHistogramAndFourierLosses,
-            NGramGraphLosses,
-            title="Height Histogram and Fourier Loss vs N-gram graph loss per epoch \n" + str(path).split("Datasets")[1][1:len(str(path).split("Datasets")[1])],
-            xlabel="Epoch",
-            ylabel="Loss",
-            labels=("Height Histogram and Fourier Loss", "N-gram graph Loss"),
-            save_path=self.plot.save_directory / save_path_fourier_loss,
         )
 
         if self.plot.save_directory is not None:
@@ -264,12 +254,12 @@ class TrainingFlow(Configuration):
                     as_grayscale_image(
                         true_surface,
                         self.plot.save_directory
-                        / (self.plot.grayscale.save_path_fmt % ("true", i)),
+                        / (self.plot.grayscale.save_path_fmt % ("real", i)),
                     )
                     as_grayscale_image(
                         fake_surface,
                         self.plot.save_directory
-                        / (self.plot.grayscale.save_path_fmt % ("fake", i)),
+                        / (self.plot.grayscale.save_path_fmt % ("generated", i)),
                     )
 
                 logger.info(
@@ -289,12 +279,12 @@ class TrainingFlow(Configuration):
                     as_3d_surface(
                         true_surface,
                         self.plot.save_directory
-                        / (self.plot.surface.save_path_fmt % ("true", i)),
+                        / (self.plot.surface.save_path_fmt % ("real", i)),
                     )
                     as_3d_surface(
                         fake_surface,
                         self.plot.save_directory
-                        / (self.plot.surface.save_path_fmt % ("fake", i)),
+                        / (self.plot.surface.save_path_fmt % ("generated", i)),
                     )
 
                 logger.info(
