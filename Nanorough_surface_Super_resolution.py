@@ -356,9 +356,8 @@ training_flow = TrainingFlow(
             "load_checkpoint": GEN_CHECKPOINT_DIR.exists() and DIS_CHECKPOINT_DIR.exists(),
             "train_epoch": per_epoch,
             "log_every_n": 10,
-            # BCE, NGramGraphLoss and HeightHistogramAndFourierLoss all have equal weights
             "criterion": {"instance": criterion},
-            "n_epochs": 1,
+            "n_epochs": 10,
             "train_ratio": 0.8,
             "optimizer": {
                 "type": Adam,
