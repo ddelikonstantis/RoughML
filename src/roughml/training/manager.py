@@ -110,7 +110,8 @@ class TrainingManager(Configuration):
                 discriminator_output_fake,
                 NGramGraphLoss,
                 HeightHistogramAndFourierLoss,
-                BCELoss
+                BCELoss,
+                loss_maxima
             ) = train_epoch_f(
                 generator,
                 discriminator,
@@ -125,6 +126,9 @@ class TrainingManager(Configuration):
                 log_every_n=self.log_every_n,
                 load_checkpoint = self.load_checkpoint,
             )
+
+            # Update loss_maxima
+            max_discriminator_loss, max_NGramGraphLoss, max_HeightHistogramAndFourierLoss = loss_maxima
 
             if (
                 self.checkpoint.directory is not None

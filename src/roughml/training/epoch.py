@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 def normalizedAndWeightedLoss(value, maxValueSoFar, weight):
     # Update maximum
     if maxValueSoFar < value:
-        maxValueSoFar = value
+        maxValueSoFar = value.detach().item()
     # Return normalized value and normalized weighted value, and max value so far
     return value / maxValueSoFar, weight * value / maxValueSoFar, maxValueSoFar
 
@@ -190,5 +190,6 @@ def per_epoch(
         discriminator_output_fake,
         NGramGraphLoss,
         HeightHistogramAndFourierLoss,
-        BCELoss
+        BCELoss, 
+        loss_maxima
     )
