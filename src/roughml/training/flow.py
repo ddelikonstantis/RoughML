@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 
 from roughml.content.loss import VectorSpaceContentLoss
-from roughml.plot import animate_epochs, as_3d_surface, as_grayscale_image, plot_against
+from roughml.plot import animate_epochs, as_3d_surface, as_grayscale_image, plot_against, plot_dataset_title
 from roughml.shared.configuration import Configuration
 from roughml.shared.context_managers import ExceptionLoggingHandler
 from roughml.training.manager import TrainingManager
@@ -210,10 +210,12 @@ class TrainingFlow(Configuration):
             ],
         ).to_csv(str(checkpoint_dir / "per_epoch_data.csv"))
 
+        # plt_data_title = plot_dataset_title(path)
+
         plot_against(
             generator_losses,
             discriminator_losses,
-            title="Generator and Discriminator loss during training \n" + str(path).split("Datasets")[1][1:len(str(path).split("Datasets")[1])],
+            title="Generator and Discriminator loss per epoch \n" + str(path).split("Datasets")[1][1:len(str(dataset_path).split("Datasets")[1])],
             xlabel="Epochs",
             ylabel="Loss",
             labels=("G (BCE+NGG+HHF)", "D"),
@@ -224,7 +226,7 @@ class TrainingFlow(Configuration):
             BCELosses,
             NGramGraphLosses,
             HeightHistogramAndFourierLosses,
-            title="BCE, N-Gram Graph, Height Histogram and Fourier losses during training \n" + str(path).split("Datasets")[1][1:len(str(path).split("Datasets")[1])],
+            title="BCE, N-Gram Graph, Height Histogram and Fourier losses per epoch \n" + str(path).split("Datasets")[1][1:len(str(dataset_path).split("Datasets")[1])],
             xlabel="Epochs",
             ylabel="Loss",
             labels=("BCE", "NGG", "HFF"),
@@ -234,9 +236,9 @@ class TrainingFlow(Configuration):
         plot_against(
             discriminator_output_reals,
             discriminator_output_fakes,
-            title="Discriminator output \n" + str(path).split("Datasets")[1][1:len(str(path).split("Datasets")[1])],
+            title="Discriminator output: Average probability of images to belong to the positive class (per epoch) \n" + str(path).split("Datasets")[1][1:len(str(dataset_path).split("Datasets")[1])],
             xlabel="Epochs",
-            ylabel="Discriminator classification",
+            ylabel="Discriminator output",
             labels=("Real images (label:1)", "Generated images (label:0)"),
             save_path=self.plot.save_directory / save_path_dis_output,
         )
