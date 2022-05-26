@@ -1,12 +1,14 @@
 import os
 
 import logging
+from xml.dom.pulldom import parseString
 import IPython.display as ipyd
 import matplotlib.animation as animation
 import matplotlib.pyplot as plt
 import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
+from sklearn.feature_extraction import img_to_graph
 import torchvision.utils as vutils
 from PIL import Image
 
@@ -132,3 +134,12 @@ def animate_epochs(batches_of_tensors, indices=None, save_path=None, **kwargs):
             "OS error: %s",
             execErr
         )
+
+
+def plot_dataset_title(dataset_path):
+    # extract dataset from path and use it in title for plots with extra information
+    txt = str(dataset_path).split("Datasets")[1][1:len(str(dataset_path).split("Datasets")[1])]
+    img = txt.find("1000")
+    img = "1000img".join(txt[img])
+
+    return txt
