@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 
 from roughml.content.loss import VectorSpaceContentLoss
-from roughml.plot import animate_epochs, as_3d_surface, as_grayscale_image, plot_against, plot_dataset_title
+from roughml.plot import animate_epochs, as_3d_surface, as_grayscale_image, plot_against, dataset_title_plot
 from roughml.shared.configuration import Configuration
 from roughml.shared.context_managers import ExceptionLoggingHandler
 from roughml.training.manager import TrainingManager
@@ -210,7 +210,7 @@ class TrainingFlow(Configuration):
             ],
         ).to_csv(str(checkpoint_dir / "per_epoch_data.csv"))
 
-        # plt_data_title = plot_dataset_title(path)
+        # dataset_title_plt = dataset_title_plot(path)
 
         plot_against(
             generator_losses,

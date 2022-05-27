@@ -136,10 +136,29 @@ def animate_epochs(batches_of_tensors, indices=None, save_path=None, **kwargs):
         )
 
 
-def plot_dataset_title(dataset_path):
-    # extract dataset from path and use it in title for plots with extra information
-    txt = str(dataset_path).split("Datasets")[1][1:len(str(dataset_path).split("Datasets")[1])]
-    img = txt.find("1000")
-    img = "1000img".join(txt[img])
+def dataset_title_plot(dataset_path):
+    # function that extracts dataset title from path and uses title for plotting information
+    # example dataset title 'dataset_1000_128_03_00_03_04_04_1.00.pt'
+    # extract undrescores in dataset name and rename according to attribute for plotting
+    # example output dataset title for plotting 'dataset_1000imgs_128dim_03rms_00skew_03kurt_04corrX_04corrY_1.00alpha.pt'
+    txt = str(dataset_path).split("Datasets")[1][1:len(str(dataset_path).split("Datasets")[1])] # extract dataset title from path
+    attrs = ["imgs", "dim", "rms", "skew", "kurt", "corrX", "corrY"] # attribute list to be added to title
+    char_index_list = []
+    char_index = 0
+    while char_index < len(txt):
+        char_index = txt.find('_', char_index)
+        if char_index == -1: # end of string or character not found
+            del char_index_list[0] # ignore first underscore in title
+            temp4 = 0
+            for idx, char in enumerate(char_index_list):
+                temp1 = txt[:char + temp4]
+                temp2 = attrs[idx]
+                temp3 = txt[char + temp4:]
+                txt = txt[:char + temp4] + attrs[idx] + txt[char + temp4:]
+                char_index_list = [x + (len(attrs[idx])+(char_index_list[idx+1]-char_index_list[idx])) for x in char_index_list] # update list with newly added string length
+                temp4 = len(attrs[idx]) #+ (char_index_list[idx+1]-char_index_list[idx]) # update index with newly added string length
+            break
+        char_index_list.append(char_index)
+        char_index += 1
 
     return txt
