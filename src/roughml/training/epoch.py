@@ -91,10 +91,10 @@ def per_epoch(
         discriminator_error_total = discriminator_error_real + discriminator_error_fake
         # normalize total discriminator loss
         # Update maximum, loss_maxima[4] is maximum value for discriminator loss so far
-        if loss_maxima[4] < discriminator_error_total:
-            loss_maxima[4] = discriminator_error_total
+        if loss_maxima[3] < discriminator_error_total:
+            loss_maxima[3] = discriminator_error_total
         # normalize discriminator loss
-        discriminator_error_total /= loss_maxima[4]
+        discriminator_error_total /= loss_maxima[3]
         # Update D
         optimizer_discriminator.step()
 
