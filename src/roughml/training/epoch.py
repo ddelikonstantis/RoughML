@@ -108,8 +108,6 @@ def per_epoch(
 
         # Calculate G's loss
         
-        # Initialize overall loss to zero
-        overall_loss = 0.0
         # For each loss component
         # Normalize it based on the maximum value we have seen in this loss
         # loss_maxima[0] is Binary Cross-Entropy maximum value so far
@@ -122,10 +120,9 @@ def per_epoch(
         # Weight it and add it to the overall loss
 
         # So: for the BCE loss
-        discriminator_error_fake = criterion(output, label) # get Binary Cross-Entropy loss
+        bce_loss = criterion(output, label) # get Binary Cross-Entropy loss
         # Calculate the normalized weighted value and also get the new maximum
-        bce_norm_loss, bce_norm_weighted_loss, loss_maxima[0] = normalizedAndWeightedLoss(discriminator_error_fake, loss_weights[0], loss_maxima[0])
-        current_batch_loss += bce_norm_weighted_loss # Update overall loss
+        bce_norm_loss, bce_norm_weighted_loss, loss_maxima[0] = normalizedAndWeightedLoss(bce_loss, loss_weights[0], loss_maxima[0])
         
         # So: for the N-Gram Graph loss
         generator_content_loss = content_loss_fn(fake.cpu().detach().numpy().squeeze())  # Get content-based-loss
@@ -143,23 +140,23 @@ def per_epoch(
         histo_fourier_norm_loss, histo_fourier_norm_weighted_loss, loss_maxima[2] = normalizedAndWeightedLoss(histo_fourier_loss, loss_weights[2], loss_maxima[2])
         current_batch_loss += histo_fourier_norm_weighted_loss # Update overall loss
 
-        # Update overall_loss with batch contribution
-        overall_loss += current_batch_loss
+        # Update overall generator loss with batch contribution
+        discriminator_error_fake = (bce_norm_weighted_loss.item() * criterion(output, label) / loss_maxima[0])  + current_batch_loss
 
         # Calculate gradients for G, which propagate through the discriminator
-        overall_loss.backward(retain_graph=True)
+        discriminator_error_fake.backward()
         discriminator_output_fake_batch = output.mean().item()
         # Update G
         optimizer_generator.step()
 
         # calculate total losses for this batch
-        generator_loss += overall_loss.item() / len(dataloader) # update overall loss for this batch
+        generator_loss += discriminator_error_fake.item() / len(dataloader) # update overall generator loss for this batch
         BCELoss += bce_norm_loss.item() / len(dataloader) # update Binary Cross-Entropy loss for this batch
         NGramGraphLoss += ngg_norm_loss.item() / len(dataloader) # update N-Gram Graph loss for this batch
         HeightHistogramAndFourierLoss += histo_fourier_norm_loss.item() / len(dataloader) # update Height Histogram And Fourier loss for this batch
-        discriminator_loss += discriminator_error_total.item() / len(dataloader)
-        discriminator_output_real += discriminator_output_real_batch / len(dataloader)
-        discriminator_output_fake += discriminator_output_fake_batch / len(dataloader)
+        discriminator_loss += discriminator_error_total.item() / len(dataloader) # update discriminator loss for this batch
+        discriminator_output_real += discriminator_output_real_batch / len(dataloader) # update discriminator output for real images for this batch
+        discriminator_output_fake += discriminator_output_fake_batch / len(dataloader) # update discriminator output for generated images for this batch
 
         if log_every_n is not None and not train_iteration % log_every_n:
             logger.info(
