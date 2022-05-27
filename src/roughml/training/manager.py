@@ -122,13 +122,13 @@ class TrainingManager(Configuration):
                 content_loss_fn=self.NGramGraphLoss,
                 vector_content_loss_fn=self.HeightHistogramAndFourierLoss,
                 loss_weights=[self.criterion.weight, self.content_loss_weight, self.HeightHistogramAndFourier_loss_weight],
-                loss_maxima=[max_discriminator_loss, max_NGramGraphLoss, max_HeightHistogramAndFourierLoss],
+                loss_maxima=[max_generator_loss, max_NGramGraphLoss, max_HeightHistogramAndFourierLoss, max_discriminator_loss],
                 log_every_n=self.log_every_n,
                 load_checkpoint = self.load_checkpoint,
             )
 
-            # Update loss_maxima
-            max_discriminator_loss, max_NGramGraphLoss, max_HeightHistogramAndFourierLoss = loss_maxima
+            # Update maximum losses so far
+            max_generator_loss, max_NGramGraphLoss, max_HeightHistogramAndFourierLoss, max_discriminator_loss = loss_maxima
 
             if (
                 self.checkpoint.directory is not None
