@@ -9,13 +9,18 @@ logger = logging.getLogger(__name__)
 
 
 # Returns a normalized and a normalized weighted value of a measure. Normalization occurs before weighting.
-# The function returns both the above value, but also the new maxValueSoFar.
-def normalizedAndWeightedLoss(value, maxValueSoFar, weight):
+# The function returns both the above value, but also the new max value so far.
+def normalizedAndWeightedLoss(value, weight, max_value_so_far):
     # Update maximum
-    if maxValueSoFar < value:
-        maxValueSoFar = value.detach().item()
-    # Return normalized value and normalized weighted value, and max value so far
-    return value / maxValueSoFar, weight * value / maxValueSoFar, maxValueSoFar
+    if max_value_so_far < value:
+        max_value_so_far = value
+    # normalize value
+    value_norm = value / max_value_so_far
+    # normalize weighted value
+    value_norm_weighted = weight * value / max_value_so_far
+
+    # Return normalized value, normalized weighted value, and max value so far
+    return value_norm, value_norm_weighted, max_value_so_far
 
 
 # TODO: Add method description/documentation
@@ -30,7 +35,7 @@ def per_epoch(
     content_loss_fn=None,
     vector_content_loss_fn=None,
     loss_weights=[1.0, 1.0, 1.0],
-    loss_maxima=[0.0, 0.0, 0.0],
+    loss_maxima=[0.0, 0.0, 0.0, 0.0],
     log_every_n=None,
     load_checkpoint = None,
 ):
@@ -84,6 +89,12 @@ def per_epoch(
         discriminator_error_fake.backward()
         # Compute error of D as sum over the fake and the real batches
         discriminator_error_total = discriminator_error_real + discriminator_error_fake
+        # normalize total discriminator loss
+        # Update maximum, loss_maxima[4] is maximum value for discriminator loss so far
+        if loss_maxima[4] < discriminator_error_total:
+            loss_maxima[4] = discriminator_error_total
+        # normalize discriminator loss
+        discriminator_error_total /= loss_maxima[4]
         # Update D
         optimizer_discriminator.step()
 
@@ -104,64 +115,33 @@ def per_epoch(
         # loss_maxima[0] is Binary Cross-Entropy maximum value so far
         # loss_maxima[1] is NGramGraphLoss maximum value so far
         # loss_maxima[2] is HeightHistogramAndFourierLoss value maximum so far
+        # loss_maxima[3] is Discriminator loss value maximum so far
         # loss_weights[0] is Binary Cross-Entropy loss weight
         # loss_weights[1] is NGramGraphLoss weight
         # loss_weights[2] is HeightHistogramAndFourierLoss weight
         # Weight it and add it to the overall loss
 
         # So: for the BCE loss
-        # Calculate the loss
-        discriminator_error_fake =  criterion(output, label)
+        discriminator_error_fake = criterion(output, label) # get Binary Cross-Entropy loss
         # Calculate the normalized weighted value and also get the new maximum
-        bce_norm_loss, bce_norm_weighted_loss, loss_maxima[0] = normalizedAndWeightedLoss(discriminator_error_fake, loss_maxima[0], loss_weights[0])
-        current_batch_loss += bce_norm_weighted_loss
-        BCELoss += bce_norm_loss.item() / len(dataloader)
-
-        # So: for the NGG loss
-        # Get the maximum
-        if (loss_maxima[1] == 0.0):
-            ngg_loss_normalizer = 1.0
-        else:
-            ngg_loss_normalizer = loss_maxima[1]
-        # Calculate the loss
+        bce_norm_loss, bce_norm_weighted_loss, loss_maxima[0] = normalizedAndWeightedLoss(discriminator_error_fake, loss_weights[0], loss_maxima[0])
+        current_batch_loss += bce_norm_weighted_loss # Update overall loss
+        
+        # So: for the N-Gram Graph loss
         generator_content_loss = content_loss_fn(fake.cpu().detach().numpy().squeeze())  # Get content-based-loss
-        generator_content_loss = torch.mean(generator_content_loss).to(fake.device)
-        ngg_loss = generator_content_loss.item() / len(dataloader) # Get average generator loss
-
-        # # and normalize by the maximum
-        # ngg_loss_norm = ngg_loss / ngg_loss_normalizer
-        # # Update the maximum so far
-        # # TODO: Make sure that this is returned to be used by the caller
-        # if loss_maxima[1] < ngg_loss:
-        #     loss_maxima[1] = ngg_loss # Update maximum
-        # ngg_norm_weighted = loss_weights[1] * ngg_loss_norm
-        ngg_loss_norm, ngg_norm_weighted, loss_maxima[1] = normalizedAndWeightedLoss(ngg_loss, loss_maxima[1], loss_weights[1])
-        current_batch_loss += ngg_norm_weighted
-        NGramGraphLoss += ngg_loss_norm  # Update overall across batches
-
-
-        # So: for the HistoFourier loss
-        # Get the maximum
-        if (loss_maxima[2] == 0.0):
-            histo_fourier_loss_normalizer = 1.0
-        else:
-            histo_fourier_loss_normalizer = loss_maxima[2]
-        # Calculate the loss
-        generator_vector_content_loss = vector_content_loss_fn(fake.cpu().detach().numpy().squeeze())
-        generator_vector_content_loss = torch.mean(generator_vector_content_loss).to(fake.device)
-        histo_fourier_loss = generator_vector_content_loss.item() / len(dataloader)
-
-        # and normalize by the maximum
-        # histo_fourier_loss_norm = histo_fourier_loss / histo_fourier_loss_normalizer
-        # # Update the maximum so far
-        # # TODO: Make sure that this is returned to be used by the caller
-        # if loss_maxima[2] < histo_fourier_loss_norm:
-        #     loss_maxima[2] = histo_fourier_loss_norm # Update maximum
-        # histo_fourier_loss_norm_weighted = histo_fourier_loss_norm * loss_weights[2] # weight for HeightHistogramAndFourierLoss
-        histo_fourier_loss_norm, histo_fourier_loss_norm_weighted, loss_maxima[2] = normalizedAndWeightedLoss(histo_fourier_loss, loss_maxima[2], loss_weights[2])
-
-        current_batch_loss += histo_fourier_loss_norm_weighted
-        HeightHistogramAndFourierLoss += histo_fourier_loss_norm # Update overall across batches
+        generator_content_loss = torch.mean(generator_content_loss).to(fake.device) # get average loss value
+        ngg_loss = generator_content_loss
+        # Calculate the normalized weighted value and also get the new maximum
+        ngg_norm_loss, ngg_norm_weighted_loss, loss_maxima[1] = normalizedAndWeightedLoss(ngg_loss, loss_weights[1], loss_maxima[1])
+        current_batch_loss += ngg_norm_weighted_loss # Update overall loss
+        
+        # So: for the Height Histogram And Fourier loss
+        generator_vector_content_loss = vector_content_loss_fn(fake.cpu().detach().numpy().squeeze()) # get height histogram and fourier loss
+        generator_vector_content_loss = torch.mean(generator_vector_content_loss).to(fake.device) # get average loss value
+        histo_fourier_loss = generator_vector_content_loss
+        # Calculate the normalized weighted value and also get the new maximum
+        histo_fourier_norm_loss, histo_fourier_norm_weighted_loss, loss_maxima[2] = normalizedAndWeightedLoss(histo_fourier_loss, loss_weights[2], loss_maxima[2])
+        current_batch_loss += histo_fourier_norm_weighted_loss # Update overall loss
 
         # Update overall_loss with batch contribution
         overall_loss += current_batch_loss
@@ -172,8 +152,11 @@ def per_epoch(
         # Update G
         optimizer_generator.step()
 
-        # calculate total losses
-        generator_loss += overall_loss.item() / len(dataloader)
+        # calculate total losses for this batch
+        generator_loss += overall_loss.item() / len(dataloader) # update overall loss for this batch
+        BCELoss += bce_norm_loss.item() / len(dataloader) # update Binary Cross-Entropy loss for this batch
+        NGramGraphLoss += ngg_norm_loss.item() / len(dataloader) # update N-Gram Graph loss for this batch
+        HeightHistogramAndFourierLoss += histo_fourier_norm_loss.item() / len(dataloader) # update Height Histogram And Fourier loss for this batch
         discriminator_loss += discriminator_error_total.item() / len(dataloader)
         discriminator_output_real += discriminator_output_real_batch / len(dataloader)
         discriminator_output_fake += discriminator_output_fake_batch / len(dataloader)
