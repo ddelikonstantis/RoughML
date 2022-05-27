@@ -147,7 +147,7 @@ def per_epoch(
         overall_loss += current_batch_loss
 
         # Calculate gradients for G, which propagate through the discriminator
-        overall_loss.backward()
+        overall_loss.backward(retain_graph=True)
         discriminator_output_fake_batch = output.mean().item()
         # Update G
         optimizer_generator.step()
