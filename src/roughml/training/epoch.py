@@ -141,7 +141,7 @@ def per_epoch(
         current_batch_loss += histo_fourier_norm_weighted_loss # Update overall loss
 
         # Update overall generator loss with batch contribution
-        discriminator_error_fake = (bce_norm_weighted_loss * criterion(output, label) / loss_maxima[0])  + current_batch_loss
+        discriminator_error_fake = (bce_norm_weighted_loss.item() * criterion(output, label) / loss_maxima[0])  + current_batch_loss
 
         # Calculate gradients for G, which propagate through the discriminator
         discriminator_error_fake.backward()
