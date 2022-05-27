@@ -99,15 +99,15 @@ def per_epoch(
         
         # Initialize overall loss to zero
         overall_loss = 0.0
-        # For each loss component        
-            # Normalize it based on the maximum value we have seen in this loss
-            # loss_maxima[0] is Binary Cross-Entropy maximum so far
-            # loss_maxima[1] is NGramGraphLoss  maximum so far
-            # loss_maxima[2] is HeightHistogramAndFourierLoss  maximum so far
-            # loss_weights[0] is Binary Cross-Entropy weight
-            # loss_weights[1] is NGramGraphLoss weight
-            # loss_weights[2] is HeightHistogramAndFourierLoss weight
-            # Weight it and add it to the overall loss
+        # For each loss component
+        # Normalize it based on the maximum value we have seen in this loss
+        # loss_maxima[0] is Binary Cross-Entropy maximum value so far
+        # loss_maxima[1] is NGramGraphLoss maximum value so far
+        # loss_maxima[2] is HeightHistogramAndFourierLoss value maximum so far
+        # loss_weights[0] is Binary Cross-Entropy loss weight
+        # loss_weights[1] is NGramGraphLoss weight
+        # loss_weights[2] is HeightHistogramAndFourierLoss weight
+        # Weight it and add it to the overall loss
 
         # So: for the BCE loss
         # Calculate the loss
@@ -128,15 +128,17 @@ def per_epoch(
         generator_content_loss = torch.mean(generator_content_loss).to(fake.device)
         ngg_loss = generator_content_loss.item() / len(dataloader) # Get average generator loss
 
-        # and normalize by the maximum
-        ngg_loss_norm = ngg_loss / ngg_loss_normalizer
-        # Update the maximum so far
-        # TODO: Make sure that this is returned to be used by the caller
-        if loss_maxima[1] < ngg_loss:
-            loss_maxima[1] = ngg_loss # Update maximum
-        ngg_norm_weighted = loss_weights[1] * ngg_loss_norm
+        # # and normalize by the maximum
+        # ngg_loss_norm = ngg_loss / ngg_loss_normalizer
+        # # Update the maximum so far
+        # # TODO: Make sure that this is returned to be used by the caller
+        # if loss_maxima[1] < ngg_loss:
+        #     loss_maxima[1] = ngg_loss # Update maximum
+        # ngg_norm_weighted = loss_weights[1] * ngg_loss_norm
+        ngg_loss_norm, ngg_norm_weighted, loss_maxima[1] = normalizedAndWeightedLoss(ngg_loss, loss_maxima[1], loss_weights[1])
         current_batch_loss += ngg_norm_weighted
         NGramGraphLoss += ngg_loss_norm  # Update overall across batches
+
 
         # So: for the HistoFourier loss
         # Get the maximum
@@ -150,12 +152,14 @@ def per_epoch(
         histo_fourier_loss = generator_vector_content_loss.item() / len(dataloader)
 
         # and normalize by the maximum
-        histo_fourier_loss_norm = histo_fourier_loss / histo_fourier_loss_normalizer
-        # Update the maximum so far
-        # TODO: Make sure that this is returned to be used by the caller
-        if loss_maxima[2] < histo_fourier_loss_norm:
-            loss_maxima[2] = histo_fourier_loss_norm # Update maximum
-        histo_fourier_loss_norm_weighted = histo_fourier_loss_norm * loss_weights[2] # weight for HeightHistogramAndFourierLoss
+        # histo_fourier_loss_norm = histo_fourier_loss / histo_fourier_loss_normalizer
+        # # Update the maximum so far
+        # # TODO: Make sure that this is returned to be used by the caller
+        # if loss_maxima[2] < histo_fourier_loss_norm:
+        #     loss_maxima[2] = histo_fourier_loss_norm # Update maximum
+        # histo_fourier_loss_norm_weighted = histo_fourier_loss_norm * loss_weights[2] # weight for HeightHistogramAndFourierLoss
+        histo_fourier_loss_norm, histo_fourier_loss_norm_weighted, loss_maxima[2] = normalizedAndWeightedLoss(histo_fourier_loss, loss_maxima[2], loss_weights[2])
+
         current_batch_loss += histo_fourier_loss_norm_weighted
         HeightHistogramAndFourierLoss += histo_fourier_loss_norm # Update overall across batches
 
