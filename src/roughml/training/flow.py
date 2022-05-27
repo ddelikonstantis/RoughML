@@ -200,7 +200,7 @@ class TrainingFlow(Configuration):
                 ]
             ).T,
             columns=[
-                "Generator Loss",
+                "Total Generator Loss",
                 "Discriminator Loss",
                 "Discriminator Output on Real images (label:1)",
                 "Discriminator Output on Generated images (label:0)",
@@ -217,8 +217,8 @@ class TrainingFlow(Configuration):
             discriminator_losses,
             title="Generator and Discriminator loss per epoch \n" + str(path).split("Datasets")[1][1:len(str(path).split("Datasets")[1])],
             xlabel="Epochs",
-            ylabel="Loss",
-            labels=("G (BCE+NGG+HHF)", "D"),
+            ylabel="Normalized loss",
+            labels=("Gen (BCE+NGG+HHF)", "Dis"),
             save_path=self.plot.save_directory / save_path_gen_vs_dis_loss,
         )
 

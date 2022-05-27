@@ -159,9 +159,10 @@ class TrainingManager(Configuration):
                 fixed_fake = generator(fixed_noise).detach().cpu()
 
             logger.info(
-                "Epoch:%03d, Generator Loss:%7.5f, N-GramGraphLoss:%7.5f, HeightHistogramAndFourierLoss:%7.5f, Discriminator Loss:%7.5f",
+                "Epoch:%03d, Total Generator Loss:%7.5f, BCE Loss:%7.5f, NGG Loss:%7.5f, HFF Loss:%7.5f, Discriminator Loss:%7.5f",
                 epoch,
                 generator_loss,
+                BCELoss,
                 NGramGraphLoss,
                 HeightHistogramAndFourierLoss,
                 discriminator_loss,
