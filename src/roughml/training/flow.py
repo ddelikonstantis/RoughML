@@ -204,7 +204,7 @@ class TrainingFlow(Configuration):
                 "Discriminator Loss",
                 "Discriminator Output on Real images (label:1)",
                 "Discriminator Output on Generated images (label:0)",
-                "Binary Cross-Entropy / Log loss",
+                "Binary Cross-Entropy Loss",
                 f"N-Gram Graph Loss ({self.NGramGraphLoss.type.__name__ if self.NGramGraphLoss.type else 'None'})",
                 "Height Histogram and Fourier Loss",
             ],
@@ -265,7 +265,7 @@ class TrainingFlow(Configuration):
                     )
 
                 logger.info(
-                    "Saved grayscale images on path: %s",
+                    "2D images saved on path: %s",
                     self.plot.save_directory / (self.plot.grayscale.save_path_fmt.split("/")[0])
                 )
 
@@ -290,7 +290,7 @@ class TrainingFlow(Configuration):
                     )
 
                 logger.info(
-                    "Saved 3D surface images on path: %s",
+                    "3D surface images saved on path: %s",
                     self.plot.save_directory / (self.plot.surface.save_path_fmt.split("/")[0])
                 )
 
