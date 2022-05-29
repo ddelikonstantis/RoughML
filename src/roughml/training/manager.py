@@ -101,7 +101,7 @@ class TrainingManager(Configuration):
         patience = 20       # number of epochs where generator loss shows no significant change
         loss_change = []
         early_stop = False
-        delta = 0.01        # generator loss threshold that shows no significant change
+        delta = 0.1        # generator loss threshold that shows no significant change
         for epoch in tqdm(range(self.n_epochs), desc="Epochs"):
             (
                 generator_loss,
