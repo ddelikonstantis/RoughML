@@ -149,6 +149,14 @@ def per_epoch(
         # Update G
         optimizer_generator.step()
 
+        # Display all model layer weights
+        # for name, param in generator.named_parameters():
+        #     print('name: ', name)
+        #     print(type(param))
+        #     print('param.shape: ', param)
+        #     print('param.requires_grad: ', param.requires_grad)
+        #     print('=====')
+
         # calculate total losses for this batch
         generator_loss += discriminator_error_fake.item() / len(dataloader) # update overall generator loss for this batch
         BCELoss += bce_norm_loss # update Binary Cross-Entropy loss for this batch
