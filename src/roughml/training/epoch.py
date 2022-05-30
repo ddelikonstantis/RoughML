@@ -3,6 +3,8 @@ import time
 
 import torch
 
+from roughml.data.model_weights import model_weights
+
 logger = logging.getLogger(__name__)
 
 
@@ -148,6 +150,9 @@ def per_epoch(
         discriminator_output_fake_batch = output.mean().item()
         # Update G
         optimizer_generator.step()
+
+        # Display all model layer weights
+        # generator_data = model_weights(generator)
 
         # calculate total losses for this batch
         generator_loss += discriminator_error_fake.item() / len(dataloader) # update overall generator loss for this batch
