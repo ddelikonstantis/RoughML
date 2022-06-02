@@ -168,7 +168,7 @@ def dataset(
 ):
     """Generate datasets consisting of nanorough surfaces"""
     non_existent_fmt = (
-        "dataset_{0:04d}_{1:03d}_{2:02d}_{3:02d}_{4:02d}_{5:02d}_{6:02d}_{7:04.2f}.pt"
+        "dataset_{0:04d}_imgs{1:03d}_dim{2:02d}_rms{3:02d}_skew{4:02d}_kurt{5:02d}_corrX{6:02d}_corrY{7:04.2f}_alpha.pt"
     )
 
     if dataset_path is None:

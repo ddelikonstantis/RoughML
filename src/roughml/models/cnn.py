@@ -41,7 +41,7 @@ class CNNBase(Base):
 class CNNGenerator(Base):
     def __init__(
         self,
-        in_channels=128,        # Size of z latent vector (i.e. size of generator input)
+        in_channels=200,        # Size of z latent vector (i.e. size of generator input)
         out_channels=128,       # Size of feature maps in generator
         training_channels=1,    # Number of channels in the training images. For color images this is 3. For grayscale this is 1
     ):
@@ -86,14 +86,14 @@ class CNNGenerator(Base):
                 ),
                 nn.Sequential(
                     nn.ConvTranspose2d(
-                        out_channels * 2, out_channels, 2, 2, 1, bias=False
+                        out_channels * 2, out_channels, 2, 2, 2, bias=False
                     ),
                     nn.BatchNorm2d(out_channels),
                     nn.ReLU(True),
                 ), # state size. (out_channels) x 64 x 64
                 nn.Sequential(
                     nn.ConvTranspose2d(
-                        out_channels, training_channels, 4, 4, 4, bias=False
+                        out_channels, training_channels, 4, 4, 0, bias=False
                     ), # state size. (training_channels) x 128 x 128
                     # nn.Tanh(),    # removed to avoid normalization [-1, 1] of the height of surfaces
                 ),
@@ -118,7 +118,7 @@ class CNNGenerator(Base):
 
 
 class CNNDiscriminator(Base):
-    def __init__(self, out_channels=1, in_channels=128):
+    def __init__(self, out_channels=1, in_channels=200):
         super().__init__()
 
         self.out_channels = out_channels    # Number of channels in the training images. For color images this is 3. For grayscale this is 1
@@ -127,11 +127,11 @@ class CNNDiscriminator(Base):
         self.module_list = nn.ModuleList(
             [
                 nn.Sequential(
-                    nn.Conv2d(out_channels, in_channels, 4, 4, 4, bias=False),
+                    nn.Conv2d(out_channels, in_channels, 4, 4, 0, bias=False),
                     nn.LeakyReLU(0.2, inplace=True),
                 ), # state size. (in_channels) x 64 x 64
                 nn.Sequential(
-                    nn.Conv2d(in_channels, in_channels * 2, 2, 2, 1, bias=False),
+                    nn.Conv2d(in_channels, in_channels * 2, 2, 2, 2, bias=False),
                     nn.BatchNorm2d(in_channels * 2),
                     nn.LeakyReLU(0.2, inplace=True),
                 ), # state size. (in_channels*2) x 32 x 32

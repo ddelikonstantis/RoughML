@@ -269,7 +269,7 @@ training_flow = TrainingFlow(
                 "params": {"lr": 0.0002, "betas": (0.5, 0.999)},
             },
             "dataloader": {
-                "batch_size": 128,
+                "batch_size": 64,
                 "shuffle": True,
                 "num_workers": 0,
             },
@@ -357,14 +357,14 @@ training_flow = TrainingFlow(
             "train_epoch": per_epoch,
             "log_every_n": 10,
             "criterion": {"instance": criterion},
-            "n_epochs": 25,
+            "n_epochs": 100,
             "train_ratio": 0.8,
             "optimizer": {
                 "type": Adadelta,
                 "params": {"lr": 1.0, "rho": 0.9},
             },
             "dataloader": {
-                "batch_size": 128,
+                "batch_size": 64,
                 "shuffle": True,
                 "num_workers": 0,
             },

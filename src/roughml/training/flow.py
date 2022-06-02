@@ -210,8 +210,6 @@ class TrainingFlow(Configuration):
             ],
         ).to_csv(str(checkpoint_dir / "per_epoch_data.csv"))
 
-        # dataset_title_plt = dataset_title_plot(path)
-
         plot_against(
             generator_losses,
             discriminator_losses,
@@ -265,7 +263,7 @@ class TrainingFlow(Configuration):
                     )
 
                 logger.info(
-                    "2D images saved on path: %s",
+                    "2D grayscale images saved on path: %s",
                     self.plot.save_directory / (self.plot.grayscale.save_path_fmt.split("/")[0])
                 )
 
