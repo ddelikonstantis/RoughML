@@ -216,7 +216,7 @@ class TrainingFlow(Configuration):
             title="Generator and Discriminator loss per epoch \n" + str(path).split("Datasets")[1][1:len(str(path).split("Datasets")[1])],
             xlabel="Epochs",
             ylabel="Normalized loss",
-            labels=("Gen (BCE+NGG+HHF equally weighted)", "Dis"),
+            labels=("Gen (BCE+NGG+HHF)", "Dis"),
             save_path=self.plot.save_directory / save_path_gen_vs_dis_loss,
         )
 
