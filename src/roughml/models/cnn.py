@@ -65,35 +65,35 @@ class CNNGenerator(Base):
                 ), # state size. (out_channels*16) x 4 x 4
                 nn.Sequential(
                     nn.ConvTranspose2d(
-                        out_channels * 16, out_channels * 8, 4, 1, 1, bias=False
+                        out_channels * 16, out_channels * 8, 2, 2, 1, bias=False
                     ),
                     nn.BatchNorm2d(out_channels * 8),
                     nn.ReLU(True),
                 ), # state size. (out_channels*8) x 8 x 8
                 nn.Sequential(
                     nn.ConvTranspose2d(
-                        out_channels * 8, out_channels * 4, 4, 1, 1, bias=False
+                        out_channels * 8, out_channels * 4, 2, 2, 1, bias=False
                     ),
                     nn.BatchNorm2d(out_channels * 4),
                     nn.ReLU(True),
                 ), # state size. (out_channels*4) x 16 x 16
                 nn.Sequential(
                     nn.ConvTranspose2d(
-                        out_channels * 4, out_channels * 2, 6, 2, 1, bias=False
+                        out_channels * 4, out_channels * 2, 2, 2, 1, bias=False
                     ), # state size. (out_channels*2) x 32 x 32
                     nn.BatchNorm2d(out_channels * 2),
                     nn.ReLU(True),
                 ),
                 nn.Sequential(
                     nn.ConvTranspose2d(
-                        out_channels * 2, out_channels, 6, 3, 1, bias=False
+                        out_channels * 2, out_channels, 2, 2, 2, bias=False
                     ),
                     nn.BatchNorm2d(out_channels),
                     nn.ReLU(True),
                 ), # state size. (out_channels) x 64 x 64
                 nn.Sequential(
                     nn.ConvTranspose2d(
-                        out_channels, training_channels, 6, 3, 2, bias=False
+                        out_channels, training_channels, 4, 4, 0, bias=False
                     ), # state size. (training_channels) x 128 x 128
                     # nn.Tanh(),    # removed to avoid normalization [-1, 1] of the height of surfaces
                 ),
@@ -127,11 +127,11 @@ class CNNDiscriminator(Base):
         self.module_list = nn.ModuleList(
             [
                 nn.Sequential(
-                    nn.Conv2d(out_channels, in_channels, 4, 4, 4, bias=False),
+                    nn.Conv2d(out_channels, in_channels, 4, 4, 0, bias=False),
                     nn.LeakyReLU(0.2, inplace=True),
                 ), # state size. (in_channels) x 64 x 64
                 nn.Sequential(
-                    nn.Conv2d(in_channels, in_channels * 2, 2, 2, 1, bias=False),
+                    nn.Conv2d(in_channels, in_channels * 2, 2, 2, 2, bias=False),
                     nn.BatchNorm2d(in_channels * 2),
                     nn.LeakyReLU(0.2, inplace=True),
                 ), # state size. (in_channels*2) x 32 x 32
