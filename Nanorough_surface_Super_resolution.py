@@ -343,7 +343,7 @@ criterion = BCELoss().to(device)
 # + cellView="code" id="82fb12f6"
 import functools
 
-from torch.optim import Adam, Adadelta
+from torch.optim import Adam
 
 from roughml.content.loss import ArrayGraph2DContentLoss
 from roughml.data.transforms import To, View
@@ -364,8 +364,8 @@ training_flow = TrainingFlow(
             "n_epochs": 100,
             "train_ratio": 0.8,
             "optimizer": {
-                "type": Adadelta,
-                "params": {"lr": 1.0, "rho": 0.9},
+                "type": Adam,
+                "params": {"lr": 0.0002, "betas": (0.5, 0.999)},
             },
             "dataloader": {
                 "batch_size": 64,
