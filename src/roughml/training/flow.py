@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 
 from roughml.content.loss import VectorSpaceContentLoss
-from roughml.plot import animate_epochs, as_3d_surface, as_grayscale_image, plot_against, dataset_title_plot
+from roughml.plot import animate_epochs, as_3d_surface, as_grayscale_image, plot_against
 from roughml.shared.configuration import Configuration
 from roughml.shared.context_managers import ExceptionLoggingHandler
 from roughml.training.manager import TrainingManager
@@ -226,7 +226,7 @@ class TrainingFlow(Configuration):
             HeightHistogramAndFourierLosses,
             title="BCE, N-Gram Graph, Height Histogram and Fourier losses per epoch \n" + str(path).split("Datasets")[1][1:len(str(path).split("Datasets")[1])],
             xlabel="Epochs",
-            ylabel="Loss",
+            ylabel="Normalized Loss",
             labels=("BCE", "NGG", "HFF"),
             save_path=self.plot.save_directory / save_path_bce_ngg_hff_loss,
         )
