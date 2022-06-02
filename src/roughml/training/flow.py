@@ -210,8 +210,6 @@ class TrainingFlow(Configuration):
             ],
         ).to_csv(str(checkpoint_dir / "per_epoch_data.csv"))
 
-        # dataset_title_plt = dataset_title_plot(path)
-
         plot_against(
             generator_losses,
             discriminator_losses,
