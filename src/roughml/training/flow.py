@@ -263,7 +263,7 @@ class TrainingFlow(Configuration):
                     )
 
                 logger.info(
-                    "2D images saved on path: %s",
+                    "2D grayscale images saved on path: %s",
                     self.plot.save_directory / (self.plot.grayscale.save_path_fmt.split("/")[0])
                 )
 
