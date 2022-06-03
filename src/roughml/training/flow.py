@@ -133,15 +133,15 @@ class TrainingFlow(Configuration):
             path,
         )
 
-        # Enable remote debugging
-        try:
-            debugpy.listen(5678)
-        except RuntimeError as execErr:
-            logger.info(
-                "Remote debugging error: %s",
-                execErr
-            )
-            pass
+        # # Enable remote debugging
+        # try:
+        #     debugpy.listen(5678)
+        # except RuntimeError as execErr:
+        #     logger.info(
+        #         "Remote debugging error: %s",
+        #         execErr
+        #     )
+        #     pass
 
         HeightHistogramAndFourierLoss = VectorSpaceContentLoss(surfaces=dataset.surfaces)
 
