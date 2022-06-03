@@ -273,7 +273,7 @@ training_flow = TrainingFlow(
                 "params": {"lr": 0.0002, "betas": (0.5, 0.999)},
             },
             "dataloader": {
-                "batch_size": 64,
+                "batch_size": 32,
                 "shuffle": True,
                 "num_workers": 0,
             },
@@ -368,7 +368,7 @@ training_flow = TrainingFlow(
                 "params": {"lr": 0.0002, "betas": (0.5, 0.999)},
             },
             "dataloader": {
-                "batch_size": 64,
+                "batch_size": 32,
                 "shuffle": True,
                 "num_workers": 0,
             },

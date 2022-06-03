@@ -6,6 +6,7 @@ from tqdm import tqdm
 from roughml.shared.configuration import Configuration
 from roughml.shared.decorators import benchmark
 from roughml.training.split import train_test_dataloaders
+from roughml.training.epoch import normalizedAndWeightedLoss
 
 logger = logging.getLogger(__name__)
 
@@ -93,6 +94,8 @@ class TrainingManager(Configuration):
         if self.benchmark is True and logger.level <= logging.INFO:
             train_epoch_f = benchmark(train_epoch_f)
 
+        max_generator_loss_epoch, max_discriminator_loss_epoch, max_bce_loss_epoch, max_ngg_loss_epoch, max_hff_loss_epoch = 0, 0, 0, 0, 0
+
         min_generator_loss = float("inf")
         max_generator_loss = float(0.0)
         max_discriminator_loss = float(0.0)
@@ -129,7 +132,24 @@ class TrainingManager(Configuration):
 
             # Update maximum losses so far
             max_generator_loss, max_NGramGraphLoss, max_HeightHistogramAndFourierLoss, max_discriminator_loss = loss_maxima
-
+            
+            # normalize losses per epoch
+            if max_generator_loss_epoch < generator_loss:
+                max_generator_loss_epoch = generator_loss
+            generator_loss /= max_generator_loss_epoch
+            if max_discriminator_loss_epoch < discriminator_loss:
+                max_discriminator_loss_epoch = discriminator_loss
+            discriminator_loss /= max_discriminator_loss_epoch
+            if max_bce_loss_epoch < BCELoss:
+                max_bce_loss_epoch = BCELoss
+            BCELoss /= max_bce_loss_epoch
+            if max_ngg_loss_epoch < NGramGraphLoss:
+                max_ngg_loss_epoch = NGramGraphLoss
+            NGramGraphLoss /= max_ngg_loss_epoch
+            if max_hff_loss_epoch < HeightHistogramAndFourierLoss:
+                max_hff_loss_epoch = HeightHistogramAndFourierLoss
+            HeightHistogramAndFourierLoss /= max_hff_loss_epoch
+            
             if (
                 self.checkpoint.directory is not None
                 and generator_loss < min_generator_loss
