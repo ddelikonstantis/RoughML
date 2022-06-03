@@ -2,6 +2,7 @@ import logging
 import logging.config
 from datetime import datetime, timedelta
 from time import time
+import debugpy
 
 import torch
 import numpy as np
@@ -131,6 +132,15 @@ class TrainingFlow(Configuration):
             discriminator.__class__.__name__,
             path,
         )
+
+        # Enable remote debugging
+        try:
+            debugpy.listen(5678)
+        except RuntimeError as execErr:
+            logger.info(
+                "Remote debugging error: %s",
+                execErr
+            )
 
         HeightHistogramAndFourierLoss = VectorSpaceContentLoss(surfaces=dataset.surfaces)
 

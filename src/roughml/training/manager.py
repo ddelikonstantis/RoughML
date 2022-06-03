@@ -5,8 +5,8 @@ from tqdm import tqdm
 
 from roughml.shared.configuration import Configuration
 from roughml.shared.decorators import benchmark
+from roughml.shared.early_stop import early_stopping
 from roughml.training.split import train_test_dataloaders
-from roughml.training.epoch import normalizedAndWeightedLoss
 
 logger = logging.getLogger(__name__)
 
@@ -101,10 +101,13 @@ class TrainingManager(Configuration):
         max_discriminator_loss = float(0.0)
         max_HeightHistogramAndFourierLoss = float(0.0)
         max_NGramGraphLoss = float(0.0)
-        patience = 20       # number of epochs where generator loss shows no significant change
-        loss_change = []
+
+        # set limits for early stopping
+        # early stopping occurs when generator loss does not change significantly
+        patience = 20      # number of consecutive epochs where generator loss shows no significant change
+        delta = 0.1        # generator loss threshold
         early_stop = False
-        delta = 0.1        # generator loss threshold that shows no significant change
+
         for epoch in tqdm(range(self.n_epochs), desc="Epochs"):
             (
                 generator_loss,
@@ -195,26 +198,18 @@ class TrainingManager(Configuration):
                 discriminator_output_fake,
             )
 
-            # stop the training when generator loss shows no significant change after a consecutive number of epochs
-            loss_change.append(generator_loss)
-            cntr = 0
-            for i in range(1, len(loss_change)):
-                if (loss_change[i] > (loss_change[i-1] + delta)) or (loss_change[i] < (loss_change[i-1] - delta)):
-                    cntr = 0
-                else:
-                    cntr += 1
+            # stop the training procedure when generator loss shows no significant change 
+            # after a predefined consecutive number of epochs
+            # early_stop, index = early_stopping(generator_loss, patience, delta)
 
-            if cntr >= patience:
-                early_stop = True
+            # if early_stop:
+            #     logger.info(
+            #     "Early stopping in epoch %03d since loss did not improve after %02d epochs",
+            #     index,
+            #     patience
+            #     )
 
-            if early_stop:
-                logger.info(
-                "Early stopping in epoch %03d since loss did not improve after %02d epochs",
-                i,
-                patience
-                )
-                
-                break
+            #     break
 
 
             yield (

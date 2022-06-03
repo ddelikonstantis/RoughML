@@ -39,10 +39,6 @@ from pathlib import Path
 
 BASE_DIR = Path.cwd()
 
-# ## Enable remote debugging
-import debugpy
-debugpy.listen(5678)
-
 # + [markdown] id="94c4d99f"
 # ## Mounting Google Drive
 
