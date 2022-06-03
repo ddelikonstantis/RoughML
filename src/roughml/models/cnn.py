@@ -41,7 +41,7 @@ class CNNBase(Base):
 class CNNGenerator(Base):
     def __init__(
         self,
-        in_channels=200,        # Size of z latent vector (i.e. size of generator input)
+        in_channels=128,        # Size of z latent vector (i.e. size of generator input)
         out_channels=128,       # Size of feature maps in generator
         training_channels=1,    # Number of channels in the training images. For color images this is 3. For grayscale this is 1
     ):
@@ -118,7 +118,7 @@ class CNNGenerator(Base):
 
 
 class CNNDiscriminator(Base):
-    def __init__(self, out_channels=1, in_channels=200):
+    def __init__(self, out_channels=1, in_channels=128):
         super().__init__()
 
         self.out_channels = out_channels    # Number of channels in the training images. For color images this is 3. For grayscale this is 1
