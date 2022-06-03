@@ -141,6 +141,7 @@ class TrainingFlow(Configuration):
                 "Remote debugging error: %s",
                 execErr
             )
+            pass
 
         HeightHistogramAndFourierLoss = VectorSpaceContentLoss(surfaces=dataset.surfaces)
 
