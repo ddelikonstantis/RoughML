@@ -266,7 +266,7 @@ training_flow = TrainingFlow(
             "train_epoch": per_epoch,
             "log_every_n": 10,
             "criterion": {"instance": criterion},
-            "n_epochs": 10,
+            "n_epochs": 100,
             "train_ratio": 0.8,
             "optimizer": {
                 "type": Adam,
@@ -292,7 +292,7 @@ training_flow = TrainingFlow(
             load_multiple_datasets_from_pt,
             DATASET_DIR,
             transforms=[To(device), View(1, 128, 128)],
-            limit=(2, 10),
+            limit=None,
         )
     },
     animation={
@@ -361,7 +361,7 @@ training_flow = TrainingFlow(
             "train_epoch": per_epoch,
             "log_every_n": 10,
             "criterion": {"instance": criterion},
-            "n_epochs": 10,
+            "n_epochs": 100,
             "train_ratio": 0.8,
             "optimizer": {
                 "type": Adam,
@@ -387,7 +387,7 @@ training_flow = TrainingFlow(
             load_multiple_datasets_from_pt,
             DATASET_DIR,
             transforms=[To(device), View(1, 128, 128)],
-            limit=(2, 10),
+            limit=None,
         )
     },
     animation={
