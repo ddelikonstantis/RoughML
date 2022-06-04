@@ -1,3 +1,5 @@
+import torch
+
 from abc import ABC, abstractstaticmethod
 
 from sklearn.preprocessing import KBinsDiscretizer

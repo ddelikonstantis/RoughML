@@ -1,6 +1,7 @@
 import logging
 import logging.config
 from datetime import datetime, timedelta
+from msilib.schema import Error
 from time import time
 import debugpy
 
@@ -115,16 +116,23 @@ class TrainingFlow(Configuration):
         animation_save_path = plotting_dir / self.animation.save_path
         self.plot.save_directory = plotting_dir
 
-        self.cuda_available = torch.cuda.is_available()
-        self.cuda_id = torch.cuda.current_device()
-        self.cuda_name = torch.cuda.get_device_name(self.cuda_id)
-
-        logger.info(
-            "Is CUDA supported? %s. Running the framework on device ID:%s with name: %s",
-            self.cuda_available,
-            self.cuda_id,
-            self.cuda_name
-        )
+        # torch device information
+        try:
+            self.cuda_available = torch.cuda.is_available()
+            self.cuda_id = torch.cuda.current_device()
+            self.cuda_name = torch.cuda.get_device_name(self.cuda_id)
+            logger.info(
+                "Is CUDA supported? %s. Running the framework on device ID:%s with name: %s",
+                self.cuda_available,
+                self.cuda_id,
+                self.cuda_name
+            )
+        except Error as execErr:
+            logger.info(
+                "Torch cuda device error: %s",
+                execErr
+            )
+            pass
 
         logger.info(
             "Running the flow on a %s/%s pair over dataset %s",
@@ -133,15 +141,12 @@ class TrainingFlow(Configuration):
             path,
         )
 
-        # # Enable remote debugging
-        # try:
-        #     debugpy.listen(5678)
-        # except RuntimeError as execErr:
-        #     logger.info(
-        #         "Remote debugging error: %s",
-        #         execErr
-        #     )
-        #     pass
+        # Enable remote debugging
+        try:
+            debugpy.listen(5678)
+        except RuntimeError as execErr:
+            logger.info("Remote debugging error: %s", execErr)
+            pass
 
         HeightHistogramAndFourierLoss = VectorSpaceContentLoss(surfaces=dataset.surfaces)
 
