@@ -213,7 +213,7 @@ class TrainingFlow(Configuration):
                 ]
             ).T,
             columns=[
-                "Total Generator Loss",
+                "Total Generator Loss (weighted)",
                 "Discriminator Loss",
                 "Discriminator Output on Real images (label:1)",
                 "Discriminator Output on Generated images (label:0)",
