@@ -128,10 +128,7 @@ class TrainingFlow(Configuration):
                 self.cuda_name
             )
         except Error as execErr:
-            logger.info(
-                "Torch cuda device error: %s",
-                execErr
-            )
+            logger.info("Torch cuda device error: %s", execErr)
             pass
 
         logger.info(
