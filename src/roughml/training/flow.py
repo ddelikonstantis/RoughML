@@ -1,7 +1,6 @@
 import logging
 import logging.config
 from datetime import datetime, timedelta
-from msilib.schema import Error
 from time import time
 import debugpy
 
@@ -127,7 +126,7 @@ class TrainingFlow(Configuration):
                 self.cuda_id,
                 self.cuda_name
             )
-        except Error as execErr:
+        except RuntimeError as execErr:
             logger.info("Torch cuda device error: %s", execErr)
             pass
 
