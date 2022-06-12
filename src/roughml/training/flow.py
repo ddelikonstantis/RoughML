@@ -64,6 +64,9 @@ class TrainingFlow(Configuration):
 
             generator = get_generator()
             discriminator = get_discriminator(generator)
+            # # review model architecture
+            # print(generator)
+            # print(discriminator)
 
             start_time = time()
 
