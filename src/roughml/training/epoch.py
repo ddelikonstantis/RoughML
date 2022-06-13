@@ -48,6 +48,8 @@ def per_epoch(
     BCELoss, NGramGraphLoss, HeightHistogramAndFourierLoss = 0, 0, 0
 
     start_time = time.time()
+
+    # For each batch in the dataloader
     for train_iteration, X_batch in enumerate(dataloader):
         
         # change batch type to match model's checkpoint weights when model is loaded
@@ -81,6 +83,7 @@ def per_epoch(
         )
         # Generate fake image batch with G
         fake = generator(noise)
+        # label for fake/generated images is 0
         label.fill_(0)
         # Classify all fake batch with D
         output = discriminator(fake.detach()).view(-1)
@@ -91,9 +94,9 @@ def per_epoch(
         # Compute error of D as sum over the fake and the real batches
         discriminator_error_total = discriminator_error_real + discriminator_error_fake
         # normalize total discriminator loss
-        # Update maximum, loss_maxima[4] is maximum value for discriminator loss so far
+        # Update maximum, loss_maxima[3] is maximum value for discriminator loss so far
         if loss_maxima[3] < discriminator_error_total:
-            loss_maxima[3] = discriminator_error_total
+            loss_maxima[3] = discriminator_error_total.item() / len(dataloader)
         # normalize discriminator loss
         discriminator_error_total =  discriminator_error_total / loss_maxima[3]
         # Update D

@@ -70,6 +70,8 @@ class TrainingManager(Configuration):
             self.fixed_noise_dim = 128
 
     def __call__(self, generator, discriminator, dataset):
+        # Create batch of latent vectors that we will use to visualize
+        # the progression of the generator
         fixed_noise = torch.randn(
             self.fixed_noise_dim,
             *generator.feature_dims,
