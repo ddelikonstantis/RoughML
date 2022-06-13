@@ -100,9 +100,18 @@ class TrainingManager(Configuration):
         # in every epoch in order to save the best model as a checkpoint
         min_generator_loss = float("inf")
 
-        # set maximum vars for loss normalization
-        max_generator_loss, max_discriminator_loss = 0, 0
+        # set maximum variables for loss normalization
+        max_total_generator_loss, max_total_discriminator_loss = 0, 0
+        max_discriminator_loss_real, max_discriminator_loss_fake = 0, 0
         max_bce_loss, max_NGramGraphLoss, max_HeightHistogramAndFourierLoss = 0, 0, 0
+        maximum_losses = {'max_total_generator_loss': max_total_generator_loss,
+                          'max_bce_loss': max_bce_loss,
+                          'max_NGramGraphLoss': max_NGramGraphLoss,
+                          'max_HeightHistogramAndFourierLoss': max_HeightHistogramAndFourierLoss,
+                          'max_total_discriminator_loss': max_total_discriminator_loss,
+                          'max_discriminator_loss_real': max_discriminator_loss_real,
+                          'max_discriminator_loss_fake': max_discriminator_loss_fake,
+                          }
 
         # set limits for early stopping
         # early stopping occurs when generator loss does not change significantly
@@ -132,30 +141,30 @@ class TrainingManager(Configuration):
                 content_loss_fn=self.NGramGraphLoss,
                 vector_content_loss_fn=self.HeightHistogramAndFourierLoss,
                 loss_weights=[self.criterion.weight, self.content_loss_weight, self.HeightHistogramAndFourier_loss_weight],
-                loss_maxima=[max_bce_loss, max_NGramGraphLoss, max_HeightHistogramAndFourierLoss, max_discriminator_loss],
+                loss_maxima=maximum_losses,
                 log_every_n=self.log_every_n,
                 load_checkpoint = self.load_checkpoint,
             )
 
             # Update maximum loss vars so far
-            max_bce_loss, max_NGramGraphLoss, max_HeightHistogramAndFourierLoss, max_discriminator_loss = loss_maxima
+            maximum_losses = loss_maxima
             
             # normalize losses per epoch
-            if max_generator_loss < generator_loss:
-                max_generator_loss = generator_loss
-            generator_loss /= max_generator_loss
-            if max_discriminator_loss < discriminator_loss:
-                max_discriminator_loss = discriminator_loss
-            discriminator_loss /= max_discriminator_loss
-            if max_bce_loss < BCELoss:
-                max_bce_loss = BCELoss
-            BCELoss /= max_bce_loss
-            if max_NGramGraphLoss < NGramGraphLoss:
-                max_NGramGraphLoss = NGramGraphLoss
-            NGramGraphLoss /= max_NGramGraphLoss
-            if max_HeightHistogramAndFourierLoss < HeightHistogramAndFourierLoss:
-                max_HeightHistogramAndFourierLoss = HeightHistogramAndFourierLoss
-            HeightHistogramAndFourierLoss /= max_HeightHistogramAndFourierLoss
+            if maximum_losses['max_total_generator_loss'] < generator_loss:
+                maximum_losses['max_total_generator_loss'] = generator_loss
+            generator_loss /= maximum_losses['max_total_generator_loss']
+            if maximum_losses['max_total_discriminator_loss'] < discriminator_loss:
+                maximum_losses['max_total_discriminator_loss'] = discriminator_loss
+            discriminator_loss /= maximum_losses['max_total_discriminator_loss']
+            if maximum_losses['max_bce_loss'] < BCELoss:
+                maximum_losses['max_bce_loss'] = BCELoss
+            BCELoss /= maximum_losses['max_bce_loss']
+            if maximum_losses['max_NGramGraphLoss'] < NGramGraphLoss:
+                maximum_losses['max_NGramGraphLoss'] = NGramGraphLoss
+            NGramGraphLoss /= maximum_losses['max_NGramGraphLoss']
+            if maximum_losses['max_HeightHistogramAndFourierLoss'] < HeightHistogramAndFourierLoss:
+                maximum_losses['max_HeightHistogramAndFourierLoss'] = HeightHistogramAndFourierLoss
+            HeightHistogramAndFourierLoss /= maximum_losses['max_HeightHistogramAndFourierLoss']
 
             if (
                 self.checkpoint.directory is not None
