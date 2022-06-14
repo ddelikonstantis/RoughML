@@ -46,6 +46,8 @@ def per_epoch(
     generator_loss, discriminator_loss = 0, 0
     discriminator_output_real, discriminator_output_fake = 0, 0
     BCELoss, NGramGraphLoss, HeightHistogramAndFourierLoss = 0, 0, 0
+    discriminator_raw_loss_real, discriminator_raw_loss_fake = 0, 0
+    generator_bce_raw_loss, ngg_raw_loss, histo_fourier_raw_loss = 0, 0, 0
 
     start_time = time.time()
 
@@ -68,6 +70,7 @@ def per_epoch(
         output = discriminator(X_batch).view(-1)
         # Calculate loss on all-real batch
         discriminator_error_real = criterion(output, label)
+        discriminator_raw_loss_real += discriminator_error_real.item() / len(dataloader)
         # normalize discriminator loss on real images
         if loss_maxima['max_discriminator_loss_real'] < discriminator_error_real:
             loss_maxima['max_discriminator_loss_real'] = discriminator_error_real.item() / len(dataloader)
@@ -92,6 +95,7 @@ def per_epoch(
         output = discriminator(fake.detach()).view(-1)
         # Calculate D's loss on the all-fake batch
         discriminator_error_fake = criterion(output, label)
+        discriminator_raw_loss_fake += discriminator_error_fake.item() / len(dataloader)
         # normalize discriminator loss on fake images
         if loss_maxima['max_discriminator_loss_fake'] < discriminator_error_fake:
             loss_maxima['max_discriminator_loss_fake'] = discriminator_error_fake.item() / len(dataloader)
@@ -128,6 +132,7 @@ def per_epoch(
         # So: for the BCE loss
         generator_bce_loss = criterion(output, label) # get Binary Cross-Entropy loss
         generator_bce_loss = generator_bce_loss.item() / len(dataloader) # update Binary Cross-Entropy loss for this batch
+        generator_bce_raw_loss += generator_bce_loss
         # Calculate the normalized weighted value and also get the new maximum
         bce_norm_loss, bce_norm_weighted_loss, loss_maxima['max_bce_loss'] = normalizedAndWeightedLoss(generator_bce_loss, loss_weights[0], loss_maxima['max_bce_loss'])
         
@@ -135,6 +140,7 @@ def per_epoch(
         generator_content_loss = content_loss_fn(fake.cpu().detach().numpy().squeeze())  # Get content-based-loss
         generator_content_loss = torch.mean(generator_content_loss).to(fake.device) # get mean values of all elements in the tensor
         ngg_loss = generator_content_loss.item() / len(dataloader) # update N-Gram Graph loss for this batch
+        ngg_raw_loss += ngg_loss
         # Calculate the normalized weighted value and also get the new maximum
         ngg_norm_loss, ngg_norm_weighted_loss, loss_maxima['max_NGramGraphLoss'] = normalizedAndWeightedLoss(ngg_loss, loss_weights[1], loss_maxima['max_NGramGraphLoss'])
         current_batch_loss += ngg_norm_weighted_loss # Update overall loss
@@ -143,6 +149,7 @@ def per_epoch(
         generator_vector_content_loss = vector_content_loss_fn(fake.cpu().detach().numpy().squeeze()) # get height histogram and fourier loss
         generator_vector_content_loss = torch.mean(generator_vector_content_loss).to(fake.device) # get mean values of all elements in the tensor
         histo_fourier_loss = generator_vector_content_loss.item() / len(dataloader) # update Height Histogram And Fourier loss for this batch
+        histo_fourier_raw_loss += histo_fourier_loss
         # Calculate the normalized weighted value and also get the new maximum
         histo_fourier_norm_loss, histo_fourier_norm_weighted_loss, loss_maxima['max_HeightHistogramAndFourierLoss'] = normalizedAndWeightedLoss(histo_fourier_loss, loss_weights[2], loss_maxima['max_HeightHistogramAndFourierLoss'])
         current_batch_loss += histo_fourier_norm_weighted_loss # Update overall loss
@@ -185,5 +192,10 @@ def per_epoch(
         NGramGraphLoss,
         HeightHistogramAndFourierLoss,
         BCELoss, 
-        loss_maxima
+        loss_maxima,
+        generator_bce_raw_loss,
+        ngg_raw_loss,
+        histo_fourier_raw_loss,
+        discriminator_raw_loss_real,
+        discriminator_raw_loss_fake,
     )

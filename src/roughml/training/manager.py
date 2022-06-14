@@ -131,7 +131,12 @@ class TrainingManager(Configuration):
                 NGramGraphLoss,
                 HeightHistogramAndFourierLoss,
                 BCELoss,
-                loss_maxima
+                loss_maxima,
+                gen_bce_raw_loss,
+                nggh_raw_loss,
+                histo_four_raw_loss,
+                dis_raw_loss_real,
+                dis_raw_loss_fake,
             ) = train_epoch_f(
                 generator,
                 discriminator,
@@ -196,7 +201,16 @@ class TrainingManager(Configuration):
                 fixed_fake = generator(fixed_noise).detach().cpu()
 
             logger.info(
-                "Epoch:%02d, Total Generator Loss:%7.5f, BCE Loss:%7.5f, NGG Loss:%7.5f, HFF Loss:%7.5f, Discriminator Loss:%7.5f",
+                "Epoch:%02d, Raw BCE Loss:%7.3f, Raw NGG Loss:%7.3f, Raw HFF Loss:%7.3f, Raw Discriminator Loss:%7.3f",
+                epoch,
+                gen_bce_raw_loss,
+                nggh_raw_loss,
+                histo_four_raw_loss,
+                (dis_raw_loss_real + dis_raw_loss_fake) / 2,
+            )
+
+            logger.info(
+                "Epoch:%02d, Total Norm Generator Loss:%7.5f, Norm BCE Loss:%7.5f, Norm NGG Loss:%7.5f, Norm HFF Loss:%7.5f, Norm Discriminator Loss:%7.5f",
                 epoch,
                 generator_loss,
                 BCELoss,
