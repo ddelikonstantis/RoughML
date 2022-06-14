@@ -103,9 +103,10 @@ class TrainingManager(Configuration):
         # set maximum variables for loss normalization
         max_total_generator_loss, max_total_discriminator_loss = 0, 0
         max_discriminator_loss_real, max_discriminator_loss_fake = 0, 0
-        max_bce_loss, max_NGramGraphLoss, max_HeightHistogramAndFourierLoss = 0, 0, 0
+        max_bce_loss, max_bce_epoch_loss, max_NGramGraphLoss, max_HeightHistogramAndFourierLoss = 0, 0, 0, 0
         maximum_losses = {'max_total_generator_loss': max_total_generator_loss,
                           'max_bce_loss': max_bce_loss,
+                          'max_bce_epoch_loss': max_bce_epoch_loss,
                           'max_NGramGraphLoss': max_NGramGraphLoss,
                           'max_HeightHistogramAndFourierLoss': max_HeightHistogramAndFourierLoss,
                           'max_total_discriminator_loss': max_total_discriminator_loss,
@@ -156,9 +157,9 @@ class TrainingManager(Configuration):
             if maximum_losses['max_total_discriminator_loss'] < discriminator_loss:
                 maximum_losses['max_total_discriminator_loss'] = discriminator_loss
             discriminator_loss /= maximum_losses['max_total_discriminator_loss']
-            if maximum_losses['max_bce_loss'] < BCELoss:
-                maximum_losses['max_bce_loss'] = BCELoss
-            BCELoss /= maximum_losses['max_bce_loss']
+            if maximum_losses['max_bce_epoch_loss'] < BCELoss:
+                maximum_losses['max_bce_epoch_loss'] = BCELoss
+            BCELoss /= maximum_losses['max_bce_epoch_loss']
             if maximum_losses['max_NGramGraphLoss'] < NGramGraphLoss:
                 maximum_losses['max_NGramGraphLoss'] = NGramGraphLoss
             NGramGraphLoss /= maximum_losses['max_NGramGraphLoss']
