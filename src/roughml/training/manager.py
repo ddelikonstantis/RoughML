@@ -70,6 +70,8 @@ class TrainingManager(Configuration):
             self.fixed_noise_dim = 128
 
     def __call__(self, generator, discriminator, dataset):
+        # Create batch of latent vectors that we will use to visualize
+        # the progression of the generator
         fixed_noise = torch.randn(
             self.fixed_noise_dim,
             *generator.feature_dims,
@@ -94,18 +96,30 @@ class TrainingManager(Configuration):
         if self.benchmark is True and logger.level <= logging.INFO:
             train_epoch_f = benchmark(train_epoch_f)
 
-        max_generator_loss_epoch, max_discriminator_loss_epoch, max_bce_loss_epoch, max_ngg_loss_epoch, max_hff_loss_epoch = 0, 0, 0, 0, 0
-
+        # set minimum generator loss var to compare with actual generator loss
+        # in every epoch in order to save the best model as a checkpoint
         min_generator_loss = float("inf")
-        max_generator_loss = float(0.0)
-        max_discriminator_loss = float(0.0)
-        max_HeightHistogramAndFourierLoss = float(0.0)
-        max_NGramGraphLoss = float(0.0)
+
+        # set maximum variables for loss normalization
+        max_total_generator_loss, max_total_discriminator_loss = 0, 0
+        max_discriminator_loss_real, max_discriminator_loss_fake = 0, 0
+        max_bce_loss, max_bce_epoch_loss, max_NGramGraphLoss, max_HeightHistogramAndFourierLoss = 0, 0, 0, 0
+        maximum_losses = {'max_total_generator_loss': max_total_generator_loss,
+                          'max_bce_loss': max_bce_loss,
+                          'max_bce_epoch_loss': max_bce_epoch_loss,
+                          'max_NGramGraphLoss': max_NGramGraphLoss,
+                          'max_HeightHistogramAndFourierLoss': max_HeightHistogramAndFourierLoss,
+                          'max_total_discriminator_loss': max_total_discriminator_loss,
+                          'max_discriminator_loss_real': max_discriminator_loss_real,
+                          'max_discriminator_loss_fake': max_discriminator_loss_fake,
+                          }
 
         # set limits for early stopping
         # early stopping occurs when generator loss does not change significantly
-        patience = 20      # number of consecutive epochs where generator loss shows no significant change
-        delta = 0.1        # generator loss threshold
+        # for example we want to stop the training when its stuck in a local minimum
+        patience = 10       # number of consecutive epochs where generator loss shows no significant change
+        delta = 0.1         # generator loss change threshold
+        gen_loss_hist = []
         early_stop = False
 
         for epoch in tqdm(range(self.n_epochs), desc="Epochs"):
@@ -128,31 +142,31 @@ class TrainingManager(Configuration):
                 content_loss_fn=self.NGramGraphLoss,
                 vector_content_loss_fn=self.HeightHistogramAndFourierLoss,
                 loss_weights=[self.criterion.weight, self.content_loss_weight, self.HeightHistogramAndFourier_loss_weight],
-                loss_maxima=[max_generator_loss, max_NGramGraphLoss, max_HeightHistogramAndFourierLoss, max_discriminator_loss],
+                loss_maxima=maximum_losses,
                 log_every_n=self.log_every_n,
                 load_checkpoint = self.load_checkpoint,
             )
 
-            # Update maximum losses so far
-            max_generator_loss, max_NGramGraphLoss, max_HeightHistogramAndFourierLoss, max_discriminator_loss = loss_maxima
+            # Update maximum loss vars so far
+            maximum_losses = loss_maxima
             
             # normalize losses per epoch
-            if max_generator_loss_epoch < generator_loss:
-                max_generator_loss_epoch = generator_loss
-            generator_loss /= max_generator_loss_epoch
-            if max_discriminator_loss_epoch < discriminator_loss:
-                max_discriminator_loss_epoch = discriminator_loss
-            discriminator_loss /= max_discriminator_loss_epoch
-            if max_bce_loss_epoch < BCELoss:
-                max_bce_loss_epoch = BCELoss
-            BCELoss /= max_bce_loss_epoch
-            if max_ngg_loss_epoch < NGramGraphLoss:
-                max_ngg_loss_epoch = NGramGraphLoss
-            NGramGraphLoss /= max_ngg_loss_epoch
-            if max_hff_loss_epoch < HeightHistogramAndFourierLoss:
-                max_hff_loss_epoch = HeightHistogramAndFourierLoss
-            HeightHistogramAndFourierLoss /= max_hff_loss_epoch
-            
+            if maximum_losses['max_total_generator_loss'] < generator_loss:
+                maximum_losses['max_total_generator_loss'] = generator_loss
+            generator_loss /= maximum_losses['max_total_generator_loss']
+            if maximum_losses['max_total_discriminator_loss'] < discriminator_loss:
+                maximum_losses['max_total_discriminator_loss'] = discriminator_loss
+            discriminator_loss /= maximum_losses['max_total_discriminator_loss']
+            if maximum_losses['max_bce_epoch_loss'] < BCELoss:
+                maximum_losses['max_bce_epoch_loss'] = BCELoss
+            BCELoss /= maximum_losses['max_bce_epoch_loss']
+            if maximum_losses['max_NGramGraphLoss'] < NGramGraphLoss:
+                maximum_losses['max_NGramGraphLoss'] = NGramGraphLoss
+            NGramGraphLoss /= maximum_losses['max_NGramGraphLoss']
+            if maximum_losses['max_HeightHistogramAndFourierLoss'] < HeightHistogramAndFourierLoss:
+                maximum_losses['max_HeightHistogramAndFourierLoss'] = HeightHistogramAndFourierLoss
+            HeightHistogramAndFourierLoss /= maximum_losses['max_HeightHistogramAndFourierLoss']
+
             if (
                 self.checkpoint.directory is not None
                 and generator_loss < min_generator_loss
@@ -182,7 +196,7 @@ class TrainingManager(Configuration):
                 fixed_fake = generator(fixed_noise).detach().cpu()
 
             logger.info(
-                "Epoch:%03d, Total Generator Loss:%7.5f, BCE Loss:%7.5f, NGG Loss:%7.5f, HFF Loss:%7.5f, Discriminator Loss:%7.5f",
+                "Epoch:%02d, Total Generator Loss:%7.5f, BCE Loss:%7.5f, NGG Loss:%7.5f, HFF Loss:%7.5f, Discriminator Loss:%7.5f",
                 epoch,
                 generator_loss,
                 BCELoss,
@@ -192,7 +206,7 @@ class TrainingManager(Configuration):
             )
 
             logger.info(
-                "Epoch:%03d, Discriminator Output: [Real images:%7.5f, Generated images:%7.5f]",
+                "Epoch:%02d, Discriminator Output: [Real images:%7.5f, Generated images:%7.5f]",
                 epoch,
                 discriminator_output_real,
                 discriminator_output_fake,
@@ -200,16 +214,17 @@ class TrainingManager(Configuration):
 
             # stop the training procedure when generator loss shows no significant change 
             # after a predefined consecutive number of epochs
-            # early_stop, index = early_stopping(generator_loss, patience, delta)
+            gen_loss_hist.append(generator_loss)  # save the generator losses so far
+            early_stop, index = early_stopping(gen_loss_hist, patience, delta)
 
-            # if early_stop:
-            #     logger.info(
-            #     "Early stopping in epoch %03d since loss did not improve after %02d epochs",
-            #     index,
-            #     patience
-            #     )
+            if early_stop:
+                logger.info(
+                "Stopping early the training in epoch %02d since loss did not improve in previous %02d consecutive epochs",
+                index,
+                patience
+                )
 
-            #     break
+                break
 
 
             yield (

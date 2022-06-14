@@ -64,6 +64,9 @@ class TrainingFlow(Configuration):
 
             generator = get_generator()
             discriminator = get_discriminator(generator)
+            # # review model architecture
+            # print(generator)
+            # print(discriminator)
 
             start_time = time()
 
@@ -300,7 +303,7 @@ class TrainingFlow(Configuration):
                     )
 
                 logger.info(
-                    "3D surface images saved on path: %s",
+                    "3D surfaces saved on path: %s",
                     self.plot.save_directory / (self.plot.surface.save_path_fmt.split("/")[0])
                 )
 
