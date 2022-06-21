@@ -41,7 +41,7 @@ def per_epoch(
     generator.train()
 
     # clear loss values before next batch
-    losses_raw = dict.fromkeys(losses_raw, None)
+    losses_raw = dict.fromkeys(losses_raw, 0)
     gen_batch_loss = 0
     generator_loss, discriminator_loss = 0, 0
     discriminator_output_real, discriminator_output_fake = 0, 0
@@ -87,8 +87,10 @@ def per_epoch(
         # save raw discriminator BCE loss for real images to view in log file
         losses_raw['raw_dis_bce_loss_real'] += discriminator_error_real.item()
         # normalize discriminator BCE loss on real images
-        if losses_maxima['max_dis_bce_loss_real'] < discriminator_error_real:
-            losses_maxima['max_dis_bce_loss_real'] = discriminator_error_real
+        # use .clone() method to prevent runtime error for using 
+        # a tensor or its part to compute a part of the same tensor.
+        if losses_maxima['max_dis_bce_loss_real'] < discriminator_error_real.clone():
+            losses_maxima['max_dis_bce_loss_real'] = discriminator_error_real.clone()
         discriminator_error_real /= losses_maxima['max_dis_bce_loss_real']
         # Calculate gradients for D in backward pass
         discriminator_error_real.backward()
@@ -113,15 +115,17 @@ def per_epoch(
         # save raw discriminator BCE loss for fake/generated images to view in log file
         losses_raw['raw_dis_bce_loss_fake'] += discriminator_error_fake.item()
         # normalize discriminator BCE loss on fake images
-        if losses_maxima['max_dis_bce_loss_fake'] < discriminator_error_fake:
-            losses_maxima['max_dis_bce_loss_fake'] = discriminator_error_fake
+        # use .clone() method to prevent runtime error for using 
+        # a tensor or its part to compute a part of the same tensor.
+        if losses_maxima['max_dis_bce_loss_fake'] < discriminator_error_fake.clone():
+            losses_maxima['max_dis_bce_loss_fake'] = discriminator_error_fake.clone()
         discriminator_error_fake /= losses_maxima['max_dis_bce_loss_fake']
         # Calculate the gradients for this batch, accumulated (summed) with previous gradients
         discriminator_error_fake.backward()
         # Compute error of D as sum over the fake and the real batches
-        discriminator_error_total = (discriminator_error_real + discriminator_error_fake) / 2
+        discriminator_error_total = (discriminator_error_real.item() + discriminator_error_fake.item()) / 2
         # save raw total discriminator BCE loss to view in log file
-        losses_raw['raw_dis_total_loss'] += discriminator_error_total.item()
+        losses_raw['raw_dis_total_loss'] += discriminator_error_total
         # Update D
         optimizer_discriminator.step()
 
@@ -162,7 +166,7 @@ def per_epoch(
         gen_batch_loss += norm_weighted_gen_bce_loss # update overall loss
 
         # Generator content loss
-        generator_content_loss = torch.mean(content_loss_fn(fake.cpu().detach().numpy().squeeze())).to(fake.device).item()  # Get content-based-loss mean        
+        generator_content_loss = torch.mean(content_loss_fn(fake.cpu().detach().numpy().squeeze())).to(fake.device)  # Get content-based-loss mean        
         # save raw generator content loss for fake/generated images to view in log file
         losses_raw['raw_gen_NGramGraphLoss'] += generator_content_loss.item()
         # Calculate the normalized weighted value and also get the new maximum
@@ -178,7 +182,7 @@ def per_epoch(
         norm_gen_hist_fourier_loss, norm_weighted_gen_histo_fourier_loss, losses_maxima['max_gen_HeightHistogramAndFourierLoss'] = normalizedAndWeightedLoss(generator_vector_content_loss, loss_weights[2], losses_maxima['max_gen_HeightHistogramAndFourierLoss'])
         gen_batch_loss += norm_weighted_gen_histo_fourier_loss # Update overall loss
 
-        # Update overall generator loss with batch contribution.
+        # Update overall generator loss with batch contribution. TODO: use .detach() method!!!!!!!!!!
         discriminator_error_fake = gen_batch_loss
 
         # Calculate gradients for G, which propagate through the discriminator
@@ -192,12 +196,12 @@ def per_epoch(
 
         # calculate total losses for this batch
         generator_loss += discriminator_error_fake.item() # update overall generator loss for this batch
-        BCELoss += norm_gen_bce_loss.item() # update Binary Cross-Entropy loss for this batch
+        BCELoss += discriminator_error_fake.item() - gen_batch_loss # update Binary Cross-Entropy loss for this batch
         NGramGraphLoss += norm_gen_content_loss.item() # update N-Gram Graph loss for this batch
         HeightHistogramAndFourierLoss += norm_gen_hist_fourier_loss.item() # update Height Histogram And Fourier loss for this batch
-        discriminator_loss += discriminator_error_total.item() # update discriminator loss for this batch
-        discriminator_output_real += discriminator_output_real_batch.item() # update discriminator output for real images for this batch
-        discriminator_output_fake += discriminator_output_fake_batch.item() # update discriminator output for generated images for this batch
+        discriminator_loss += discriminator_error_total # update discriminator loss for this batch
+        discriminator_output_real += discriminator_output_real_batch # update discriminator output for real images for this batch
+        discriminator_output_fake += discriminator_output_fake_batch # update discriminator output for generated images for this batch
 
         if log_every_n is not None and not train_iteration % log_every_n:
             logger.info(
