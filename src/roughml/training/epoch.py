@@ -120,6 +120,8 @@ def per_epoch(
         discriminator_error_fake.backward()
         # Compute error of D as sum over the fake and the real batches
         discriminator_error_total = (discriminator_error_real + discriminator_error_fake) / 2
+        # save raw total discriminator BCE loss to view in log file
+        losses_raw['raw_dis_total_loss'] += discriminator_error_total.item()
         # Update D
         optimizer_discriminator.step()
 
@@ -177,7 +179,7 @@ def per_epoch(
         gen_batch_loss += norm_weighted_gen_histo_fourier_loss # Update overall loss
 
         # Update overall generator loss with batch contribution.
-        discriminator_error_fake += gen_batch_loss
+        discriminator_error_fake = gen_batch_loss
 
         # Calculate gradients for G, which propagate through the discriminator
         discriminator_error_fake.backward()
