@@ -67,7 +67,7 @@ class TrainingManager(Configuration):
 
         # Initialize fixed_noise_dim
         if not hasattr(self, "fixed_noise_dim"):
-            self.fixed_noise_dim = 128
+            self.fixed_noise_dim = 64
 
     def __call__(self, generator, discriminator, dataset):
         # Create batch of latent vectors that we will use to visualize
@@ -100,26 +100,38 @@ class TrainingManager(Configuration):
         # in every epoch in order to save the best model as a checkpoint
         min_generator_loss = float("inf")
 
-        # set maximum variables for loss normalization
-        max_total_generator_loss, max_total_discriminator_loss = 0, 0
-        max_discriminator_loss_real, max_discriminator_loss_fake = 0, 0
-        max_bce_loss, max_bce_epoch_loss, max_NGramGraphLoss, max_HeightHistogramAndFourierLoss = 0, 0, 0, 0
-        maximum_losses = {'max_total_generator_loss': max_total_generator_loss,
-                          'max_bce_loss': max_bce_loss,
-                          'max_bce_epoch_loss': max_bce_epoch_loss,
-                          'max_NGramGraphLoss': max_NGramGraphLoss,
-                          'max_HeightHistogramAndFourierLoss': max_HeightHistogramAndFourierLoss,
-                          'max_total_discriminator_loss': max_total_discriminator_loss,
-                          'max_discriminator_loss_real': max_discriminator_loss_real,
-                          'max_discriminator_loss_fake': max_discriminator_loss_fake,
+        # set maximum variables for every loss normalization per batch
+        max_total_gen_loss, max_total_dis_loss = 0, 0
+        max_dis_bce_loss_real, max_dis_bce_loss_fake = 0, 0
+        max_gen_bce_loss, max_gen_NGramGraphLoss, max_gen_HeightHistogramAndFourierLoss = 0, 0, 0
+        maximum_losses = {'max_total_gen_loss': max_total_gen_loss,
+                          'max_gen_bce_loss': max_gen_bce_loss,
+                          'max_gen_NGramGraphLoss': max_gen_NGramGraphLoss,
+                          'max_gen_HeightHistogramAndFourierLoss': max_gen_HeightHistogramAndFourierLoss,
+                          'max_total_dis_loss': max_total_dis_loss,
+                          'max_dis_bce_loss_real': max_dis_bce_loss_real,
+                          'max_dis_bce_loss_fake': max_dis_bce_loss_fake,
                           }
+
+        # variables for storing the raw losses per epoch to be viewed in the log file
+        raw_total_gen_loss, raw_total_disc_loss = 0, 0
+        raw_dis_bce_loss_real, raw_dis_bce_loss_fake = 0, 0
+        raw_gen_bce_loss, raw_gen_NGramGraphLoss, raw_gen_HeightHistogramAndFourierLoss = 0, 0, 0
+        raw_losses =    {'raw_total_gen_loss': raw_total_gen_loss,
+                        'raw_gen_bce_loss': raw_gen_bce_loss,
+                        'raw_gen_NGramGraphLoss': raw_gen_NGramGraphLoss,
+                        'raw_gen_HeightHistogramAndFourierLoss': raw_gen_HeightHistogramAndFourierLoss,
+                        'raw_total_disc_loss': raw_total_disc_loss,
+                        'raw_dis_bce_loss_real': raw_dis_bce_loss_real,
+                        'raw_dis_bce_loss_fake': raw_dis_bce_loss_fake,
+                        }
 
         # set limits for early stopping
         # early stopping occurs when generator loss does not change significantly
         # for example we want to stop the training when its stuck in a local minimum
         patience = 10       # number of consecutive epochs where generator loss shows no significant change
         delta = 0.001       # generator loss change threshold
-        gen_loss_hist = []
+        gen_loss_hist = []  # initialize list for saving past generator losses
         early_stop = False
 
         for epoch in tqdm(range(self.n_epochs), desc="Epochs"):
@@ -131,12 +143,8 @@ class TrainingManager(Configuration):
                 NGramGraphLoss,
                 HeightHistogramAndFourierLoss,
                 BCELoss,
-                loss_maxima,
-                gen_bce_raw_loss,
-                nggh_raw_loss,
-                histo_four_raw_loss,
-                dis_raw_loss_real,
-                dis_raw_loss_fake,
+                losses_max,
+                losses_raw_val,
             ) = train_epoch_f(
                 generator,
                 discriminator,
@@ -147,13 +155,14 @@ class TrainingManager(Configuration):
                 content_loss_fn=self.NGramGraphLoss,
                 vector_content_loss_fn=self.HeightHistogramAndFourierLoss,
                 loss_weights=[self.criterion.weight, self.content_loss_weight, self.HeightHistogramAndFourier_loss_weight],
-                loss_maxima=maximum_losses,
+                losses_maxima=maximum_losses,
+                losses_raw=raw_losses,
                 log_every_n=self.log_every_n,
                 load_checkpoint = self.load_checkpoint,
             )
 
             # Update maximum loss vars so far
-            maximum_losses = loss_maxima
+            maximum_losses = losses_max
             
             # normalize losses per epoch
             if maximum_losses['max_total_generator_loss'] < generator_loss:
