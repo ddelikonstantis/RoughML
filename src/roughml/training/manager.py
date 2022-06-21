@@ -118,7 +118,7 @@ class TrainingManager(Configuration):
         # early stopping occurs when generator loss does not change significantly
         # for example we want to stop the training when its stuck in a local minimum
         patience = 10       # number of consecutive epochs where generator loss shows no significant change
-        delta = 0.1         # generator loss change threshold
+        delta = 0.001       # generator loss change threshold
         gen_loss_hist = []
         early_stop = False
 
