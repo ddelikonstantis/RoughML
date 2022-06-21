@@ -161,26 +161,6 @@ class TrainingManager(Configuration):
                 load_checkpoint = self.load_checkpoint,
             )
 
-            # Update maximum loss vars so far
-            maximum_losses = losses_max
-            
-            # normalize losses per epoch
-            if maximum_losses['max_total_generator_loss'] < generator_loss:
-                maximum_losses['max_total_generator_loss'] = generator_loss
-            generator_loss /= maximum_losses['max_total_generator_loss']
-            if maximum_losses['max_total_discriminator_loss'] < discriminator_loss:
-                maximum_losses['max_total_discriminator_loss'] = discriminator_loss
-            discriminator_loss /= maximum_losses['max_total_discriminator_loss']
-            if maximum_losses['max_bce_epoch_loss'] < BCELoss:
-                maximum_losses['max_bce_epoch_loss'] = BCELoss
-            BCELoss /= maximum_losses['max_bce_epoch_loss']
-            if maximum_losses['max_NGramGraphLoss'] < NGramGraphLoss:
-                maximum_losses['max_NGramGraphLoss'] = NGramGraphLoss
-            NGramGraphLoss /= maximum_losses['max_NGramGraphLoss']
-            if maximum_losses['max_HeightHistogramAndFourierLoss'] < HeightHistogramAndFourierLoss:
-                maximum_losses['max_HeightHistogramAndFourierLoss'] = HeightHistogramAndFourierLoss
-            HeightHistogramAndFourierLoss /= maximum_losses['max_HeightHistogramAndFourierLoss']
-
             if (
                 self.checkpoint.directory is not None
                 and generator_loss < min_generator_loss
@@ -210,16 +190,17 @@ class TrainingManager(Configuration):
                 fixed_fake = generator(fixed_noise).detach().cpu()
 
             logger.info(
-                "Epoch:%02d, Raw BCE Loss:%7.3f, Raw NGG Loss:%7.3f, Raw HFF Loss:%7.3f, Raw Discriminator Loss:%7.3f",
+                "Epoch:%02d, Raw Total Generator Loss:%7.3f, Raw BCE Loss:%7.3f, Raw NGG Loss:%7.3f, Raw HFF Loss:%7.3f, Raw Discriminator Loss:%7.3f",
                 epoch,
+                losses_raw_val['raw_gen_total_loss'],
                 losses_raw_val['raw_gen_bce_loss'],
                 losses_raw_val['raw_gen_NGramGraphLoss'],
                 losses_raw_val['raw_gen_HeightHistogramAndFourierLoss'],
-                losses_raw_val['raw_total_disc_loss'],
+                losses_raw_val['raw_dis_total_loss'],
             )
 
             logger.info(
-                "Epoch:%02d, Total Norm Generator Loss:%7.5f, Norm BCE Loss:%7.5f, Norm NGG Loss:%7.5f, Norm HFF Loss:%7.5f, Norm Discriminator Loss:%7.5f",
+                "Epoch:%02d, Norm Total Generator Loss:%7.5f, Norm BCE Loss:%7.5f, Norm NGG Loss:%7.5f, Norm HFF Loss:%7.5f, Norm Discriminator Loss:%7.5f",
                 epoch,
                 generator_loss,
                 BCELoss,

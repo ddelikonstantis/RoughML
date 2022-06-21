@@ -191,13 +191,13 @@ def per_epoch(
         # generator_data = model_weights(generator)
 
         # calculate total losses for this batch
-        generator_loss += discriminator_error_fake.item() / len(dataloader) # update overall generator loss for this batch
-        BCELoss += norm_gen_bce_loss.item() / len(dataloader) # update Binary Cross-Entropy loss for this batch
-        NGramGraphLoss += norm_gen_content_loss.item() / len(dataloader) # update N-Gram Graph loss for this batch
-        HeightHistogramAndFourierLoss += norm_gen_hist_fourier_loss.item() / len(dataloader) # update Height Histogram And Fourier loss for this batch
-        discriminator_loss += discriminator_error_total.item() / len(dataloader) # update discriminator loss for this batch
-        discriminator_output_real += discriminator_output_real_batch / len(dataloader) # update discriminator output for real images for this batch
-        discriminator_output_fake += discriminator_output_fake_batch / len(dataloader) # update discriminator output for generated images for this batch
+        generator_loss += discriminator_error_fake.item() # update overall generator loss for this batch
+        BCELoss += norm_gen_bce_loss.item() # update Binary Cross-Entropy loss for this batch
+        NGramGraphLoss += norm_gen_content_loss.item() # update N-Gram Graph loss for this batch
+        HeightHistogramAndFourierLoss += norm_gen_hist_fourier_loss.item() # update Height Histogram And Fourier loss for this batch
+        discriminator_loss += discriminator_error_total.item() # update discriminator loss for this batch
+        discriminator_output_real += discriminator_output_real_batch.item() # update discriminator output for real images for this batch
+        discriminator_output_fake += discriminator_output_fake_batch.item() # update discriminator output for generated images for this batch
 
         if log_every_n is not None and not train_iteration % log_every_n:
             logger.info(
@@ -207,6 +207,16 @@ def per_epoch(
             )
 
             start_time = time.time()
+
+    # calculate average losses over an epoch
+    generator_loss /= len(dataloader)
+    BCELoss /= len(dataloader)
+    NGramGraphLoss /= len(dataloader)
+    HeightHistogramAndFourierLoss /= len(dataloader)
+    discriminator_loss /= len(dataloader)
+    discriminator_output_real /= len(dataloader)
+    discriminator_output_fake /= len(dataloader)
+    
 
     return (
         generator_loss,
