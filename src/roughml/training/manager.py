@@ -155,6 +155,9 @@ class TrainingManager(Configuration):
                 load_checkpoint = self.load_checkpoint,
             )
 
+            # update maximum losses seen in current epoch
+            maximum_losses = losses_max
+
             if (
                 self.checkpoint.directory is not None
                 and generator_loss < min_generator_loss
@@ -184,13 +187,13 @@ class TrainingManager(Configuration):
                 fixed_fake = generator(fixed_noise).detach().cpu()
 
             logger.info(
-                "Epoch:%02d, Raw Total Generator Loss:%7.3f, Raw BCE Loss:%7.3f, Raw NGG Loss:%7.3f, Raw HFF Loss:%7.3f, Raw Total Discriminator Loss:%7.3f",
+                "Epoch:%02d, Raw Gen BCE Loss:%7.3f, Raw Gen NGG Loss:%7.3f, Raw Gen HFF Loss:%7.3f, Raw Dis BCE Loss Real:%7.3f, Raw Dis BCE Loss Fake:%7.3f", 
                 epoch,
-                losses_raw_val['raw_gen_total_loss'],
                 losses_raw_val['raw_gen_bce_loss'],
                 losses_raw_val['raw_gen_NGramGraphLoss'],
                 losses_raw_val['raw_gen_HeightHistogramAndFourierLoss'],
-                losses_raw_val['raw_dis_total_loss'],
+                losses_raw_val['raw_dis_bce_loss_real'],
+                losses_raw_val['raw_dis_bce_loss_fake'],
             )
 
             logger.info(
