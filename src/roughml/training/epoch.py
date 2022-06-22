@@ -127,6 +127,7 @@ def per_epoch(
         # Calculate the gradients for this batch, accumulated (summed) with previous gradients
         discriminator_error_fake.backward()
         # Compute error of Discriminator as sum over the fake and the real batches
+        # Divide total discriminator error by 2 cause each independent loss is normalized from 0 to 1
         discriminator_error_total = (discriminator_error_real.item() + discriminator_error_fake.item()) / 2
         # Update Discriminator
         optimizer_discriminator.step()
@@ -166,7 +167,7 @@ def per_epoch(
         # save raw generator BCE loss for fake/generated images to view in log file
         losses_raw['raw_gen_bce_loss'] += generator_bce_loss.item()
         # Calculate the normalized weighted value and also get the new maximum
-        norm_gen_bce_loss, norm_weighted_gen_bce_loss, losses_maxima['max_gen_bce_loss'] = normalizedAndWeightedLoss(generator_bce_loss.clone(), loss_weights[0], losses_maxima['max_gen_bce_loss'])
+        norm_gen_bce_loss, norm_weighted_gen_bce_loss, losses_maxima['max_gen_bce_loss'] = normalizedAndWeightedLoss(generator_bce_loss, loss_weights[0], losses_maxima['max_gen_bce_loss'])
         gen_batch_loss += norm_weighted_gen_bce_loss # update overall loss
 
         # Generator content loss (N-Gram graph loss)
@@ -178,8 +179,7 @@ def per_epoch(
         gen_batch_loss += norm_weighted_gen_content_loss # Update overall loss
         
         # Generator vector content loss (Height Histogram and Fourier loss)
-        generator_vector_content_loss = vector_content_loss_fn(fake.cpu().detach().numpy().squeeze()) # get generator height histogram and fourier loss on fake images batch
-        generator_vector_content_loss = torch.mean(generator_vector_content_loss).to(fake.device) # get mean values of all elements in the tensor
+        generator_vector_content_loss = torch.mean(vector_content_loss_fn(fake.cpu().detach().numpy().squeeze())).to(fake.device) # get mean generator height histogram and fourier loss on fake images batch
         # save raw generator vector content loss for fake/generated images to view in log file
         losses_raw['raw_gen_HeightHistogramAndFourierLoss'] += generator_vector_content_loss.item()
         # Calculate the normalized weighted value and also get the new maximum
