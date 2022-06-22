@@ -132,8 +132,9 @@ class TrainingManager(Configuration):
             (
                 generator_loss,
                 discriminator_loss,
-                discriminator_output_real,
-                discriminator_output_fake,
+                dis_out_real_batch_real_label,
+                dis_out_gen_batch_fake_label,
+                dis_out_gen_batch_real_label,
                 NGramGraphLoss,
                 HeightHistogramAndFourierLoss,
                 BCELoss,
@@ -207,10 +208,11 @@ class TrainingManager(Configuration):
             )
 
             logger.info(
-                "Epoch:%02d, Discriminator Output: [Real images:%7.5f, Generated images:%7.5f]",
+                "Epoch:%02d, Discriminator Output on Real Batch (label:1):%7.5f, Discriminator Output on Fake Batch (label:0):%7.5f, Discriminator Output on Fake Batch (label:1):%7.5f",
                 epoch,
-                discriminator_output_real,
-                discriminator_output_fake,
+                dis_out_real_batch_real_label,
+                dis_out_gen_batch_fake_label,
+                dis_out_gen_batch_real_label
             )
 
             # stop the training procedure when generator loss shows no significant change 
@@ -231,8 +233,9 @@ class TrainingManager(Configuration):
             yield (
                 generator_loss,
                 discriminator_loss,
-                discriminator_output_real,
-                discriminator_output_fake,
+                dis_out_real_batch_real_label,
+                dis_out_gen_batch_fake_label,
+                dis_out_gen_batch_real_label,
                 NGramGraphLoss,
                 HeightHistogramAndFourierLoss,
                 BCELoss,

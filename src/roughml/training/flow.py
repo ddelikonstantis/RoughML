@@ -177,8 +177,9 @@ class TrainingFlow(Configuration):
         (
             generator_losses,
             discriminator_losses,
-            discriminator_output_reals,
-            discriminator_output_fakes,
+            dis_out_real_batch_real_labels,
+            dis_out_gen_batch_fake_labels,
+            dis_out_gen_batch_real_labels,
             NGramGraphLosses,
             HeightHistogramAndFourierLosses,
             BCELosses,
@@ -207,18 +208,20 @@ class TrainingFlow(Configuration):
                 [
                     generator_losses,
                     discriminator_losses,
-                    discriminator_output_reals,
-                    discriminator_output_fakes,
+                    dis_out_real_batch_real_labels,
+                    dis_out_gen_batch_fake_labels,
+                    dis_out_gen_batch_real_labels,
                     BCELosses,
                     NGramGraphLosses,
                     HeightHistogramAndFourierLosses,
                 ]
             ).T,
             columns=[
-                "Total Generator Loss (weighted)",
+                "Total weighted Generator Loss",
                 "Total Discriminator Loss",
                 "Discriminator Output on Real images (label:1)",
                 "Discriminator Output on Generated images (label:0)",
+                "Discriminator Output on Generated images (label:1)",
                 "Binary Cross-Entropy Loss",
                 f"N-Gram Graph Loss ({self.NGramGraphLoss.type.__name__ if self.NGramGraphLoss.type else 'None'})",
                 "Height Histogram and Fourier Loss",
@@ -247,12 +250,13 @@ class TrainingFlow(Configuration):
         )
 
         plot_against(
-            discriminator_output_reals,
-            discriminator_output_fakes,
+            dis_out_real_batch_real_labels,
+            dis_out_gen_batch_fake_labels,
+            dis_out_gen_batch_real_labels,
             title="Discriminator output: Average probability of images to belong to the positive class (per epoch) \n" + str(path).split("Datasets")[1][1:len(str(path).split("Datasets")[1])],
             xlabel="Epochs",
             ylabel="Discriminator output",
-            labels=("Real images (label:1)", "Generated images (label:0)"),
+            labels=("Real images (label:1)", "Generated images (label:0)", "Generated images (label:1)"),
             save_path=self.plot.save_directory / save_path_dis_output,
         )
 

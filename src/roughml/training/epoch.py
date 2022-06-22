@@ -23,7 +23,11 @@ def normalizedAndWeightedLoss(value, weight, max_value_so_far):
     return value_norm, value_norm_weighted, max_value_so_far
 
 
-
+# The training of the GAN takes place in this function.
+# It closely follows Algorithm 1 from Goodfellow’s paper, while abiding by some of the best practices 
+# shown in ganhacks. Namely, we will “construct different mini-batches for real and fake” images, 
+# and also adjust Generator’s objective function to maximize logD(G(z)). Training is split up into two main parts. 
+# Part 1 updates the Discriminator and Part 2 updates the Generator.
 def per_epoch(
     generator,
     discriminator,
@@ -45,10 +49,14 @@ def per_epoch(
     losses_raw = dict.fromkeys(losses_raw, 0)
     gen_batch_loss = 0
     generator_loss, discriminator_loss = 0, 0
-    discriminator_output_real, discriminator_output_fake = 0, 0
+    dis_out_real_batch_real_label, dis_out_gen_batch_fake_label, dis_out_gen_batch_real_label = 0, 0, 0
     BCELoss, NGramGraphLoss, HeightHistogramAndFourierLoss = 0, 0, 0
 
     start_time = time.time()
+
+    # Establish convention for real and fake labels during training
+    real_label = 1
+    fake_label = 0
 
     # For each batch in the dataloader
     for train_iteration, X_batch in enumerate(dataloader):
@@ -56,7 +64,6 @@ def per_epoch(
         # to prevent runtime error
         if load_checkpoint:
             X_batch = X_batch.float()
-
 
         ############################ Part 1 - Train the Discriminator ############################
         # Recall, the goal of training the discriminator is to maximize the probability of correctly 
@@ -80,8 +87,9 @@ def per_epoch(
         # Set the gradients of Discriminator to zero
         discriminator.zero_grad()
         # Format batch
+        batch_size = X_batch.size(0)
         label = torch.full(
-            (X_batch.size(0),), 1, dtype=X_batch.dtype, device=X_batch.device
+            (batch_size,), real_label, dtype=X_batch.dtype, device=X_batch.device
         )
         # Forward pass real batch through Discriminator
         output = discriminator(X_batch).view(-1)
@@ -97,13 +105,13 @@ def per_epoch(
         discriminator_error_real /= losses_maxima['max_dis_bce_loss_real']
         # Calculate gradients for Discriminator for real images in backward pass
         discriminator_error_real.backward()
-        # Average Discriminator output during forward pass on real images batch
-        discriminator_output_real_batch = output.mean().item()
+        # Average Discriminator output during forward pass on real images batch (D(x))
+        dis_out_real_batch_real_lbl = output.mean().item()
 
         ## Train with all-fake batch
         # Generate batch of latent vectors
         noise = torch.randn(
-            X_batch.size(0),
+            batch_size,
             *generator.feature_dims,
             dtype=X_batch.dtype,
             device=X_batch.device,
@@ -111,7 +119,7 @@ def per_epoch(
         # Generate fake image batch with Generator
         fake = generator(noise)
         # label for fake/generated images is 0
-        label.fill_(0)
+        label.fill_(fake_label)
         # Classify all fake batch with Discriminator
         output = discriminator(fake.detach()).view(-1)
         # Calculate Discriminator's loss on the all-fake batch
@@ -126,9 +134,9 @@ def per_epoch(
         discriminator_error_fake /= losses_maxima['max_dis_bce_loss_fake']
         # Calculate the gradients for this batch, accumulated (summed) with previous gradients
         discriminator_error_fake.backward()
+        dis_out_gen_batch_fake_lbl = output.mean().item()
         # Compute error of Discriminator as sum over the fake and the real batches
-        # Divide total discriminator error by 2 cause each independent loss is normalized from 0 to 1
-        discriminator_error_total = (discriminator_error_real.item() + discriminator_error_fake.item()) / 2
+        discriminator_error_total = (discriminator_error_real + discriminator_error_fake) / 2
         # Update Discriminator
         optimizer_discriminator.step()
 
@@ -153,7 +161,7 @@ def per_epoch(
         # Set the gradients of Generator to zero
         generator.zero_grad()
         # fake labels are real for generator cost
-        label.fill_(1)
+        label.fill_(real_label)
         # Since we just updated Discriminator, perform another forward pass of all-fake batch through Discriminator
         output = discriminator(fake).view(-1)
 
@@ -164,7 +172,6 @@ def per_epoch(
 
         # Generator BCE loss calculated as log(D(G(z)))
         generator_bce_loss = criterion(output, label) # get generator BCE loss for this batch
-        generator_bce_loss = generator_bce_loss.detach()
         # save raw generator BCE loss for fake/generated images to view in log file
         losses_raw['raw_gen_bce_loss'] += generator_bce_loss.item()
         # Calculate the normalized weighted value and also get the new maximum
@@ -188,11 +195,11 @@ def per_epoch(
         gen_batch_loss += norm_weighted_gen_hist_fourier_loss # Update overall loss
 
         # Update overall generator loss with batch contribution
-        discriminator_error_fake = gen_batch_loss
+        generator_error_total = gen_batch_loss
 
         # Calculate gradients for G, which propagate through the discriminator
-        discriminator_error_fake.backward()
-        discriminator_output_fake_batch = output.mean().item()
+        generator_error_total.backward()
+        dis_out_gen_batch_real_lbl = output.mean().item()
         # Update Generator
         optimizer_generator.step()
 
@@ -200,13 +207,14 @@ def per_epoch(
         # generator_data = model_weights(generator)
 
         # calculate total losses for this batch
-        generator_loss += discriminator_error_fake.item() # update total generator loss for this batch
+        generator_loss += generator_error_total.item() # update total generator loss for this batch
         BCELoss += norm_gen_bce_loss.item() # update generator Binary Cross-Entropy loss for this batch
         NGramGraphLoss += norm_gen_content_loss.item() # update generator N-Gram Graph loss for this batch
         HeightHistogramAndFourierLoss += norm_gen_hist_fourier_loss.item() # update generator Height Histogram And Fourier loss for this batch
-        discriminator_loss += discriminator_error_total # update total discriminator loss for this batch
-        discriminator_output_real += discriminator_output_real_batch # update discriminator output for real images for this batch
-        discriminator_output_fake += discriminator_output_fake_batch # update discriminator output for generated images for this batch
+        discriminator_loss += discriminator_error_total.item() # update total discriminator loss for this batch
+        dis_out_real_batch_real_label += dis_out_real_batch_real_lbl # update discriminator output for real images for this batch
+        dis_out_gen_batch_fake_label += dis_out_gen_batch_fake_lbl # update discriminator output for generated images for this batch
+        dis_out_gen_batch_real_label += dis_out_gen_batch_real_lbl # update discriminator output for generated images for this batch
 
         if log_every_n is not None and not train_iteration % log_every_n:
             logger.info(
@@ -224,8 +232,9 @@ def per_epoch(
     NGramGraphLoss /= len(dataloader)
     HeightHistogramAndFourierLoss /= len(dataloader)
     discriminator_loss /= len(dataloader)
-    discriminator_output_real /= len(dataloader)
-    discriminator_output_fake /= len(dataloader)
+    dis_out_real_batch_real_label /= len(dataloader)
+    dis_out_gen_batch_fake_label /= len(dataloader)
+    dis_out_gen_batch_real_label /= len(dataloader)
     for elem in losses_raw.values():
         elem /= len(dataloader)
 
@@ -233,8 +242,9 @@ def per_epoch(
     return (
         generator_loss,
         discriminator_loss,
-        discriminator_output_real,
-        discriminator_output_fake,
+        dis_out_real_batch_real_label,
+        dis_out_gen_batch_fake_label,
+        dis_out_gen_batch_real_label,
         NGramGraphLoss,
         HeightHistogramAndFourierLoss,
         BCELoss, 
