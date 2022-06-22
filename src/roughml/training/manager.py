@@ -101,29 +101,23 @@ class TrainingManager(Configuration):
         min_generator_loss = float("inf")
 
         # set maximum variables for every loss normalization per batch
-        max_gen_total_loss, max_dis_total_loss = 0, 0
         max_dis_bce_loss_real, max_dis_bce_loss_fake = 0, 0
         max_gen_bce_loss, max_gen_NGramGraphLoss, max_gen_HeightHistogramAndFourierLoss = 0, 0, 0
-        maximum_losses = {'max_gen_total_loss': max_gen_total_loss,
-                          'max_gen_bce_loss': max_gen_bce_loss,
+        maximum_losses = {'max_gen_bce_loss': max_gen_bce_loss,
                           'max_gen_NGramGraphLoss': max_gen_NGramGraphLoss,
                           'max_gen_HeightHistogramAndFourierLoss': max_gen_HeightHistogramAndFourierLoss,
-                          'max_dis_total_loss': max_dis_total_loss,
                           'max_dis_bce_loss_real': max_dis_bce_loss_real,
                           'max_dis_bce_loss_fake': max_dis_bce_loss_fake,
                           }
 
         # variables for storing the raw losses per epoch to be viewed in the log file
-        raw_gen_total_loss, raw_dis_total_loss = 0, 0
         raw_dis_bce_loss_real, raw_dis_bce_loss_fake = 0, 0
         raw_gen_bce_loss, raw_gen_NGramGraphLoss, raw_gen_HeightHistogramAndFourierLoss = 0, 0, 0
-        raw_losses =    {'raw_gen_total_loss': raw_gen_total_loss,
-                        'raw_gen_bce_loss': raw_gen_bce_loss,
-                        'raw_gen_NGramGraphLoss': raw_gen_NGramGraphLoss,
-                        'raw_gen_HeightHistogramAndFourierLoss': raw_gen_HeightHistogramAndFourierLoss,
-                        'raw_dis_total_loss': raw_dis_total_loss,
-                        'raw_dis_bce_loss_real': raw_dis_bce_loss_real,
-                        'raw_dis_bce_loss_fake': raw_dis_bce_loss_fake,
+        raw_losses =    {'raw_gen_bce_loss': raw_gen_bce_loss,
+                         'raw_gen_NGramGraphLoss': raw_gen_NGramGraphLoss,
+                         'raw_gen_HeightHistogramAndFourierLoss': raw_gen_HeightHistogramAndFourierLoss,
+                         'raw_dis_bce_loss_real': raw_dis_bce_loss_real,
+                         'raw_dis_bce_loss_fake': raw_dis_bce_loss_fake,
                         }
 
         # set limits for early stopping

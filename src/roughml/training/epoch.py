@@ -128,8 +128,6 @@ def per_epoch(
         discriminator_error_fake.backward()
         # Compute error of Discriminator as sum over the fake and the real batches
         discriminator_error_total = (discriminator_error_real.item() + discriminator_error_fake.item()) / 2
-        # save raw total discriminator BCE loss to view in log file
-        losses_raw['raw_dis_total_loss'] += discriminator_error_total
         # Update Discriminator
         optimizer_discriminator.step()
 
