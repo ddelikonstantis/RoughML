@@ -100,8 +100,8 @@ def per_epoch(
         # normalize discriminator BCE loss on real images
         # use .clone() method on loss tensor to prevent runtime error for
         # using a tensor or its part to compute a part of the same tensor.
-        if losses_maxima['max_dis_bce_loss_real'] < discriminator_error_real.clone():
-            losses_maxima['max_dis_bce_loss_real'] = discriminator_error_real.clone()
+        if losses_maxima['max_dis_bce_loss_real'] < discriminator_error_real.item():
+            losses_maxima['max_dis_bce_loss_real'] = discriminator_error_real.item()
         discriminator_error_real /= losses_maxima['max_dis_bce_loss_real']
         # Calculate gradients for Discriminator for real images in backward pass
         discriminator_error_real.backward()
@@ -129,8 +129,8 @@ def per_epoch(
         # normalize discriminator BCE loss on fake images
         # use .clone() method on loss tensor to prevent runtime error for
         # using a tensor or its part to compute a part of the same tensor.
-        if losses_maxima['max_dis_bce_loss_fake'] < discriminator_error_fake.clone():
-            losses_maxima['max_dis_bce_loss_fake'] = discriminator_error_fake.clone()
+        if losses_maxima['max_dis_bce_loss_fake'] < discriminator_error_fake.item():
+            losses_maxima['max_dis_bce_loss_fake'] = discriminator_error_fake.item()
         discriminator_error_fake /= losses_maxima['max_dis_bce_loss_fake']
         # Calculate the gradients for this batch, accumulated (summed) with previous gradients
         discriminator_error_fake.backward()
