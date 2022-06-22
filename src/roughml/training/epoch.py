@@ -208,7 +208,6 @@ def per_epoch(
         discriminator_output_real += discriminator_output_real_batch # update discriminator output for real images for this batch
         discriminator_output_fake += discriminator_output_fake_batch # update discriminator output for generated images for this batch
 
-
         if log_every_n is not None and not train_iteration % log_every_n:
             logger.info(
                 "Minibatch training iteration #%04d ended after %7.3f seconds",
