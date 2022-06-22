@@ -190,7 +190,7 @@ class TrainingManager(Configuration):
                 fixed_fake = generator(fixed_noise).detach().cpu()
 
             logger.info(
-                "Epoch:%02d, Raw Total Generator Loss:%7.3f, Raw BCE Loss:%7.3f, Raw NGG Loss:%7.3f, Raw HFF Loss:%7.3f, Raw Discriminator Loss:%7.3f",
+                "Epoch:%02d, Raw Total Generator Loss:%7.3f, Raw BCE Loss:%7.3f, Raw NGG Loss:%7.3f, Raw HFF Loss:%7.3f, Raw Total Discriminator Loss:%7.3f",
                 epoch,
                 losses_raw_val['raw_gen_total_loss'],
                 losses_raw_val['raw_gen_bce_loss'],
@@ -200,7 +200,7 @@ class TrainingManager(Configuration):
             )
 
             logger.info(
-                "Epoch:%02d, Norm Total Generator Loss:%7.5f, Norm BCE Loss:%7.5f, Norm NGG Loss:%7.5f, Norm HFF Loss:%7.5f, Norm Discriminator Loss:%7.5f",
+                "Epoch:%02d, Norm Total Generator Loss:%7.5f, Norm BCE Loss:%7.5f, Norm NGG Loss:%7.5f, Norm HFF Loss:%7.5f, Norm Total Discriminator Loss:%7.5f",
                 epoch,
                 generator_loss,
                 BCELoss,
