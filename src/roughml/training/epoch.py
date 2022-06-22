@@ -164,6 +164,7 @@ def per_epoch(
 
         # Generator BCE loss calculated as log(D(G(z)))
         generator_bce_loss = criterion(output, label) # get generator BCE loss for this batch
+        generator_bce_loss = generator_bce_loss.detach()
         # save raw generator BCE loss for fake/generated images to view in log file
         losses_raw['raw_gen_bce_loss'] += generator_bce_loss.item()
         # Calculate the normalized weighted value and also get the new maximum
@@ -210,7 +211,7 @@ def per_epoch(
 
         if log_every_n is not None and not train_iteration % log_every_n:
             logger.info(
-                "Training Iteration #%04d ended after %7.3f seconds",
+                "Minibatch training iteration #%04d ended after %7.3f seconds",
                 train_iteration,
                 time.time() - start_time,
             )
