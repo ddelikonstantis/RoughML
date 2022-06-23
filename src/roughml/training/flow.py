@@ -244,7 +244,7 @@ class TrainingFlow(Configuration):
             HeightHistogramAndFourierLosses,
             title="BCE, N-Gram Graph, Height Histogram and Fourier losses per epoch \n" + str(path).split("Datasets")[1][1:len(str(path).split("Datasets")[1])],
             xlabel="Epochs",
-            ylabel="Normalized Loss",
+            ylabel="Normalized Generator Loss",
             labels=("BCE", "NGG", "HFF"),
             save_path=self.plot.save_directory / save_path_bce_ngg_hff_loss,
         )
