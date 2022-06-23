@@ -136,7 +136,7 @@ def per_epoch(
         discriminator_error_fake.backward()
         dis_out_gen_batch_fake_lbl = output.mean().item()
         # Compute error of Discriminator as sum over the fake and the real batches
-        discriminator_error_total = (discriminator_error_real + discriminator_error_fake) / 2
+        discriminator_error_total = (discriminator_error_real.item() + discriminator_error_fake.item()) / 2
         # Update Discriminator
         optimizer_discriminator.step()
 
@@ -180,7 +180,7 @@ def per_epoch(
         # normalize generator bce loss
         generator_bce_loss /= losses_maxima['max_gen_bce_loss']
         # assign to another var for plotting
-        norm_gen_bce_loss = generator_bce_loss
+        norm_gen_bce_loss = generator_bce_loss.item()
         # weight generator bce loss
         generator_bce_loss *= loss_weights[0]
 
@@ -194,7 +194,7 @@ def per_epoch(
         # normalize generator content loss
         generator_content_loss /= losses_maxima['max_gen_NGramGraphLoss']
         # assign to another var for plotting
-        norm_gen_content_loss = generator_content_loss
+        norm_gen_content_loss = generator_content_loss.item()
         # weight generator content loss
         generator_content_loss *= loss_weights[1]
         
@@ -208,7 +208,7 @@ def per_epoch(
         # normalize generator vector content loss
         generator_vector_content_loss /= losses_maxima['max_gen_HeightHistogramAndFourierLoss']
         # assign to another var for plotting
-        norm_gen_hist_fourier_loss = generator_vector_content_loss
+        norm_gen_hist_fourier_loss = generator_vector_content_loss.item()
         # weight generator vector content loss
         generator_vector_content_loss *= loss_weights[2]
 
@@ -226,10 +226,10 @@ def per_epoch(
 
         # calculate total losses for this batch
         generator_loss += generator_error_total.item() # update total generator loss for this batch
-        BCELoss += norm_gen_bce_loss.item() # update generator Binary Cross-Entropy loss for this batch
-        NGramGraphLoss += norm_gen_content_loss.item() # update generator N-Gram Graph loss for this batch
-        HeightHistogramAndFourierLoss += norm_gen_hist_fourier_loss.item() # update generator Height Histogram And Fourier loss for this batch
-        discriminator_loss += discriminator_error_total.item() # update total discriminator loss for this batch
+        BCELoss += norm_gen_bce_loss # update generator Binary Cross-Entropy loss for this batch
+        NGramGraphLoss += norm_gen_content_loss # update generator N-Gram Graph loss for this batch
+        HeightHistogramAndFourierLoss += norm_gen_hist_fourier_loss # update generator Height Histogram And Fourier loss for this batch
+        discriminator_loss += discriminator_error_total # update total discriminator loss for this batch
         dis_out_real_batch_real_label += dis_out_real_batch_real_lbl # update discriminator output for real images for this batch
         dis_out_gen_batch_fake_label += dis_out_gen_batch_fake_lbl # update discriminator output for generated images for this batch
         dis_out_gen_batch_real_label += dis_out_gen_batch_real_lbl # update discriminator output for generated images for this batch
