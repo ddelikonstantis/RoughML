@@ -67,7 +67,7 @@ class TrainingManager(Configuration):
 
         # Initialize fixed_noise_dim
         if not hasattr(self, "fixed_noise_dim"):
-            self.fixed_noise_dim = 128
+            self.fixed_noise_dim = 64
 
     def __call__(self, generator, discriminator, dataset):
         # Create batch of latent vectors that we will use to visualize
@@ -100,43 +100,46 @@ class TrainingManager(Configuration):
         # in every epoch in order to save the best model as a checkpoint
         min_generator_loss = float("inf")
 
-        # set maximum variables for loss normalization
-        max_total_generator_loss, max_total_discriminator_loss = 0, 0
-        max_discriminator_loss_real, max_discriminator_loss_fake = 0, 0
-        max_bce_loss, max_bce_epoch_loss, max_NGramGraphLoss, max_HeightHistogramAndFourierLoss = 0, 0, 0, 0
-        maximum_losses = {'max_total_generator_loss': max_total_generator_loss,
-                          'max_bce_loss': max_bce_loss,
-                          'max_bce_epoch_loss': max_bce_epoch_loss,
-                          'max_NGramGraphLoss': max_NGramGraphLoss,
-                          'max_HeightHistogramAndFourierLoss': max_HeightHistogramAndFourierLoss,
-                          'max_total_discriminator_loss': max_total_discriminator_loss,
-                          'max_discriminator_loss_real': max_discriminator_loss_real,
-                          'max_discriminator_loss_fake': max_discriminator_loss_fake,
+        # set maximum variables for normalizing every loss per batch
+        max_dis_bce_loss_real, max_dis_bce_loss_fake = 0, 0
+        max_gen_bce_loss, max_gen_NGramGraphLoss, max_gen_HeightHistogramAndFourierLoss = 0, 0, 0
+        maximum_losses = {'max_gen_bce_loss': max_gen_bce_loss,
+                          'max_gen_NGramGraphLoss': max_gen_NGramGraphLoss,
+                          'max_gen_HeightHistogramAndFourierLoss': max_gen_HeightHistogramAndFourierLoss,
+                          'max_dis_bce_loss_real': max_dis_bce_loss_real,
+                          'max_dis_bce_loss_fake': max_dis_bce_loss_fake,
                           }
+
+        # variables for storing the raw losses per epoch to be viewed in the log file
+        raw_dis_bce_loss_real, raw_dis_bce_loss_fake = 0, 0
+        raw_gen_bce_loss, raw_gen_NGramGraphLoss, raw_gen_HeightHistogramAndFourierLoss = 0, 0, 0
+        raw_losses =    {'raw_gen_bce_loss': raw_gen_bce_loss,
+                         'raw_gen_NGramGraphLoss': raw_gen_NGramGraphLoss,
+                         'raw_gen_HeightHistogramAndFourierLoss': raw_gen_HeightHistogramAndFourierLoss,
+                         'raw_dis_bce_loss_real': raw_dis_bce_loss_real,
+                         'raw_dis_bce_loss_fake': raw_dis_bce_loss_fake,
+                        }
 
         # set limits for early stopping
         # early stopping occurs when generator loss does not change significantly
         # for example we want to stop the training when its stuck in a local minimum
         patience = 10       # number of consecutive epochs where generator loss shows no significant change
         delta = 0.001       # generator loss change threshold
-        gen_loss_hist = []
+        gen_loss_hist = []  # initialize list for saving past generator losses
         early_stop = False
 
         for epoch in tqdm(range(self.n_epochs), desc="Epochs"):
             (
                 generator_loss,
                 discriminator_loss,
-                discriminator_output_real,
-                discriminator_output_fake,
+                dis_out_real_batch_real_label,
+                dis_out_gen_batch_fake_label,
+                dis_out_gen_batch_real_label,
                 NGramGraphLoss,
                 HeightHistogramAndFourierLoss,
                 BCELoss,
-                loss_maxima,
-                gen_bce_raw_loss,
-                nggh_raw_loss,
-                histo_four_raw_loss,
-                dis_raw_loss_real,
-                dis_raw_loss_fake,
+                losses_max,
+                losses_raw_val,
             ) = train_epoch_f(
                 generator,
                 discriminator,
@@ -147,30 +150,14 @@ class TrainingManager(Configuration):
                 content_loss_fn=self.NGramGraphLoss,
                 vector_content_loss_fn=self.HeightHistogramAndFourierLoss,
                 loss_weights=[self.criterion.weight, self.content_loss_weight, self.HeightHistogramAndFourier_loss_weight],
-                loss_maxima=maximum_losses,
+                losses_maxima=maximum_losses,
+                losses_raw=raw_losses,
                 log_every_n=self.log_every_n,
                 load_checkpoint = self.load_checkpoint,
             )
 
-            # Update maximum loss vars so far
-            maximum_losses = loss_maxima
-            
-            # normalize losses per epoch
-            if maximum_losses['max_total_generator_loss'] < generator_loss:
-                maximum_losses['max_total_generator_loss'] = generator_loss
-            generator_loss /= maximum_losses['max_total_generator_loss']
-            if maximum_losses['max_total_discriminator_loss'] < discriminator_loss:
-                maximum_losses['max_total_discriminator_loss'] = discriminator_loss
-            discriminator_loss /= maximum_losses['max_total_discriminator_loss']
-            if maximum_losses['max_bce_epoch_loss'] < BCELoss:
-                maximum_losses['max_bce_epoch_loss'] = BCELoss
-            BCELoss /= maximum_losses['max_bce_epoch_loss']
-            if maximum_losses['max_NGramGraphLoss'] < NGramGraphLoss:
-                maximum_losses['max_NGramGraphLoss'] = NGramGraphLoss
-            NGramGraphLoss /= maximum_losses['max_NGramGraphLoss']
-            if maximum_losses['max_HeightHistogramAndFourierLoss'] < HeightHistogramAndFourierLoss:
-                maximum_losses['max_HeightHistogramAndFourierLoss'] = HeightHistogramAndFourierLoss
-            HeightHistogramAndFourierLoss /= maximum_losses['max_HeightHistogramAndFourierLoss']
+            # update maximum losses seen in current epoch
+            maximum_losses = losses_max
 
             if (
                 self.checkpoint.directory is not None
@@ -201,16 +188,17 @@ class TrainingManager(Configuration):
                 fixed_fake = generator(fixed_noise).detach().cpu()
 
             logger.info(
-                "Epoch:%02d, Raw BCE Loss:%7.3f, Raw NGG Loss:%7.3f, Raw HFF Loss:%7.3f, Raw Discriminator Loss:%7.3f",
+                "Epoch:%02d, Raw Gen BCE Loss:%7.3f, Raw Gen NGG Loss:%7.3f, Raw Gen HFF Loss:%7.3f, Raw Dis BCE Loss Real:%7.3f, Raw Dis BCE Loss Fake:%7.3f", 
                 epoch,
-                gen_bce_raw_loss,
-                nggh_raw_loss,
-                histo_four_raw_loss,
-                (dis_raw_loss_real + dis_raw_loss_fake) / 2,
+                losses_raw_val['raw_gen_bce_loss'],
+                losses_raw_val['raw_gen_NGramGraphLoss'],
+                losses_raw_val['raw_gen_HeightHistogramAndFourierLoss'],
+                losses_raw_val['raw_dis_bce_loss_real'],
+                losses_raw_val['raw_dis_bce_loss_fake'],
             )
 
             logger.info(
-                "Epoch:%02d, Total Norm Generator Loss:%7.5f, Norm BCE Loss:%7.5f, Norm NGG Loss:%7.5f, Norm HFF Loss:%7.5f, Norm Discriminator Loss:%7.5f",
+                "Epoch:%02d, Norm Total Generator Loss:%7.5f, Norm BCE Loss:%7.5f, Norm NGG Loss:%7.5f, Norm HFF Loss:%7.5f, Norm Total Discriminator Loss:%7.5f",
                 epoch,
                 generator_loss,
                 BCELoss,
@@ -220,10 +208,11 @@ class TrainingManager(Configuration):
             )
 
             logger.info(
-                "Epoch:%02d, Discriminator Output: [Real images:%7.5f, Generated images:%7.5f]",
+                "Epoch:%02d, Discriminator Output on Real Batch (label 1):%7.5f, Discriminator Output on Fake Batch (label 0):%7.5f, Discriminator Output on Fake Batch (label 1):%7.5f",
                 epoch,
-                discriminator_output_real,
-                discriminator_output_fake,
+                dis_out_real_batch_real_label,
+                dis_out_gen_batch_fake_label,
+                dis_out_gen_batch_real_label
             )
 
             # stop the training procedure when generator loss shows no significant change 
@@ -244,8 +233,9 @@ class TrainingManager(Configuration):
             yield (
                 generator_loss,
                 discriminator_loss,
-                discriminator_output_real,
-                discriminator_output_fake,
+                dis_out_real_batch_real_label,
+                dis_out_gen_batch_fake_label,
+                dis_out_gen_batch_real_label,
                 NGramGraphLoss,
                 HeightHistogramAndFourierLoss,
                 BCELoss,
