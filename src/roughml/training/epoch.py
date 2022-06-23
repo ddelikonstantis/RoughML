@@ -28,6 +28,11 @@ def normalizedAndWeightedLoss(value, weight, max_value_so_far):
 # shown in ganhacks. Namely, we will “construct different mini-batches for real and fake” images, 
 # and also adjust Generator’s objective function to maximize logD(G(z)). Training is split up into two main parts. 
 # Part 1 updates the Discriminator and Part 2 updates the Generator.
+# Furthermore, custom losses are calculated for the generator overall loss.
+# Specifically content loss and vector content loss are generall terms whereas in our case
+# content loss is N-Gram graph loss and vector content loss is Height Histogram and Fourier loss
+# Each independent loss is normalized and weighted
+# Those custom losses are accumulated to generators bce loss
 def per_epoch(
     generator,
     discriminator,
@@ -86,7 +91,7 @@ def per_epoch(
         ## Train with all-real batch
         # Set the gradients of Discriminator to zero
         discriminator.zero_grad()
-        # Format batch
+        # Format batch on real images with real label
         batch_size = X_batch.size(0)
         label = torch.full(
             (batch_size,), real_label, dtype=X_batch.dtype, device=X_batch.device
@@ -98,14 +103,12 @@ def per_epoch(
         # save raw discriminator BCE loss for real images to view in log file
         losses_raw['raw_dis_bce_loss_real'] += discriminator_error_real.item()
         # normalize discriminator BCE loss on real images
-        # use .clone() method on loss tensor to prevent runtime error for
-        # using a tensor or its part to compute a part of the same tensor.
         if losses_maxima['max_dis_bce_loss_real'] < discriminator_error_real.item():
             losses_maxima['max_dis_bce_loss_real'] = discriminator_error_real.item()
         discriminator_error_real /= losses_maxima['max_dis_bce_loss_real']
         # Calculate gradients for Discriminator for real images in backward pass
         discriminator_error_real.backward()
-        # Average Discriminator output during forward pass on real images batch (D(x))
+        # Average Discriminator output on batch during forward pass on real images with real label (D(x))
         dis_out_real_batch_real_lbl = output.mean().item()
 
         ## Train with all-fake batch
@@ -127,8 +130,6 @@ def per_epoch(
         # save raw discriminator BCE loss for fake/generated images to view in log file
         losses_raw['raw_dis_bce_loss_fake'] += discriminator_error_fake.item()
         # normalize discriminator BCE loss on fake images
-        # use .clone() method on loss tensor to prevent runtime error for
-        # using a tensor or its part to compute a part of the same tensor.
         if losses_maxima['max_dis_bce_loss_fake'] < discriminator_error_fake.item():
             losses_maxima['max_dis_bce_loss_fake'] = discriminator_error_fake.item()
         discriminator_error_fake /= losses_maxima['max_dis_bce_loss_fake']
@@ -177,29 +178,34 @@ def per_epoch(
         # Calculate the normalized weighted value and also get the new maximum
         if losses_maxima['max_gen_bce_loss'] < generator_bce_loss.item():
             losses_maxima['max_gen_bce_loss'] = generator_bce_loss.item()
-        norm_gen_bce_loss = generator_bce_loss / losses_maxima['max_gen_bce_loss']
-        norm_weighted_gen_bce_loss = norm_gen_bce_loss * loss_weights[0]
-        gen_batch_loss += norm_weighted_gen_bce_loss # update overall loss
+        generator_bce_loss /= losses_maxima['max_gen_bce_loss']
+        norm_gen_bce_loss = generator_bce_loss
+        generator_bce_loss *= loss_weights[0]
 
-        # # Generator content loss (N-Gram graph loss)
-        # generator_content_loss = torch.mean(content_loss_fn(fake.cpu().detach().numpy().squeeze())).to(fake.device)  # Get generator content-based-loss mean on fake images batch
-        # # save raw generator content loss for fake/generated images to view in log file
-        # losses_raw['raw_gen_NGramGraphLoss'] += generator_content_loss.item()
-        # # Calculate the normalized weighted value and also get the new maximum
-        # norm_gen_content_loss, norm_weighted_gen_content_loss, losses_maxima['max_gen_NGramGraphLoss'] = normalizedAndWeightedLoss(generator_content_loss, loss_weights[1], losses_maxima['max_gen_NGramGraphLoss'])
-        # gen_batch_loss += norm_weighted_gen_content_loss # Update overall loss
+        # Generator content loss (N-Gram graph loss)
+        generator_content_loss = torch.mean(content_loss_fn(fake.cpu().detach().numpy().squeeze())).to(fake.device)  # Get generator content-based-loss mean on fake images batch
+        # save raw generator content loss for fake/generated images to view in log file
+        losses_raw['raw_gen_NGramGraphLoss'] += generator_content_loss.item()
+        # Calculate the normalized weighted value and also get the new maximum
+        if losses_maxima['max_gen_NGramGraphLoss'] < generator_content_loss.item():
+            losses_maxima['max_gen_NGramGraphLoss'] = generator_content_loss.item()
+        generator_content_loss /= losses_maxima['max_gen_NGramGraphLoss']
+        norm_gen_content_loss = generator_content_loss
+        generator_content_loss *= loss_weights[1]
         
-        # # Generator vector content loss (Height Histogram and Fourier loss)
-        # generator_vector_content_loss = torch.mean(vector_content_loss_fn(fake.cpu().detach().numpy().squeeze())).to(fake.device) # get mean generator height histogram and fourier loss on fake images batch
-        # # save raw generator vector content loss for fake/generated images to view in log file
-        # losses_raw['raw_gen_HeightHistogramAndFourierLoss'] += generator_vector_content_loss.item()
-        # # Calculate the normalized weighted value and also get the new maximum
-        # norm_gen_hist_fourier_loss, norm_weighted_gen_hist_fourier_loss, losses_maxima['max_gen_HeightHistogramAndFourierLoss'] = normalizedAndWeightedLoss(generator_vector_content_loss, loss_weights[2], losses_maxima['max_gen_HeightHistogramAndFourierLoss'])
-        # gen_batch_loss += norm_weighted_gen_hist_fourier_loss # Update overall loss
+        # Generator vector content loss (Height Histogram and Fourier loss)
+        generator_vector_content_loss = torch.mean(vector_content_loss_fn(fake.cpu().detach().numpy().squeeze())).to(fake.device) # get mean generator height histogram and fourier loss on fake images batch
+        # save raw generator vector content loss for fake/generated images to view in log file
+        losses_raw['raw_gen_HeightHistogramAndFourierLoss'] += generator_vector_content_loss.item()
+        # Calculate the normalized weighted value and also get the new maximum
+        if losses_maxima['max_gen_HeightHistogramAndFourierLoss'] < generator_vector_content_loss.item():
+            losses_maxima['max_gen_HeightHistogramAndFourierLoss'] = generator_vector_content_loss.item()
+        generator_vector_content_loss /= losses_maxima['max_gen_HeightHistogramAndFourierLoss']
+        norm_gen_hist_fourier_loss = generator_vector_content_loss
+        generator_vector_content_loss *= loss_weights[2]
 
         # Update overall generator loss with batch contribution
-        generator_error_total = gen_batch_loss
-
+        generator_error_total = generator_bce_loss + generator_content_loss + generator_vector_content_loss
         # Calculate gradients for G, which propagate through the discriminator
         generator_error_total.backward()
         dis_out_gen_batch_real_lbl = output.mean().item()
@@ -212,8 +218,8 @@ def per_epoch(
         # calculate total losses for this batch
         generator_loss += generator_error_total.item() # update total generator loss for this batch
         BCELoss += norm_gen_bce_loss.item() # update generator Binary Cross-Entropy loss for this batch
-        # NGramGraphLoss += norm_gen_content_loss.item() # update generator N-Gram Graph loss for this batch
-        # HeightHistogramAndFourierLoss += norm_gen_hist_fourier_loss.item() # update generator Height Histogram And Fourier loss for this batch
+        NGramGraphLoss += norm_gen_content_loss.item() # update generator N-Gram Graph loss for this batch
+        HeightHistogramAndFourierLoss += norm_gen_hist_fourier_loss.item() # update generator Height Histogram And Fourier loss for this batch
         discriminator_loss += discriminator_error_total.item() # update total discriminator loss for this batch
         dis_out_real_batch_real_label += dis_out_real_batch_real_lbl # update discriminator output for real images for this batch
         dis_out_gen_batch_fake_label += dis_out_gen_batch_fake_lbl # update discriminator output for generated images for this batch
