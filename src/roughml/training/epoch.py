@@ -253,9 +253,8 @@ def per_epoch(
     dis_out_real_batch_real_label /= len(dataloader)
     dis_out_gen_batch_fake_label /= len(dataloader)
     dis_out_gen_batch_real_label /= len(dataloader)
-    for elem in losses_raw.values():
-        elem /= len(dataloader)
-
+    for elem in losses_raw.keys():
+        losses_raw[elem] = losses_raw.get(elem) / len(dataloader)
 
     return (
         generator_loss,
