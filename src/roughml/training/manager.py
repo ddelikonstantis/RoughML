@@ -100,7 +100,7 @@ class TrainingManager(Configuration):
         # in every epoch in order to save the best model as a checkpoint
         min_generator_loss = float("inf")
 
-        # set maximum variables for every loss normalization per batch
+        # set maximum variables for normalizing every loss per batch
         max_dis_bce_loss_real, max_dis_bce_loss_fake = 0, 0
         max_gen_bce_loss, max_gen_NGramGraphLoss, max_gen_HeightHistogramAndFourierLoss = 0, 0, 0
         maximum_losses = {'max_gen_bce_loss': max_gen_bce_loss,

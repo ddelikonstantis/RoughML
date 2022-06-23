@@ -52,7 +52,6 @@ def per_epoch(
 
     # clear loss values before next batch
     losses_raw = dict.fromkeys(losses_raw, 0)
-    gen_batch_loss = 0
     generator_loss, discriminator_loss = 0, 0
     dis_out_real_batch_real_label, dis_out_gen_batch_fake_label, dis_out_gen_batch_real_label = 0, 0, 0
     BCELoss, NGramGraphLoss, HeightHistogramAndFourierLoss = 0, 0, 0
@@ -178,8 +177,11 @@ def per_epoch(
         # Calculate the normalized weighted value and also get the new maximum
         if losses_maxima['max_gen_bce_loss'] < generator_bce_loss.item():
             losses_maxima['max_gen_bce_loss'] = generator_bce_loss.item()
+        # normalize generator bce loss
         generator_bce_loss /= losses_maxima['max_gen_bce_loss']
+        # assign to another var for plotting
         norm_gen_bce_loss = generator_bce_loss
+        # weight generator bce loss
         generator_bce_loss *= loss_weights[0]
 
         # Generator content loss (N-Gram graph loss)
@@ -189,8 +191,11 @@ def per_epoch(
         # Calculate the normalized weighted value and also get the new maximum
         if losses_maxima['max_gen_NGramGraphLoss'] < generator_content_loss.item():
             losses_maxima['max_gen_NGramGraphLoss'] = generator_content_loss.item()
+        # normalize generator content loss
         generator_content_loss /= losses_maxima['max_gen_NGramGraphLoss']
+        # assign to another var for plotting
         norm_gen_content_loss = generator_content_loss
+        # weight generator content loss
         generator_content_loss *= loss_weights[1]
         
         # Generator vector content loss (Height Histogram and Fourier loss)
@@ -200,12 +205,16 @@ def per_epoch(
         # Calculate the normalized weighted value and also get the new maximum
         if losses_maxima['max_gen_HeightHistogramAndFourierLoss'] < generator_vector_content_loss.item():
             losses_maxima['max_gen_HeightHistogramAndFourierLoss'] = generator_vector_content_loss.item()
+        # normalize generator vector content loss
         generator_vector_content_loss /= losses_maxima['max_gen_HeightHistogramAndFourierLoss']
+        # assign to another var for plotting
         norm_gen_hist_fourier_loss = generator_vector_content_loss
+        # weight generator vector content loss
         generator_vector_content_loss *= loss_weights[2]
 
         # Update overall generator loss with batch contribution
         generator_error_total = generator_bce_loss + generator_content_loss + generator_vector_content_loss
+
         # Calculate gradients for G, which propagate through the discriminator
         generator_error_total.backward()
         dis_out_gen_batch_real_lbl = output.mean().item()
@@ -227,11 +236,11 @@ def per_epoch(
 
         if log_every_n is not None and not train_iteration % log_every_n:
             logger.info(
-                "Minibatch training iteration #%04d ended after %7.3f seconds",
+                "Minibatch iteration:%02d with batch size:%02d ended after %7.3f seconds",
                 train_iteration,
+                batch_size,
                 time.time() - start_time,
             )
-
             start_time = time.time()
 
 
