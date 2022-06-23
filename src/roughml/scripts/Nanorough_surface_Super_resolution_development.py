@@ -260,7 +260,7 @@ training_flow = TrainingFlow(
             # Uncomment if you want to enable checkpointing
             # "checkpoint": {"multiple": True},
             "train_epoch": per_epoch,
-            "log_every_n": 10,
+            "log_every_n": 1,
             "criterion": {"instance": criterion},
             "n_epochs": 10,
             "train_ratio": 0.8,
@@ -298,8 +298,8 @@ training_flow = TrainingFlow(
         "save_path": "perceptron_per_epoch_animation.mp4",
     },
     plot={
-        "grayscale": {"limit": 10, "save_path_fmt": "grayscale/%s_%02d.png"},
-        "surface": {"limit": 10, "save_path_fmt": "surface/%s_%02d.png"},
+        "grayscale": {"limit": 20, "save_path_fmt": "grayscale/%s_%02d.png"},
+        "surface": {"limit": 20, "save_path_fmt": "surface/%s_%02d.png"},
         "against": {"save_path_fmt": "against_%s.png"},
     },
     suppress_exceptions=False,
@@ -393,8 +393,8 @@ training_flow = TrainingFlow(
         "save_path": "cnn_per_epoch_animation.mp4",
     },
     plot={
-        "grayscale": {"limit": 10, "save_path_fmt": "grayscale/%s_%02d.png"},
-        "surface": {"limit": 10, "save_path_fmt": "surface/%s_%02d.png"},
+        "grayscale": {"limit": 20, "save_path_fmt": "grayscale/%s_%02d.png"},
+        "surface": {"limit": 20, "save_path_fmt": "surface/%s_%02d.png"},
         "against": {"save_path_fmt": "against_%s.png"},
     },
     suppress_exceptions=False,
