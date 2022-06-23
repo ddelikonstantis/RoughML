@@ -188,7 +188,7 @@ class TrainingManager(Configuration):
                 fixed_fake = generator(fixed_noise).detach().cpu()
 
             logger.info(
-                "Epoch:%02d, Raw Gen BCE Loss:%7.3f, Raw Gen NGG Loss:%7.3f, Raw Gen HFF Loss:%7.3f, Raw Dis BCE Loss Real:%7.3f, Raw Dis BCE Loss Fake:%7.3f", 
+                "Epoch:%02d, Raw Gen BCE Loss:%8.5f, Raw Gen NGG Loss:%8.5f, Raw Gen HFF Loss:%8.5f, Raw Dis BCE Loss Real:%8.5f, Raw Dis BCE Loss Fake:%8.5f", 
                 epoch,
                 losses_raw_val['raw_gen_bce_loss'],
                 losses_raw_val['raw_gen_NGramGraphLoss'],
