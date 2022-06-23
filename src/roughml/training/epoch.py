@@ -179,7 +179,7 @@ def per_epoch(
             losses_maxima['max_gen_bce_loss'] = generator_bce_loss.item()
         # normalize generator bce loss
         generator_bce_loss /= losses_maxima['max_gen_bce_loss']
-        # assign to another var for plotting
+        # assign normalized value to another var for plotting
         norm_gen_bce_loss = generator_bce_loss.item()
         # weight generator bce loss
         generator_bce_loss *= loss_weights[0]
@@ -193,7 +193,7 @@ def per_epoch(
             losses_maxima['max_gen_NGramGraphLoss'] = generator_content_loss.item()
         # normalize generator content loss
         generator_content_loss /= losses_maxima['max_gen_NGramGraphLoss']
-        # assign to another var for plotting
+        # assign normalized value to another var for plotting
         norm_gen_content_loss = generator_content_loss.item()
         # weight generator content loss
         generator_content_loss *= loss_weights[1]
@@ -224,7 +224,7 @@ def per_epoch(
         # Display all model layer weights
         # generator_data = model_weights(generator)
 
-        # calculate total losses for this batch
+        # accumulate losses for this batch
         generator_loss += generator_error_total.item() # update total generator loss for this batch
         BCELoss += norm_gen_bce_loss # update generator Binary Cross-Entropy loss for this batch
         NGramGraphLoss += norm_gen_content_loss # update generator N-Gram Graph loss for this batch
