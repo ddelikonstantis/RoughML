@@ -52,7 +52,7 @@ def generate(generator, dataset_size, save_path):
 
 @click.group()
 @click.option(
-    "-s",
+    "-su",
     "--surfaces",
     "surfaces",
     required=False,
