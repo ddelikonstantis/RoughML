@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--next-version-placeholder-->
 
+## v4.6.1 (2022-06-26)
+### Fix
+* Surface limit in dev script ([`b2fed68`](https://github.com/DimitriosDelikonstantis/RoughML/commit/b2fed6896ce827a3cf60a8ca1272195be125eeda))
+* Dataset naming convention ([`2523f6d`](https://github.com/DimitriosDelikonstantis/RoughML/commit/2523f6d59a359e54f2d5fadc5f387254b7c70506))
+* Properties when creating a dataset ([`197d7f1`](https://github.com/DimitriosDelikonstantis/RoughML/commit/197d7f100c1fb8992c121decd461120f642c2527))
+
+**[See all commits in this version](https://github.com/DimitriosDelikonstantis/RoughML/compare/v4.6.0...v4.6.1)**
+
 ## v4.6.0 (2021-10-19)
 ### Feature
 * **cli:** `benchmark` content similarity script ([`add2ad9`](https://github.com/billsioros/RoughML/commit/add2ad941cfdeca1f9d178cc47a32a44168a0dbf))
