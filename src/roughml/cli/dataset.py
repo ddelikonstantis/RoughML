@@ -52,7 +52,7 @@ def generate(generator, dataset_size, save_path):
 
 @click.group()
 @click.option(
-    "-s",
+    "-su",
     "--surfaces",
     "surfaces",
     required=False,
@@ -168,7 +168,7 @@ def dataset(
 ):
     """Generate datasets consisting of nanorough surfaces"""
     non_existent_fmt = (
-        "dataset_{0:04d}im_{1:03d}dim_{2:02d}rms_{3:02d}sk_{4:02d}ku_{5:02d}clX_{6:02d}clY_{7:04.2f}a.pt"
+        "dataset_{0:04d}sur_{1:03d}dim_{2:02d}rms_{3:02d}sk_{4:02d}ku_{5:02d}clX_{6:02d}clY_{7:04.2f}a.pt"
     )
 
     if dataset_path is None:
