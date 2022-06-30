@@ -219,9 +219,9 @@ class TrainingFlow(Configuration):
             columns=[
                 "Total Generator Loss",
                 "Total Discriminator Loss",
-                "Discriminator Output on Real images (label:1)",
-                "Discriminator Output on Generated images (label:0)",
-                "Discriminator Output on Generated images (label:1)",
+                "Discriminator Output on Real training images",
+                "Discriminator Output on Fake training images",
+                "Discriminator Output on Fake test images",
                 "Binary Cross-Entropy Loss",
                 f"N-Gram Graph Loss ({self.NGramGraphLoss.type.__name__ if self.NGramGraphLoss.type else 'None'})",
                 "Height Histogram and Fourier Loss",
@@ -255,7 +255,7 @@ class TrainingFlow(Configuration):
             dis_out_gen_batch_real_labels,
             title="Discriminator output: Average probability of images to belong to the positive class (per epoch) \n" + str(path).split("Datasets")[1][1:len(str(path).split("Datasets")[1])],
             xlabel="Epochs",
-            ylabel="Normalized Discriminator output",
+            ylabel="Discriminator output",
             labels=("Real training images", "Fake training images", "Fake test images"),
             save_path=self.plot.save_directory / save_path_dis_output,
         )
