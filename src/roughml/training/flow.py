@@ -244,7 +244,7 @@ class TrainingFlow(Configuration):
             HeightHistogramAndFourierLosses,
             title="BCE, N-Gram Graph, Height Histogram and Fourier losses per epoch \n" + str(path).split("Datasets")[1][1:len(str(path).split("Datasets")[1])],
             xlabel="Epochs",
-            ylabel="Normalized Generator Loss",
+            ylabel="Normalized loss",
             labels=("BCE", "NGG", "HFF"),
             save_path=self.plot.save_directory / save_path_bce_ngg_hff_loss,
         )
@@ -255,8 +255,8 @@ class TrainingFlow(Configuration):
             dis_out_gen_batch_real_labels,
             title="Discriminator output: Average probability of images to belong to the positive class (per epoch) \n" + str(path).split("Datasets")[1][1:len(str(path).split("Datasets")[1])],
             xlabel="Epochs",
-            ylabel="Discriminator output",
-            labels=("Real images (label:1)", "Generated images (label:0)", "Generated images (label:1)"),
+            ylabel="Normalized Discriminator output",
+            labels=("Real training images", "Fake training images", "Fake test images"),
             save_path=self.plot.save_directory / save_path_dis_output,
         )
 
