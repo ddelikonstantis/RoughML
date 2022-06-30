@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!--next-version-placeholder-->
 
+## v4.6.2 (2022-06-30)
+### Fix
+* Histogram and Fourier loss calculation ([`f799c8d`](https://github.com/DimitriosDelikonstantis/RoughML/commit/f799c8d9301b4acc60ff5c8a1ce4690f51553e3e))
+
+**[See all commits in this version](https://github.com/DimitriosDelikonstantis/RoughML/compare/v4.6.1...v4.6.2)**
+
 ## v4.6.1 (2022-06-26)
 ### Fix
 * Surface limit in dev script ([`b2fed68`](https://github.com/DimitriosDelikonstantis/RoughML/commit/b2fed6896ce827a3cf60a8ca1272195be125eeda))
