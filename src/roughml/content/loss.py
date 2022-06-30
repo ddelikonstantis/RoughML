@@ -267,10 +267,6 @@ class VectorSpaceContentLoss(ContentLoss):
             # and raise this difference to the power of 2.
             # Get the square root of the mean of these squared differences and add it to the total diff
             HistDiff += np.sqrt(np.square(np.subtract(histogram, _histogram)).mean()) 
-            # Normalize histogram diff from 0 to 1
-            if self.MaxHistDiff < HistDiff:
-                self.MaxHistDiff = HistDiff
-            HistDiff /= self.MaxHistDiff
 
             # Calculate the Fourier contribution to the loss with respect to this training instance
             # This contribution is effectively a difference/dissimilarity measurement between Fourier transformation outputs
@@ -279,16 +275,20 @@ class VectorSpaceContentLoss(ContentLoss):
             # and raise the difference to the power of 2.
             # Get the square root of the mean of these squared differences and add it to the total diff
             FourierDiff += np.sqrt(np.square(np.subtract(fourier, _fourier)).mean())
-            # Normalize fourier diff from 0 to 1
-            if self.MaxFourierDiff < FourierDiff:
-                self.MaxFourierDiff = FourierDiff
-            FourierDiff /= self.MaxFourierDiff
 
-            # normalize histogram and fourier diff from 0 to 1
-            diff = (HistDiff + FourierDiff) / 2
 
-        # Normalize the total diff to reflect the average diff over all instances (each of which has 2 components contributing: histogram and Fourier)
-        diff /= self.n_neighbors * 2
+        # Normalize histogram diff from 0 to 1
+        if self.MaxHistDiff < HistDiff:
+            self.MaxHistDiff = HistDiff
+        HistDiff /= self.MaxHistDiff
+
+        # Normalize fourier diff from 0 to 1
+        if self.MaxFourierDiff < FourierDiff:
+            self.MaxFourierDiff = FourierDiff
+        FourierDiff /= self.MaxFourierDiff
+
+        # Normalize the total diff for each loss component
+        diff = (HistDiff + FourierDiff) / 2
 
         # The loss is a function of diff normalized between 0 and 1. A value of diff = 0
         # (i.e. the evaluated surface is completely identical - in terms of histogam and Fourier - to all the training instances)

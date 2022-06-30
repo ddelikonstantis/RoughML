@@ -269,7 +269,7 @@ training_flow = TrainingFlow(
                 "params": {"lr": 0.0002, "betas": (0.5, 0.999)},
             },
             "dataloader": {
-                "batch_size": 64,
+                "batch_size": 10,
                 "shuffle": True,
                 "num_workers": 0,
             },
@@ -288,7 +288,7 @@ training_flow = TrainingFlow(
             load_multiple_datasets_from_pt,
             DATASET_DIR,
             transforms=[To(device), View(1, 128, 128)],
-            limit=(2, 20),
+            limit=(2, 50),
         )
     },
     animation={
@@ -364,7 +364,7 @@ training_flow = TrainingFlow(
                 "params": {"lr": 0.0002, "betas": (0.5, 0.999)},
             },
             "dataloader": {
-                "batch_size": 64,
+                "batch_size": 10,
                 "shuffle": True,
                 "num_workers": 0,
             },
@@ -383,7 +383,7 @@ training_flow = TrainingFlow(
             load_multiple_datasets_from_pt,
             DATASET_DIR,
             transforms=[To(device), View(1, 128, 128)],
-            limit=(2, 20),
+            limit=(2, 50),
         )
     },
     animation={
