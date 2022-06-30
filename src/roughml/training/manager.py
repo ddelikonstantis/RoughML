@@ -208,7 +208,7 @@ class TrainingManager(Configuration):
             )
 
             logger.info(
-                "Epoch:%02d, Discriminator Output on Real Batch (label 1):%7.5f, Discriminator Output on Fake Batch (label 0):%7.5f, Discriminator Output on Fake Batch (label 1):%7.5f",
+                "Epoch:%02d, Discriminator Output on Real training images:%7.5f, Discriminator Output on Fake training images:%7.5f, Discriminator Output on Fake test images:%7.5f",
                 epoch,
                 dis_out_real_batch_real_label,
                 dis_out_gen_batch_fake_label,
