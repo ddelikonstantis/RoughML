@@ -262,14 +262,14 @@ training_flow = TrainingFlow(
             "train_epoch": per_epoch,
             "log_every_n": 1,
             "criterion": {"instance": criterion},
-            "n_epochs": 100,
+            "n_epochs": 10,
             "train_ratio": 0.8,
             "optimizer": {
                 "type": Adam,
                 "params": {"lr": 0.0002, "betas": (0.5, 0.999)},
             },
             "dataloader": {
-                "batch_size": 64,
+                "batch_size": 10,
                 "shuffle": True,
                 "num_workers": 0,
             },
@@ -288,7 +288,7 @@ training_flow = TrainingFlow(
             load_multiple_datasets_from_pt,
             DATASET_DIR,
             transforms=[To(device), View(1, 128, 128)],
-            limit=None,
+            limit=(2, 50),
         )
     },
     animation={
@@ -357,14 +357,14 @@ training_flow = TrainingFlow(
             "train_epoch": per_epoch,
             "log_every_n": 1,
             "criterion": {"instance": criterion},
-            "n_epochs": 200,
+            "n_epochs": 30,
             "train_ratio": 0.8,
             "optimizer": {
                 "type": Adam,
                 "params": {"lr": 0.0002, "betas": (0.5, 0.999)},
             },
             "dataloader": {
-                "batch_size": 64,
+                "batch_size": 40,
                 "shuffle": True,
                 "num_workers": 0,
             },
@@ -383,7 +383,7 @@ training_flow = TrainingFlow(
             load_multiple_datasets_from_pt,
             DATASET_DIR,
             transforms=[To(device), View(1, 128, 128)],
-            limit=None,
+            limit=(2, 200),
         )
     },
     animation={
