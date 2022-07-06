@@ -154,6 +154,7 @@ class TrainingManager(Configuration):
                 losses_raw=raw_losses,
                 log_every_n=self.log_every_n,
                 load_checkpoint = self.load_checkpoint,
+                epoch_iter = epoch
             )
 
             # update maximum losses seen in current epoch

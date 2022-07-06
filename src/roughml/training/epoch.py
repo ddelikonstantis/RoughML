@@ -47,6 +47,7 @@ def per_epoch(
     losses_raw = {},
     log_every_n=None,
     load_checkpoint = None,
+    epoch_iter = 0
 ):
     generator.train()
 
@@ -106,7 +107,8 @@ def per_epoch(
             losses_maxima['max_dis_bce_loss_real'] = discriminator_error_real.item()
         discriminator_error_real /= losses_maxima['max_dis_bce_loss_real']
         # Calculate gradients for Discriminator for real images in backward pass
-        discriminator_error_real.backward()
+        if epoch_iter % 2 == 0:
+            discriminator_error_real.backward()
         # Average Discriminator output on batch during forward pass on real images with real label (D(x))
         dis_out_real_batch_real_lbl = output.mean().item()
 
@@ -133,7 +135,8 @@ def per_epoch(
             losses_maxima['max_dis_bce_loss_fake'] = discriminator_error_fake.item()
         discriminator_error_fake /= losses_maxima['max_dis_bce_loss_fake']
         # Calculate the gradients for this batch, accumulated (summed) with previous gradients
-        discriminator_error_fake.backward()
+        if epoch_iter % 2 == 0:
+            discriminator_error_fake.backward()
         dis_out_gen_batch_fake_lbl = output.mean().item()
         # Compute error of Discriminator as sum over the fake and the real batches
         discriminator_error_total = (discriminator_error_real.item() + discriminator_error_fake.item()) / 2
