@@ -112,7 +112,7 @@ class ArrayGraph2DContentLoss(ContentLoss):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-        self._collector = ArrayGraph2DCollector()
+        self._collector = ArrayGraph2DCollector(n=8, window_size=8)
 
         for surface in self.surfaces:
             self._collector.add(surface)
