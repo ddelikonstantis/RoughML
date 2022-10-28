@@ -147,7 +147,7 @@ if "roughml" not in pip_freeze_output:
 import torch
 
 # Set random seed for reproducibility
-manualSeed = 999
+manualSeed = None
 #manualSeed = random.randint(1, 10000) # use if you want new results
 
 if manualSeed is not None:
@@ -383,7 +383,7 @@ training_flow = TrainingFlow(
             load_multiple_datasets_from_pt,
             DATASET_DIR,
             transforms=[To(device), View(1, 128, 128)],
-            limit=(None, 300),
+            limit=(None, 500),
         )
     },
     animation={
