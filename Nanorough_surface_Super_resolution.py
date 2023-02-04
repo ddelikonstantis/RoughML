@@ -357,14 +357,14 @@ training_flow = TrainingFlow(
             "train_epoch": per_epoch,
             "log_every_n": 1,
             "criterion": {"instance": criterion},
-            "n_epochs": 200,
+            "n_epochs": 100,
             "train_ratio": 0.8,
             "optimizer": {
                 "type": Adam,
                 "params": {"lr": 0.0002, "betas": (0.5, 0.999)},
             },
             "dataloader": {
-                "batch_size": 64,
+                "batch_size": 128,
                 "shuffle": True,
                 "num_workers": 0,
             },
