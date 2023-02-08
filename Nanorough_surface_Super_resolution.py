@@ -147,8 +147,8 @@ if "roughml" not in pip_freeze_output:
 import torch
 
 # Set random seed for reproducibility
-manualSeed = 999
-#manualSeed = random.randint(1, 10000) # use if you want new results
+# manualSeed = 999
+manualSeed = random.randint(1, 10000) # use if you want new results
 
 if manualSeed is not None:
     np.random.seed(manualSeed)
