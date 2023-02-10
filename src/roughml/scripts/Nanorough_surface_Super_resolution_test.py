@@ -382,7 +382,7 @@ training_flow = TrainingFlow(
         "loader": functools.partial(
             load_multiple_datasets_from_pt,
             DATASET_DIR,
-            transforms=[To(device), View(1, 128, 128)],
+            transforms=[To(device), View(1, 256, 256)],
             limit=None,
         )
     },
